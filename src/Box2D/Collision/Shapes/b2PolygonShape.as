@@ -153,7 +153,7 @@ package Box2D.Collision.Shapes
 		{
 			CONFIG::debug
 			{
-				assert((0 <= p_index && p_index < m_vertexCount), "index out of range", "b2PolygonShape.GetVertex");
+				assert((0 <= p_index && p_index < m_vertexCount), "index out of range");
 			}
 
 			return b2Vec2.Get(m_vertices[p_index], m_vertices[p_index+1]);

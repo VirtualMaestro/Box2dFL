@@ -74,7 +74,7 @@ package Box2D.Common.Math
 		{
 			CONFIG::develop
 			{
-				assert(t0 < 1.0, "t0 has to be < 1.0", "b2Sweep.Advance");
+				assert(t0 < 1.0, "t0 has to be < 1.0");
 			}
 
 			var beta:Number = (t - t0) / (1.0 - t0);

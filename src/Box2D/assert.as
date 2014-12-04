@@ -5,12 +5,30 @@
  */
 package Box2D
 {
-	public function assert(p_expression:Boolean, p_message:String, p_where:String = null):void
+	import flash.utils.getQualifiedClassName;
+
+	public function assert(p_expression:Boolean, p_message:String, p_causeObject:* = null):void
 	{
 		 if (!p_expression)
 		 {
-			 var where:String = p_where ? " in " + p_where + ": " : ": ";
-			 throw new Error("Exception" + where + p_message);
+			 var error:Error = new Error();
+			 var stackTrace:String = error.getStackTrace();
+			 var eIndex:int = stackTrace.indexOf("]") +1;
+			 var outStackTrace:String = stackTrace.substring(eIndex);
+
+			 trace("EXCEPTION!: " + p_message);
+
+			 if (p_causeObject)
+			 {
+				 trace("ADDITIONAL: ");
+				 trace(" - " + getQualifiedClassName(p_causeObject));
+				 trace(" - " + p_causeObject.toString());
+			 }
+
+			 trace("STACK TRACE:");
+			 trace(outStackTrace);
+
+			 throw error;
 		 }
 	}
 }

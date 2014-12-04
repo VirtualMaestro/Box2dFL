@@ -5,10 +5,6 @@
  */
 package Box2D.Common
 {
-	import Box2D.Collision.Shapes.b2CircleShape;
-	import Box2D.Collision.Shapes.b2PolygonShape;
-	import Box2D.Collision.Shapes.b2Shape;
-
 	CONFIG::debug
 	{
 		import Box2D.assert;
@@ -43,7 +39,7 @@ package Box2D.Common
 		{
 			CONFIG::debug
 			{
-				assert(!disposed, "attempt to destroy the already destroyed instance", getQualifiedClassName(this));
+				assert(!disposed, "attempt to destroy the already destroyed instance");
 			}
 		}
 
@@ -105,7 +101,7 @@ package Box2D.Common
 		 * Returns circle shape.
 		 * @return b2Disposable
 		 */
-		static public function Get(p_classId:uint):b2Disposable
+		static b2internal function Get(p_classId:uint):b2Disposable
 		{
 			//
 			if (_counts == null) init();
@@ -146,11 +142,11 @@ package Box2D.Common
 		 * Put instance of b2Shape to pool.
 		 */
 		[Inline]
-		static public function Put(p_instance:b2Disposable):void
+		static b2internal function Put(p_instance:b2Disposable):void
 		{
 			CONFIG::debug
 			{
-				assert(!p_instance.disposed, "try to add already disposed shape to pool", "b2Disposable.Put");
+				assert(!p_instance.disposed, "try to add already disposed shape to pool");
 			}
 
 			p_instance.disposed = true;
@@ -169,7 +165,7 @@ package Box2D.Common
 		 * Clear pool for GC.
 		 */
 		[Inline]
-		static public function Rid():void
+		static b2internal function Rid():void
 		{
 			var len:int = _pool.length;
 

@@ -195,7 +195,7 @@ package Box2D.Collision.Shapes
 		{
 			CONFIG::debug
 			{
-				assert(!p_instance.disposed, "try to add already disposed shape to pool", "b2Shape.Put");
+				assert(!p_instance.disposed, "try to add already disposed shape to pool");
 			}
 
 			p_instance.disposed = true;
