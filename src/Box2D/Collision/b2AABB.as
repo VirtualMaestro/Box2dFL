@@ -1,0 +1,329 @@
+/**
+ * User: VirtualMaestro
+ * Date: 26.11.2014
+ * Time: 0:48
+ */
+package Box2D.Collision
+{
+	import Box2D.Common.b2Disposable;
+	import Box2D.Common.IDisposable;
+	import Box2D.Common.Math.b2Math;
+	import Box2D.Common.Math.b2SPoint;
+	import Box2D.Common.b2internal;
+
+	use namespace b2internal;
+
+	/**
+	 * An axis aligned bounding box.
+	 */
+	public class b2AABB extends b2Disposable
+	{
+		public var upperBoundX:Number = 0;
+		public var upperBoundY:Number = 0;
+		public var lowerBoundX:Number = 0;
+		public var lowerBoundY:Number = 0;
+
+		/**
+		 * Get the center of the AABB.
+		 * IMPORTANT! Method returns new instance of b2SPoint.
+		 */
+		[Inline]
+		final public function GetCenter():b2SPoint // const
+		{
+			return b2SPoint.Get((upperBoundX + lowerBoundX) * 0.5, (upperBoundY + lowerBoundY) * 0.5);
+		}
+
+		/**
+		 * Get center of aabb by X axis.
+		 */
+		[Inline]
+		final public function get centerX():Number    // const
+		{
+			return (upperBoundX + lowerBoundX) * 0.5;
+		}
+
+		/**
+		 * Get center of aabb by Y axis.
+		 */
+		[Inline]
+		final public function get centerY():Number    // const
+		{
+			return (upperBoundY + lowerBoundY) * 0.5;
+		}
+
+		/**
+		 * Get the extents of the AABB (half-widths).
+		 * IMPORTANT! Method returns new instance of b2SPoint.
+		 */
+		[Inline]
+		final public function GetExtents():b2SPoint
+		{
+			return b2SPoint.Get((upperBoundX - lowerBoundX) * 0.5, (upperBoundY - lowerBoundY) * 0.5);
+		}
+
+		/**
+		 * Get the perimeter length.
+		 * @return Number
+		 */
+		[Inline]
+		final public function GetPerimeter():Number
+		{
+			var wx:Number = upperBoundX - lowerBoundX;
+			var wy:Number = upperBoundY - lowerBoundY;
+
+			return (wx + wy) * 2.0;
+		}
+
+		/**
+		 * Combine an AABB into this one.
+		 */
+		[Inline]
+		final public function Combine(p_aabb:b2AABB):void
+		{
+			lowerBoundX = b2Math.Min(lowerBoundX, p_aabb.lowerBoundX);
+			lowerBoundY = b2Math.Min(lowerBoundY, p_aabb.lowerBoundY);
+
+			upperBoundX = b2Math.Max(upperBoundX, p_aabb.upperBoundX);
+			upperBoundY = b2Math.Max(upperBoundY, p_aabb.upperBoundY);
+		}
+
+		/**
+		 * Combine two AABBs into this one.
+		 */
+		[Inline]
+		final public function CombineTwo(p_aabb1:b2AABB, p_aabb2:b2AABB):void
+		{
+			lowerBoundX = b2Math.Min(p_aabb1.lowerBoundX, p_aabb2.lowerBoundX);
+			lowerBoundY = b2Math.Min(p_aabb1.lowerBoundY, p_aabb2.lowerBoundY);
+
+			upperBoundX = b2Math.Max(p_aabb1.upperBoundX, p_aabb2.upperBoundX);
+			upperBoundY = b2Math.Max(p_aabb1.upperBoundY, p_aabb2.upperBoundY);
+		}
+
+		/**
+		 * Does this aabb contain the provided AABB.
+		 */
+		[Inline]
+		final public function Contains(p_aabb:b2AABB):Boolean
+		{
+			if (upperBoundX <= p_aabb.upperBoundX)
+			{
+				if (upperBoundY <= p_aabb.upperBoundY)
+				{
+					if (lowerBoundX >= p_aabb.lowerBoundX)
+					{
+						if (lowerBoundY >= p_aabb.lowerBoundY)
+						{
+							return true;
+						}
+					}
+				}
+			}
+
+			return false;
+		}
+
+		/**
+		 * Dispose instance. After disposing there is no possible of using instance.
+		 */
+		override public function Dispose():void
+		{
+			CONFIG::debug
+			{
+				super.Dispose();
+			}
+
+			Put(this);
+		}
+
+		/**
+		 */
+		override public function Clone():IDisposable
+		{
+			return Get(upperBoundX, upperBoundY, lowerBoundX, lowerBoundY);
+		}
+
+		/**
+		 * From Real-time Collision Detection, p179.
+		 * @param p_rayCastData simultaneously input and output data.
+		 */
+		public function RayCast(p_rayCastData:b2RayCastData):Boolean
+		{
+			var tMin:Number = -Number.MAX_VALUE;
+			var tMax:Number = Number.MAX_VALUE;
+
+			var pX:Number = p_rayCastData.startX;
+			var pY:Number = p_rayCastData.startY;
+
+			var dX:Number = p_rayCastData.endX - pX;
+			var dY:Number = p_rayCastData.endY - pY;
+
+			var absDX:Number = b2Math.Abs(dX);
+			var absDY:Number = b2Math.Abs(dY);
+
+			var normalX:Number;
+			var normalY:Number;
+
+			var inv_d:Number;
+			var t1:Number;
+			var t2:Number;
+			var s:Number;
+			var swap:Number;
+
+			// process X
+			if (absDX < b2Math.EPSILON)
+			{
+				// Parallel
+				if (pX < lowerBoundX || upperBoundX < pX)
+				{
+					return false;
+				}
+			}
+			else
+			{
+				inv_d = 1.0 / dX;
+				t1 = (lowerBoundX - pX) * inv_d;
+				t2 = (upperBoundX - pX) * inv_d;
+
+				// Sign of the normal vector.
+				s = -1.0;
+
+				if (t1 > t2)
+				{
+					swap = t1;
+					t1 = t2;
+					t2 = swap;
+
+					s = 1.0;
+				}
+
+				// Push the min up
+				if (t1 > tMin)
+				{
+					normalX = s;
+					normalY = 0;
+					tMin = t1;
+				}
+
+				// Pull the max down
+				tMax = b2Math.Min(tMax, t2);
+
+				if (tMin > tMax)
+				{
+					return false;
+				}
+			}
+
+			// process Y
+			if (absDY < b2Math.EPSILON)
+			{
+				// Parallel
+				if (pY < lowerBoundY || upperBoundY < pY)
+				{
+					return false;
+				}
+			}
+			else
+			{
+				inv_d = 1.0 / dY;
+				t1 = (lowerBoundY - pY) * inv_d;
+				t2 = (upperBoundY - pY) * inv_d;
+
+				// Sign of the normal vector.
+				s = -1.0;
+
+				if (t1 > t2)
+				{
+					swap = t1;
+					t1 = t2;
+					t2 = swap;
+
+					s = 1.0;
+				}
+
+				// Push the min up
+				if (t1 > tMin)
+				{
+					normalX = 0;
+					normalY = s;
+					tMin = t1;
+				}
+
+				// Pull the max down
+				tMax = b2Math.Min(tMax, t2);
+
+				if (tMin > tMax)
+				{
+					return false;
+				}
+			}
+
+			// Does the ray start inside the box?
+			// Does the ray intersect beyond the max fraction?
+			if (tMin < 0.0 || p_rayCastData.maxFraction < tMin)
+			{
+				return false;
+			}
+
+			// Intersection.
+			p_rayCastData.fraction = tMin;
+			p_rayCastData.normalX = normalX;
+			p_rayCastData.normalY = normalY;
+
+			return true;
+		}
+
+		//*************
+		//**** POOL ***
+		//*************
+		static private var _pool:Vector.<b2AABB> = new <b2AABB>[];
+		static private var _count:int = 0;
+
+		/**
+		 * Returns new instance of b2AABB.
+		 * @return b2AABB
+		 */
+		static public function Get(p_upperBoundX:Number = 0, p_upperBoundY:Number = 0, p_lowerBoundX:Number = 0, p_lowerBoundY:Number = 0):b2AABB
+		{
+			var instance:b2AABB;
+
+			if (_count > 0)
+			{
+				instance = _pool[--_count];
+				instance.disposed = false;
+				_pool[_count] = null;
+			}
+			else
+			{
+				instance = new b2AABB();
+			}
+
+			instance.upperBoundX = p_upperBoundX;
+			instance.upperBoundY = p_upperBoundY;
+			instance.lowerBoundX = p_lowerBoundX;
+			instance.lowerBoundY = p_lowerBoundY;
+
+			return instance;
+		}
+
+		/**
+		 * Put instance of b2AABB to pool.
+		 */
+		[Inline]
+		static private function Put(p_instance:b2AABB):void
+		{
+			p_instance.disposed = true;
+			_pool[_count++] = p_instance;
+		}
+
+		/**
+		 * Clear pool for GC.
+		 */
+		[Inline]
+		static public function Rid():void
+		{
+			b2Disposable.clearVector(_pool);
+			_count = 0;
+		}
+	}
+}
