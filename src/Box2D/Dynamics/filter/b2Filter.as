@@ -16,6 +16,8 @@ package Box2D.Dynamics.filter
 	 */
 	public class b2Filter extends b2Disposable
 	{
+		static b2internal var classId:uint = b2Disposable.getClassId();
+
 		/**
 		 * The collision category bits. Normally you would just set one bit.
 		 * Value by default 0x00000001
@@ -74,7 +76,7 @@ package Box2D.Dynamics.filter
 				super.Dispose();
 			}
 
-			Put(this);
+			b2Disposable.Put(this, classId);
 		}
 
 		/**
@@ -195,55 +197,24 @@ package Box2D.Dynamics.filter
 			return p_filterMask & (~p_excludingGroup);
 		}
 
-		//*************
-		//**** POOL ***
-		//*************
-		static private var _pool:Vector.<b2Filter> = new <b2Filter>[];
-		static private var _count:int = 0;
-
 		/**
 		 * Returns new instance of b2Filter.
-		 * @return Box2D.Dynamics.filter.b2Filter
+		 * @return b2Filter
 		 */
+		[Inline]
 		static public function Get(p_categoryBits:uint = 0x00000001, p_maskBits:uint = 0xffffffff, p_groupIndex:uint = 0x00000000):b2Filter
 		{
+			var instance:b2Disposable = b2Disposable.Get(classId);
 			var filter:b2Filter;
 
-			if (_count > 0)
-			{
-				filter = _pool[--_count];
-				filter.disposed = false;
-				_pool[_count] = null;
+			if (instance) filter = instance as b2Filter;
+			else filter = new b2Filter();
 
-				filter.category = p_categoryBits;
-				filter.mask = p_maskBits;
-				filter.groupIndex = p_groupIndex;
-			}
-			else
-			{
-				filter = new b2Filter(p_categoryBits, p_maskBits, p_groupIndex);
-			}
+			filter.category = p_categoryBits;
+			filter.mask = p_maskBits;
+			filter.groupIndex = p_groupIndex;
 
 			return filter;
 		}
-
-		/**
-		 * Put instance of b2Filter to pool.
-		 */
-		static private function Put(p_filter:b2Filter):void
-		{
-			p_filter.disposed = true;
-			_pool[_count++] = p_filter;
-		}
-
-		/**
-		 * Clear pool for GC.
-		 */
-		static public function Rid():void
-		{
-			b2Disposable.clearVector(_pool);
-			_count = 0;
-		}
-
 	}
 }

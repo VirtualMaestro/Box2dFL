@@ -10,6 +10,7 @@ package Box2D.Collision.Shapes
 	import Box2D.Common.IDisposable;
 	import Box2D.Common.Math.b2Mat22;
 	import Box2D.Common.Math.b2Math;
+	import Box2D.Common.b2Disposable;
 	import Box2D.Common.b2internal;
 	import Box2D.Dynamics.b2MassData;
 
@@ -20,6 +21,9 @@ package Box2D.Collision.Shapes
 	 */
 	public class b2CircleShape extends b2Shape
 	{
+		static b2internal var classId:uint = b2Disposable.getClassId();
+
+		//
 		public var m_pX:Number;
 		public var m_pY:Number;
 
@@ -145,7 +149,7 @@ package Box2D.Collision.Shapes
 		 */
 		override public function Dispose():void
 		{
-			b2Shape.Put(this);
+			b2Disposable.Put(this, classId);
 		}
 
 		/**
@@ -154,10 +158,32 @@ package Box2D.Collision.Shapes
 		 */
 		override public function Clone():IDisposable
 		{
-			var circle:b2CircleShape = b2Shape.GetCircle(m_radius, m_pX, m_pY);
+			var circle:b2CircleShape = Get(m_radius, m_pX, m_pY);
 			circle.m_radius = m_radius;
 			circle.m_pX = m_pX;
 			circle.m_pY = m_pY;
+
+			return circle;
+		}
+
+		/**
+		 * Returns new instance of b2CircleShape.
+		 * @return b2CircleShape
+		 */
+		[Inline]
+		static public function Get(p_radius:Number, p_x:Number = 0, p_y:Number = 0):b2CircleShape
+		{
+			var instance:b2Disposable = b2Disposable.Get(classId);
+			var circle:b2CircleShape;
+
+			if (instance)
+			{
+				circle = instance as b2CircleShape;
+				circle.m_radius = p_radius;
+				circle.m_pX = p_x;
+				circle.m_pY = p_y;
+			}
+			else circle = new b2CircleShape(p_radius, p_x, p_y);
 
 			return circle;
 		}

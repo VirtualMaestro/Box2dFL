@@ -16,6 +16,9 @@ package Box2D.Common.Math
 	 */
 	public class b2SPoint extends b2Disposable
 	{
+		static b2internal var classId:uint = b2Disposable.getClassId();
+
+		//
 		public var x:Number;
 		public var y:Number;
 
@@ -37,7 +40,7 @@ package Box2D.Common.Math
 				super.Dispose();
 			}
 
-			Put(this);
+			b2Disposable.Put(this, classId);
 		}
 
 		/**
@@ -49,56 +52,25 @@ package Box2D.Common.Math
 			return Get(x, y);
 		}
 
-
-		//*************
-		//**** POOL ***
-		//*************
-		static private var _pool:Vector.<b2SPoint> = new <b2SPoint>[];
-		static private var _count:int = 0;
-
 		/**
 		 * Returns new instance of b2SPoint.
 		 * @return b2SPoint
 		 */
+		[Inline]
 		static public function Get(p_x:Number = 0, p_y:Number = 0):b2SPoint
 		{
-			var instance:b2SPoint;
+			var instance:b2Disposable = b2Disposable.Get(classId);
+			var point:b2SPoint;
 
-			if (_count > 0)
+			if (instance)
 			{
-				instance = _pool[--_count];
-				instance.disposed = false;
-				_pool[_count] = null;
-
-				instance.x = p_x;
-				instance.y = p_y;
+				point = instance as b2SPoint;
+				point.x = p_x;
+				point.y = p_y;
 			}
-			else
-			{
-				instance = new b2SPoint(p_x, p_y);
-			}
+			else point = new b2SPoint(p_x, p_y);
 
-			return instance;
-		}
-
-		/**
-		 * Put instance of b2SPoint to pool.
-		 */
-		[Inline]
-		static private function Put(p_instance:b2SPoint):void
-		{
-			p_instance.disposed = true;
-			_pool[_count++] = p_instance;
-		}
-
-		/**
-		 * Clear pool for GC.
-		 */
-		[Inline]
-		static public function Rid():void
-		{
-			b2Disposable.clearVector(_pool);
-			_count = 0;
+			return point;
 		}
 	}
 }

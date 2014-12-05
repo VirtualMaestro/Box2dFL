@@ -18,6 +18,9 @@ package Box2D.Collision
 	 */
 	public class b2AABB extends b2Disposable
 	{
+		static b2internal var classId:uint = b2Disposable.getClassId();
+
+		//
 		public var upperBoundX:Number = 0;
 		public var upperBoundY:Number = 0;
 		public var lowerBoundX:Number = 0;
@@ -133,7 +136,7 @@ package Box2D.Collision
 				super.Dispose();
 			}
 
-			Put(this);
+			b2Disposable.Put(this, classId);
 		}
 
 		/**
@@ -273,57 +276,25 @@ package Box2D.Collision
 			return true;
 		}
 
-		//*************
-		//**** POOL ***
-		//*************
-		static private var _pool:Vector.<b2AABB> = new <b2AABB>[];
-		static private var _count:int = 0;
-
 		/**
 		 * Returns new instance of b2AABB.
 		 * @return b2AABB
 		 */
+		[Inline]
 		static public function Get(p_upperBoundX:Number = 0, p_upperBoundY:Number = 0, p_lowerBoundX:Number = 0, p_lowerBoundY:Number = 0):b2AABB
 		{
-			var instance:b2AABB;
+			var instance:b2Disposable = b2Disposable.Get(classId);
+			var aabb:b2AABB;
 
-			if (_count > 0)
-			{
-				instance = _pool[--_count];
-				instance.disposed = false;
-				_pool[_count] = null;
-			}
-			else
-			{
-				instance = new b2AABB();
-			}
+			if (instance) aabb = instance as b2AABB;
+			else aabb = new b2AABB();
 
-			instance.upperBoundX = p_upperBoundX;
-			instance.upperBoundY = p_upperBoundY;
-			instance.lowerBoundX = p_lowerBoundX;
-			instance.lowerBoundY = p_lowerBoundY;
+			aabb.upperBoundX = p_upperBoundX;
+			aabb.upperBoundY = p_upperBoundY;
+			aabb.lowerBoundX = p_lowerBoundX;
+			aabb.lowerBoundY = p_lowerBoundY;
 
-			return instance;
-		}
-
-		/**
-		 * Put instance of b2AABB to pool.
-		 */
-		[Inline]
-		static private function Put(p_instance:b2AABB):void
-		{
-			p_instance.disposed = true;
-			_pool[_count++] = p_instance;
-		}
-
-		/**
-		 * Clear pool for GC.
-		 */
-		[Inline]
-		static public function Rid():void
-		{
-			b2Disposable.clearVector(_pool);
-			_count = 0;
+			return aabb;
 		}
 	}
 }

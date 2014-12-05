@@ -8,11 +8,6 @@ package Box2D.Common
 	public interface IDisposable
 	{
 		/**
-		 * Class id.
-		 */
-		function get id():uint;
-
-		/**
 		 * Dispose instance. After disposing there is no possible of using instance.
 		 */
 		function Dispose():void;

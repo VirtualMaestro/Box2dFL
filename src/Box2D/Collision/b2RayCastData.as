@@ -6,6 +6,7 @@
 package Box2D.Collision
 {
 	import Box2D.Common.b2Disposable;
+	import Box2D.Common.b2Disposable;
 	import Box2D.Common.IDisposable;
 	import Box2D.Common.b2internal;
 
@@ -16,6 +17,8 @@ package Box2D.Collision
 	 */
 	public class b2RayCastData extends b2Disposable
 	{
+		static b2internal var classId:uint = b2Disposable.getClassId();
+
 		/**
 		 * Start position of ray. X
 		 * Ray-cast input data.
@@ -72,7 +75,7 @@ package Box2D.Collision
 				super.Dispose();
 			}
 
-			Put(this);
+			b2Disposable.Put(this, classId);
 		}
 
 		/**
@@ -98,59 +101,28 @@ package Box2D.Collision
 			maxFraction = p_maxFraction;
 		}
 
-
-		//*************
-		//**** POOL ***
-		//*************
-		static private var _pool:Vector.<b2RayCastData> = new <b2RayCastData>[];
-		static private var _count:int = 0;
-
 		/**
 		 * Returns new instance of b2RayCastData.
 		 * @return b2RayCastData
 		 */
-		static public function Get(p_startX:Number, p_startY:Number, p_endX:Number, p_endY:Number, p_maxFraction:Number):b2RayCastData
-		{
-			var instance:b2RayCastData;
-
-			if (_count > 0)
-			{
-				instance = _pool[--_count];
-				instance.disposed = false;
-				_pool[_count] = null;
-
-				instance.startX = p_startX;
-				instance.startY = p_startY;
-				instance.endX = p_endX;
-				instance.endY = p_endY;
-				instance.maxFraction = p_maxFraction;
-			}
-			else
-			{
-				instance = new b2RayCastData(p_startX, p_startY, p_endX, p_endY, p_maxFraction);
-			}
-
-			return instance;
-		}
-
-		/**
-		 * Put instance of b2RayCastData to pool.
-		 */
 		[Inline]
-		static private function Put(p_instance:b2RayCastData):void
+		static public function Get(p_startX:Number, p_startY:Number, p_endX:Number, p_endY:Number, p_maxFraction:Number = 1.0):b2RayCastData
 		{
-			p_instance.disposed = true;
-			_pool[_count++] = p_instance;
-		}
+			var instance:b2Disposable = b2Disposable.Get(classId);
+			var rayCastData:b2RayCastData;
 
-		/**
-		 * Clear pool for GC.
-		 */
-		[Inline]
-		static public function Rid():void
-		{
-			b2Disposable.clearVector(_pool);
-			_count = 0;
+			if (instance)
+			{
+				rayCastData = instance as b2RayCastData;
+				rayCastData.startX = p_startX;
+				rayCastData.startY = p_startY;
+				rayCastData.endX = p_endX;
+				rayCastData.endY = p_endY;
+				rayCastData.maxFraction = p_maxFraction;
+			}
+			else rayCastData = new b2RayCastData(p_startX, p_startY, p_endX, p_endY, p_maxFraction);
+
+			return rayCastData;
 		}
 	}
 }

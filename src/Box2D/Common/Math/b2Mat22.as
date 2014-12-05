@@ -6,6 +6,7 @@
 package Box2D.Common.Math
 {
 	import Box2D.Common.b2Disposable;
+	import Box2D.Common.b2Disposable;
 	import Box2D.Common.IDisposable;
 	import Box2D.Common.b2internal;
 
@@ -19,6 +20,9 @@ package Box2D.Common.Math
 	 */
 	final public class b2Mat22 extends b2Disposable
 	{
+		static b2internal var classId:uint = b2Disposable.getClassId();
+
+		//
 		public var c11:Number;   // col1.x
 		public var c12:Number;   // col1.y
 		public var c21:Number;   // col2.x
@@ -134,7 +138,7 @@ package Box2D.Common.Math
 				super.Dispose();
 			}
 
-			Put(this);
+			b2Disposable.Put(this, classId);
 		}
 
 		/**
@@ -148,59 +152,30 @@ package Box2D.Common.Math
 
 			return mat;
 		}
-		
-		
-		//*************
-		//**** POOL ***
-		//*************
-		static private var _pool:Vector.<b2Mat22> = new <b2Mat22>[];
-		static private var _count:int = 0;
 
 		/**
 		 * Returns new instance of b2Mat22.
 		 * @return b2Mat22
 		 */
+		[Inline]
 		static public function Get(p_c11:Number = 1.0, p_c12:Number = 0.0, p_c21:Number = 0.0, p_c22:Number = 1.0, p_tx:Number = 0, p_ty:Number = 0):b2Mat22
 		{
+			var instance:b2Disposable = b2Disposable.Get(classId);
 			var mat:b2Mat22;
 
-			if (_count > 0)
+			if (instance)
 			{
-				mat = _pool[--_count];
-				mat.disposed = false;
-				_pool[_count] = null;
-
+				mat = instance as b2Mat22;
 				mat.c11 = p_c11;
 				mat.c12 = p_c12;
 				mat.c21 = p_c21;
 				mat.c22 = p_c22;
-				mat.tx = p_tx;
-				mat.ty = p_ty;
+				mat.tx  = p_tx;
+				mat.ty  = p_ty;
 			}
-			else
-			{
-				mat = new b2Mat22(p_c11, p_c12, p_c21, p_c22, p_tx, p_ty);
-			}
+			else mat = new b2Mat22(p_c11, p_c12, p_c21, p_c22, p_tx, p_ty);
 
 			return mat;
 		}
-
-		/**
-		 * Put instance of b2Mat22 to pool.
-		 */
-		static private function Put(p_mat:b2Mat22):void
-		{
-			p_mat.disposed = true;
-			_pool[_count++] = p_mat;
-		}
-
-		/**
-		 * Clear pool for GC.
-		 */
-		static public function Rid():void
-		{
-			b2Disposable.clearVector(_pool);
-			_count = 0;
-		}		
 	}
 }

@@ -10,6 +10,7 @@ package Box2D.Collision.Shapes
 	import Box2D.Common.IDisposable;
 	import Box2D.Common.Math.b2Mat22;
 	import Box2D.Common.Math.b2Vec2;
+	import Box2D.Common.b2Disposable;
 	import Box2D.Common.b2internal;
 	import Box2D.Dynamics.b2MassData;
 	import Box2D.assert;
@@ -26,6 +27,9 @@ package Box2D.Collision.Shapes
 	 */
 	public class b2PolygonShape extends b2Shape
 	{
+		static b2internal var classId:uint = b2Disposable.getClassId();
+
+		//
 		b2internal var m_centroidX:Number;
 		b2internal var m_centroidY:Number;
 
@@ -203,7 +207,7 @@ package Box2D.Collision.Shapes
 		 */
 		override public function Clone():IDisposable
 		{
-			return b2Shape.GetPolygon();
+			return Get();
 		}
 
 		/**
@@ -219,7 +223,24 @@ package Box2D.Collision.Shapes
 			m_vertices.length = 0;
 			m_vertexCount = 0;
 
-			b2Shape.Put(this);
+			b2Disposable.Put(this, classId);
+		}
+
+		/**
+		 * Returns new instance of b2PolygonShape.
+		 * @return b2PolygonShape
+		 */
+		[Inline]
+		static public function Get():b2PolygonShape
+		{
+			var instance:b2Disposable = b2Disposable.Get(classId);
+			var polygon:b2PolygonShape;
+
+			if (instance) polygon = instance as b2PolygonShape;
+			else polygon = new b2PolygonShape();
+			// TODO:
+
+			return polygon;
 		}
 	}
 }

@@ -6,6 +6,7 @@
 package Box2D.Common.Math
 {
 	import Box2D.Common.b2Disposable;
+	import Box2D.Common.b2Disposable;
 	import Box2D.Common.IDisposable;
 	import Box2D.Common.b2internal;
 
@@ -25,6 +26,8 @@ package Box2D.Common.Math
 	 */
 	public class b2Sweep extends b2Disposable
 	{
+		static b2internal var classId:uint = b2Disposable.getClassId();
+
 		/**
 		 * Local X center of mass position.
 		 */
@@ -107,24 +110,24 @@ package Box2D.Common.Math
 				super.Dispose();
 			}
 
-			Put(this);
+			b2Disposable.Put(this, classId);
 		}
 
 		/**
 		 * Set properties to current instance from given.
 		 */
 		[Inline]
-		final public function Set(sweep:b2Sweep):void
+		final public function Set(p_sweep:b2Sweep):void
 		{
-			localCenterX = sweep.localCenterX;
-			localCenterY = sweep.localCenterY;
-			worldCenter0X = sweep.worldCenter0X;
-			worldCenter0Y = sweep.worldCenter0Y;
-			worldCenterX = sweep.worldCenterX;
-			worldCenterY = sweep.worldCenterY;
-			worldAngle = sweep. worldAngle;
-			worldAngle0 = sweep.worldAngle0;
-			t0 = sweep.t0;
+			localCenterX = p_sweep.localCenterX;
+			localCenterY = p_sweep.localCenterY;
+			worldCenter0X = p_sweep.worldCenter0X;
+			worldCenter0Y = p_sweep.worldCenter0Y;
+			worldCenterX = p_sweep.worldCenterX;
+			worldCenterY = p_sweep.worldCenterY;
+			worldAngle = p_sweep. worldAngle;
+			worldAngle0 = p_sweep.worldAngle0;
+			t0 = p_sweep.t0;
 		}
 
 		/**
@@ -137,51 +140,20 @@ package Box2D.Common.Math
 			return sweep;
 		}
 
-		
-		//*************
-		//**** POOL ***
-		//*************
-		static private var _pool:Vector.<b2Sweep> = new <b2Sweep>[];
-		static private var _count:int = 0;
-
 		/**
 		 * Returns new instance of b2Sweep.
 		 * @return b2Sweep
 		 */
+		[Inline]
 		static public function Get():b2Sweep
 		{
+			var instance:b2Disposable = b2Disposable.Get(classId);
 			var sweep:b2Sweep;
 
-			if (_count > 0)
-			{
-				sweep = _pool[--_count];
-				sweep.disposed = false;
-				_pool[_count] = null;
-			}
-			else
-			{
-				sweep = new b2Sweep();
-			}
+			if (instance) sweep = instance as b2Sweep;
+			else sweep = new b2Sweep();
 
 			return sweep;
 		}
-
-		/**
-		 * Put instance of b2Sweep to pool.
-		 */
-		static private function Put(p_sweep:b2Sweep):void
-		{
-			p_sweep.disposed = true;
-			_pool[_count++] = p_sweep;
-		}
-
-		/**
-		 * Clear pool for GC.
-		 */
-		static public function Rid():void
-		{
-			b2Disposable.clearVector(_pool);
-			_count = 0;
-		}			
 	}
 }

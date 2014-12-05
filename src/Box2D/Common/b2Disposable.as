@@ -8,7 +8,6 @@ package Box2D.Common
 	CONFIG::debug
 	{
 		import Box2D.assert;
-		import avmplus.getQualifiedClassName;
 	}
 
 	use namespace b2internal;
@@ -18,19 +17,9 @@ package Box2D.Common
 	 */
 	public class b2Disposable implements IDisposable
 	{
-		private var _id:uint;
-
 		/**
 		 */
 		b2internal var disposed:Boolean = false;
-
-		/**
-		 * Unique class id.
-		 */
-		public function get id():uint
-		{
-			return _id;
-		}
 
 		/**
 		 * Disposed current instance and return to pool (if current implementation able to do this).
@@ -98,7 +87,7 @@ package Box2D.Common
 		static private var _counts:Vector.<int>;
 
 		/**
-		 * Returns circle shape.
+		 * Returns disposable instance corresponds to given class id.
 		 * @return b2Disposable
 		 */
 		static b2internal function Get(p_classId:uint):b2Disposable
@@ -142,7 +131,7 @@ package Box2D.Common
 		 * Put instance of b2Shape to pool.
 		 */
 		[Inline]
-		static b2internal function Put(p_instance:b2Disposable):void
+		static b2internal function Put(p_instance:b2Disposable, p_classId:uint):void
 		{
 			CONFIG::debug
 			{
@@ -151,14 +140,15 @@ package Box2D.Common
 
 			p_instance.disposed = true;
 
-			var type:int = p_instance._id;
-			var count:int = _counts[type];
+			var count:int = _counts[p_classId];
 
 			if (count < 0)
-				_pool[type] = new <b2Disposable>[];
+			{
+				_pool[p_classId] = new <b2Disposable>[];
+			}
 
-			_pool[type][count++] = p_instance;
-			_counts[type] = count;
+			_pool[p_classId][count++] = p_instance;
+			_counts[p_classId] = count;
 		}
 
 		/**
