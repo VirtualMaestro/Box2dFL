@@ -10,7 +10,7 @@ package Box2D.Common.Math
 	import Box2D.Common.IDisposable;
 	import Box2D.Common.b2internal;
 
-	CONFIG::develop
+	CONFIG::debug
 	{
 		import Box2D.assert;
 	}
@@ -75,7 +75,7 @@ package Box2D.Common.Math
 		*/
 		public function Advance(t:Number) : void
 		{
-			CONFIG::develop
+			CONFIG::debug
 			{
 				assert(t0 < 1.0, "t0 has to be < 1.0");
 			}

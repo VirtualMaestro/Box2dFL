@@ -9,11 +9,17 @@ package Box2D.Collision.Shapes
 	import Box2D.Collision.b2RayCastData;
 	import Box2D.Common.IDisposable;
 	import Box2D.Common.Math.b2Mat22;
+	import Box2D.Common.Math.b2Math;
 	import Box2D.Common.Math.b2Vec2;
 	import Box2D.Common.b2Disposable;
+	import Box2D.Common.b2Settings;
 	import Box2D.Common.b2internal;
 	import Box2D.Dynamics.b2MassData;
-	import Box2D.assert;
+
+	CONFIG::debug
+	{
+		import Box2D.assert;
+	}
 
 	use namespace b2internal;
 
@@ -64,8 +70,21 @@ package Box2D.Collision.Shapes
 		 * @warning collinear points are handled but not removed.
 		 * Collinear points may lead to poor stacking behavior.
 		*/
-		public function Set(p_points:b2Vec2, p_count:int):void
+		public function Set(p_vertices:Vector.<Number>, p_count:int):void
 		{
+			CONFIG::debug
+			{
+				assert(p_count >= 3 && p_count <= b2Settings.maxPolygonVertices, "unacceptable count of polygon vertices");
+			}
+
+			if (p_count < 3)
+			{
+				SetAsBox(1.0, 1.0);
+				return;
+			}
+
+			var n:int = b2Math.Min(p_count, b2Settings.maxPolygonVertices);
+
 
 		}
 
@@ -74,12 +93,35 @@ package Box2D.Collision.Shapes
 		 * @param p_hx the half-width.
 		 * @param p_hy the half-height
 		 */
-		public function SetAsBox(p_hx:Number, p_hy:Number):void
+		[Inline]
+		final public function SetAsBox(p_hx:Number, p_hy:Number):void
 		{
+			m_vertexCount = 4;
 
+			m_vertices[0] = -p_hx;
+			m_vertices[1] = -p_hy;
+			m_vertices[2] = p_hx;
+			m_vertices[3] = -p_hy;
+			m_vertices[4] = p_hx;
+			m_vertices[5] = p_hy;
+			m_vertices[6] = -p_hx;
+			m_vertices[7] = p_hy;
+
+			m_normals[0] = 0.0;
+			m_normals[1] = -1.0;
+			m_normals[2] = 1.0;
+			m_normals[3] = 0.0;
+			m_normals[4] = 0.0;
+			m_normals[5] = 1.0;
+			m_normals[6] = -1.0;
+			m_normals[7] = 0.0;
+
+			m_centroidX = 0;
+			m_centroidY = 0;
 		}
 
-		/** Build vertices to represent an oriented box.
+		/**
+		 * Build vertices to represent an oriented box.
 		 * @param p_hx the half-width.
 		 * @param p_hy the half-height.
 		 * @param p_centerX the center by X of the box in local coordinates.
@@ -88,7 +130,32 @@ package Box2D.Collision.Shapes
 		*/
 		public function SetAsOrientedBox(p_hx:Number, p_hy:Number, p_centerX:Number, p_centerY:Number, p_angle:Number):void
 		{
+			SetAsBox(p_hx, p_hy);
 
+			m_centroidX = p_centerX;
+			m_centroidY = p_centerY;
+
+			var sin:Number = Math.sin(p_angle);
+			var cos:Number = Math.cos(p_angle);
+
+			var vecX:Number;
+			var vecY:Number;
+			var len:int = m_vertexCount*2;
+
+			for (var i:int=0, i1:int=1; i < len; i+=2, i1+=2)
+			{
+				vecX = m_vertices[i];
+				vecY = m_vertices[i1];
+
+				m_vertices[i]   = (cos * vecX - sin * vecY) + p_centerX;
+				m_vertices[i1] = (sin * vecX + cos * vecY) + p_centerY;
+
+				vecX = m_normals[i];
+				vecY = m_normals[i1];
+
+				m_normals[i]   = (cos * vecX - sin * vecY);
+				m_normals[i1]  = (sin * vecX + cos * vecY);
+			}
 		}
 
 		/**
@@ -227,10 +294,90 @@ package Box2D.Collision.Shapes
 		}
 
 		/**
+		 * Computes the centroid of the given polygon
+		 * @param	p_vs vector of Number specifying a polygon. Every two following numbers represents x and y.
+		 * @param	p_count	length of vs
+		 * @return the polygon centroid.
+		 * IMPORTANT! Method produces new instance of b2Vec2 as return value, so it is need manually to dispose it for free memory.
+		 */
+		static public function ComputeCentroid(p_vs:Vector.<Number>, p_count:int):b2Vec2
+		{
+			CONFIG::debug
+			{
+				assert(p_count >= 3, "Given vertices count is " + p_count + ". Polygon should has at least 3 vertices");
+			}
+
+			var cX:Number = 0;
+			var cY:Number = 0;
+			var area:Number = 0;
+			var inv3:Number = 1.0 / 3.0;
+			var p1X:Number = 0;
+			var p1Y:Number = 0;
+			var p2X:Number;
+			var p2Y:Number;
+			var p3X:Number;
+			var p3Y:Number;
+			var e1X:Number;
+			var e1Y:Number;
+			var e2X:Number;
+			var e2Y:Number;
+			var D:Number;
+			var triangleArea:Number;
+			var temp:Number;
+			var j:int = 0;
+
+			for (var i:int = 0; i < p_count; i++)
+			{
+				j = i*2;
+
+				p2X = p_vs[j];
+				p2Y = p_vs[j+1];
+
+				if ((i+1) < p_count)
+				{
+					p3X = p_vs[j+2];
+					p3Y = p_vs[j+3];
+				}
+				else
+				{
+					p3X = p_vs[0];
+					p3Y = p_vs[1];
+				}
+
+				e1X = p2X - p1X;
+				e1Y = p2Y - p1Y;
+
+				e2X = p3X - p1X;
+				e2Y = p3Y - p1Y;
+
+				D = e1X * e2Y - e1Y * e2X;
+
+				triangleArea = D * 0.5;
+				area += triangleArea;
+
+				// Area weighted centroid
+				temp = triangleArea * inv3;
+				cX += temp * (p1X + p2X + p3X);
+				cY += temp * (p1Y + p2Y + p3Y);
+			}
+
+			// Centroid
+			CONFIG::debug
+			{
+				assert(area > b2Math.EPSILON, "area too small. Area: " + area);
+			}
+
+			temp = 1.0/area;
+			cX *= temp;
+			cY *= temp;
+
+			return b2Vec2.Get(cX, cY);
+		}
+
+		/**
 		 * Returns new instance of b2PolygonShape.
 		 * @return b2PolygonShape
 		 */
-		[Inline]
 		static public function Get():b2PolygonShape
 		{
 			var instance:b2Disposable = b2Disposable.Get(classId);

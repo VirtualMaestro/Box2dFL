@@ -121,7 +121,7 @@ package Box2D.Common.Math
 			}
 			else
 			{
-				p_outMatrix = b2Mat22.Get(r11, r12, r21, r22);
+				p_outMatrix = Get(r11, r12, r21, r22);
 			}
 
 			return p_outMatrix;
@@ -157,7 +157,6 @@ package Box2D.Common.Math
 		 * Returns new instance of b2Mat22.
 		 * @return b2Mat22
 		 */
-		[Inline]
 		static public function Get(p_c11:Number = 1.0, p_c12:Number = 0.0, p_c21:Number = 0.0, p_c22:Number = 1.0, p_tx:Number = 0, p_ty:Number = 0):b2Mat22
 		{
 			var instance:b2Disposable = b2Disposable.Get(classId);

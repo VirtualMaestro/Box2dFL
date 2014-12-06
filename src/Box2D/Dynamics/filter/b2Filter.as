@@ -201,7 +201,6 @@ package Box2D.Dynamics.filter
 		 * Returns new instance of b2Filter.
 		 * @return b2Filter
 		 */
-		[Inline]
 		static public function Get(p_categoryBits:uint = 0x00000001, p_maskBits:uint = 0xffffffff, p_groupIndex:uint = 0x00000000):b2Filter
 		{
 			var instance:b2Disposable = b2Disposable.Get(classId);
