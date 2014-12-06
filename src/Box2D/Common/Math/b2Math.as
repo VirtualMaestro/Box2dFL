@@ -13,6 +13,7 @@ package Box2D.Common.Math
 		static public const PI_2:Number = 2.0*Math.PI;
 		static public const EPSILON:Number = Number.MIN_VALUE;
 		static public const EPSILON_SQUARED:Number = Number.MIN_VALUE * Number.MIN_VALUE;
+		static public const INV_3:Number = 1.0 / 3.0;
 
 		/**
 		 * Returns minimal of given two.
@@ -59,6 +60,69 @@ package Box2D.Common.Math
 			var y:Number = p_v1Y - p_v2Y;
 
 			return x*x + y*y;
+		}
+
+		/**
+		 * Return X component by index from given array.
+		 * @param p_array - Array is represented by numbers where each following two numbers are x and y.
+		 * @param p_index - index of need element.
+		 * @return Number
+		 */
+		[Inline]
+		static public function getX(p_array:Vector.<Number>, p_index:int):Number
+		{
+			return p_array[p_index*2];
+		}
+
+		/**
+		 * Set value for X component by index for given array.
+		 * @param p_value - value to set as x.
+		 * @param p_array - Array is represented by numbers where each following two numbers are x and y.
+		 * @param p_index - index of need element.
+		 */
+		[Inline]
+		static public function setX(p_value:Number, p_array:Vector.<Number>, p_index:int):void
+		{
+			p_array[p_index*2] = p_value;
+		}
+
+		/**
+		 * Return Y component by index from given array.
+		 * @param p_array - Array is represented by numbers where each following two numbers are x and y.
+		 * @param p_index - index of need element.
+		 * @return Number
+		 */
+		[Inline]
+		static public function getY(p_array:Vector.<Number>, p_index:int):Number
+		{
+			return p_array[p_index*2 + 1];
+		}
+
+		/**
+		 * Set value for Y component by index for given array.
+		 * @param p_value - value to set as y.
+		 * @param p_array - Array is represented by numbers where each following two numbers are x and y.
+		 * @param p_index - index of need element.
+		 */
+		[Inline]
+		static public function setY(p_value:Number, p_array:Vector.<Number>, p_index:int):void
+		{
+			p_array[p_index*2 + 1] = p_value;
+		}
+
+		/**
+		 * Set value for X and Y component by index for given array.
+		 * @param p_x - value to set as x.
+		 * @param p_y - value to set as y.
+		 * @param p_array - Array is represented by numbers where each following two numbers are x and y.
+		 * @param p_index - index of need element.
+		 */
+		[Inline]
+		static public function setXY(p_x:Number, p_y:Number, p_array:Vector.<Number>, p_index:int):void
+		{
+			var ind:int = p_index*2;
+			p_array[ind] = p_x;
+			p_array[ind+1] = p_y;
 		}
 	}
 }

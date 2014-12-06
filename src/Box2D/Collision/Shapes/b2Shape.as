@@ -9,6 +9,7 @@ package Box2D.Collision.Shapes
 	import Box2D.Collision.b2RayCastData;
 	import Box2D.Common.b2Disposable;
 	import Box2D.Common.Math.b2Mat22;
+	import Box2D.Common.b2Settings;
 	import Box2D.Common.b2internal;
 	import Box2D.Dynamics.b2MassData;
 

@@ -56,7 +56,6 @@ package Box2D.Common.Math
 		 * Returns new instance of b2SPoint.
 		 * @return b2SPoint
 		 */
-		[Inline]
 		static public function Get(p_x:Number = 0, p_y:Number = 0):b2SPoint
 		{
 			var instance:b2Disposable = b2Disposable.Get(classId);

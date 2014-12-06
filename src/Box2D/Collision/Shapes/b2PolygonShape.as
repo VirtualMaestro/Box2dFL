@@ -10,6 +10,7 @@ package Box2D.Collision.Shapes
 	import Box2D.Common.IDisposable;
 	import Box2D.Common.Math.b2Mat22;
 	import Box2D.Common.Math.b2Math;
+	import Box2D.Common.Math.b2SPoint;
 	import Box2D.Common.Math.b2Vec2;
 	import Box2D.Common.b2Disposable;
 	import Box2D.Common.b2Settings;
@@ -28,8 +29,6 @@ package Box2D.Collision.Shapes
 	 * the left of each edge.
 	 * Polygons have a maximum number of vertices equal to b2_maxPolygonVertices.
 	 * In most cases you should not need many vertices for a convex polygon.
-	 *
-	 * TODO: Implement
 	 */
 	public class b2PolygonShape extends b2Shape
 	{
@@ -57,6 +56,7 @@ package Box2D.Collision.Shapes
 		public function b2PolygonShape()
 		{
 			m_type = b2Shape.POLYGON;
+			m_radius = b2Settings.polygonRadius;
 			m_centroidX = 0;
 			m_centroidY = 0;
 			m_vertexCount = 0;
@@ -74,18 +74,160 @@ package Box2D.Collision.Shapes
 		{
 			CONFIG::debug
 			{
-				assert(p_count >= 3 && p_count <= b2Settings.maxPolygonVertices, "unacceptable count of polygon vertices");
-			}
-
-			if (p_count < 3)
-			{
-				SetAsBox(1.0, 1.0);
-				return;
+				assert(p_count <= b2Settings.maxPolygonVertices, "too many vertices of polygon ("+p_count+"). Acceptable count is " + b2Settings.maxPolygonVertices);
+				assert(p_count > 2, "Polygon is degenerate");
 			}
 
 			var n:int = b2Math.Min(p_count, b2Settings.maxPolygonVertices);
 
+			// Perform welding and copy vertices into local buffer.
+			var vX:Number;
+			var vY:Number;
+			var unique:Boolean;
+			var tempCount:int = 0;
+			var ps:Vector.<Number> = new <Number>[];
 
+			for (var i:int = 0; i < n; i++)
+			{
+				vX = b2Math.getX(p_vertices, i);
+				vY = b2Math.getY(p_vertices, i);
+
+				unique = true;
+
+				for (var j:int = 0; j < tempCount; j++)
+				{
+					if (b2Math.DistanceSquared(vX, vY, b2Math.getX(ps, j), b2Math.getY(ps, j)) < (b2Settings.linearSlop * 0.5))
+					{
+                        unique = false;
+						break;
+					}
+				}
+
+				if (unique)
+				{
+					b2Math.setXY(vX, vY, ps, tempCount);
+					tempCount++;
+				}
+			}
+
+			n = tempCount;
+
+			CONFIG::debug
+			{
+				assert(n > 2, "Polygon is degenerate");
+			}
+
+			// Create the convex hull using the Gift wrapping algorithm
+			// http://en.wikipedia.org/wiki/Gift_wrapping_algorithm
+
+			// Find the right most point on the hull
+			var i0:int = 0;
+			var x0:Number = ps[0];
+			var x:Number;
+			for (i = 1; i < n; i++)
+			{
+				x = b2Math.getX(ps, i);
+
+				if (x > x0 || (x == x0 && b2Math.getY(ps, i) < b2Math.getY(ps, i0)))
+				{
+					i0 = i;
+					x0 = x;
+				}
+			}
+
+			var hull:Vector.<int> = new <int>[];
+			var m:int = 0;
+			var ih:int = i0;
+			var ie:int;
+
+			for(;;)
+			{
+				hull[m] = ih;
+				ie = 0;
+
+				for (j = 1; j < n; j++)
+				{
+					if (ie == ih)
+					{
+						ie = j;
+						continue;
+					}
+
+					var psieX:Number = b2Math.getX(ps, ie);
+					var psieY:Number = b2Math.getY(ps, ie);
+					var hullM:int = hull[m];
+
+					var pshullX:Number = b2Math.getX(ps, hullM);
+					var pshullY:Number = b2Math.getY(ps, hullM);
+
+					var rX:Number = psieX - pshullX;
+					var rY:Number = psieY - pshullY;
+
+					var psjX:Number = b2Math.getX(ps, j);
+					var psjY:Number = b2Math.getY(ps, j);
+
+					vX = psjX - pshullX;
+					vY = psjY - pshullY;
+
+					var c:Number = rX * vY - rY * vX;
+
+					// Collinearity check
+					if (c < 0.0 || (c == 0.0 && (vX*vX + vY*vY) > (rX*rX + rY*rY)))
+					{
+						ie = j;
+					}
+				}
+
+				++m;
+				ih = ie;
+
+				if (ie == i0)
+				{
+					break;
+				}
+			}
+
+			CONFIG::debug
+			{
+				assert(m>2, "Polygon is degenerate");
+			}
+
+			m_vertexCount = m;
+
+			// Copy vertices
+			for (i = 0; i < m; i++)
+			{
+				hullM = hull[i];
+				b2Math.setXY(b2Math.getX(ps, hullM), b2Math.getY(ps, hullM), m_vertices, i);
+			}
+
+			// Compute normals. Ensure the edges have non-zero length.
+			for (i = 0; i < m; i++)
+			{
+				var i1:int = i;
+				var i2:int = (i+1) < m ? i+1 : 0;
+				var edgeX:Number = b2Math.getX(m_vertices, i2) - b2Math.getX(m_vertices, i1);
+				var edgeY:Number = b2Math.getY(m_vertices, i2) - b2Math.getY(m_vertices, i1);
+
+				CONFIG::debug
+				{
+					assert((edgeX*edgeX + edgeY*edgeY) > b2Math.EPSILON_SQUARED, "edge has zero length");
+				}
+
+				var nX:Number = edgeY;
+				var nY:Number = -edgeX;
+				var invLength:Number = 1.0 / Math.sqrt(nX*nX + nY*nY);
+				nX *= invLength;
+				nY *= invLength;
+
+				b2Math.setXY(nX, nY, m_normals, i);
+			}
+
+			// Compute the polygon centroid.
+			var point:b2SPoint = ComputeCentroid(m_vertices, m);
+			m_centroidX = point.x;
+			m_centroidY = point.y;
+			point.Dispose();
 		}
 
 		/** Build vertices to represent an axis-aligned box centered on the local origin.
@@ -135,8 +277,19 @@ package Box2D.Collision.Shapes
 			m_centroidX = p_centerX;
 			m_centroidY = p_centerY;
 
-			var sin:Number = Math.sin(p_angle);
-			var cos:Number = Math.cos(p_angle);
+			var sin:Number;
+			var cos:Number;
+
+			if (p_angle == 0.0)
+			{
+				sin = 0.0;
+				cos = 1.0;
+			}
+			else
+			{
+				sin = Math.sin(p_angle);
+				cos = Math.cos(p_angle);
+			}
 
 			var vecX:Number;
 			var vecY:Number;
@@ -167,7 +320,34 @@ package Box2D.Collision.Shapes
 		 */
 		override public function TestPoint(p_transform:b2Mat22, p_pointX:Number, p_pointY:Number):Boolean
 		{
-			return false;
+			var rX:Number = p_pointX - p_transform.tx;
+			var rY:Number = p_pointY - p_transform.ty;
+			var cos:Number = p_transform.c11;
+			var sin:Number = p_transform.c12;
+			
+			var localX:Number = cos * rX + sin * rY;
+			var localY:Number = -sin * rX + cos * rY;
+
+			for (var i:int = 0; i < m_vertexCount; i++)
+			{
+				var tvX:Number = b2Math.getX(m_vertices, i);
+				var tvY:Number = b2Math.getY(m_vertices, i);
+
+				var lX:Number = localX - tvX;
+				var lY:Number = localY - tvY;
+
+				var nX:Number = b2Math.getX(m_normals, i);
+				var nY:Number = b2Math.getY(m_normals, i);
+
+				var dot:Number = nX * lX + nY * lY;
+
+				if (dot > 0.0)
+				{
+					return false;
+				}
+			}
+
+			return true;
 		}
 
 		/**
@@ -179,6 +359,99 @@ package Box2D.Collision.Shapes
 		 */
 		override public function RayCast(p_rayCastData:b2RayCastData, p_transform:b2Mat22, p_childIndex:int):Boolean
 		{
+			// Put the ray into the polygon's frame of reference.
+			var sX:Number = p_rayCastData.startX - p_transform.tx;
+			var sY:Number = p_rayCastData.startY - p_transform.ty;
+			var eX:Number = p_rayCastData.endX   - p_transform.tx;
+			var eY:Number = p_rayCastData.endY   - p_transform.ty;
+			var cos:Number = p_transform.c11;
+			var sin:Number = p_transform.c12;
+
+			var p1X:Number = cos * sX + sin * sY;
+			var p1Y:Number = -sin * sX + cos * sY;
+
+			var p2X:Number = cos * eX + sin * eY;
+			var p2Y:Number = -sin * eX + cos * eY;
+
+			var dX:Number = p2X - p1X;
+			var dY:Number = p2Y - p1Y;
+
+			var lower:Number = 0.0;
+			var upper:Number = p_rayCastData.maxFraction;
+			var index:int = -1;
+
+			for (var i:int = 0; i < m_vertexCount; i++)
+			{
+				// p = p1 + a * d
+				// dot(normal, p - v) = 0
+				// dot(normal, p1 - v) + a * dot(normal, d) = 0
+
+				var viX:Number = b2Math.getX(m_vertices, i);
+				var viY:Number = b2Math.getY(m_vertices, i);
+				var niX:Number = b2Math.getX(m_normals, i);
+				var niY:Number = b2Math.getY(m_normals, i);
+				var rX:Number = viX - p1X;
+				var rY:Number = viY - p1Y;
+
+				var numerator:Number = niX * rX + niY * rY;
+				var denominator:Number = niX * dX + niY * dY;
+
+				if (denominator == 0.0)
+				{
+					if (numerator < 0.0)
+					{
+						return false;
+					}
+				}
+				else
+				{
+					// Note: we want this predicate without division:
+					// lower < numerator / denominator, where denominator < 0
+					// Since denominator < 0, we have to flip the inequality:
+					// lower < numerator / denominator <==> denominator * lower > numerator.
+					if (denominator < 0.0 && numerator < lower * denominator)
+					{
+						// Increase lower.
+						// The segment enters this half-space.
+						lower = numerator / denominator;
+						index = i;
+					}
+					else if (denominator > 0.0 && numerator < upper * denominator)
+					{
+						// Decrease upper.
+						// The segment exits this half-space.
+						upper = numerator / denominator;
+					}
+				}
+
+		        // The use of epsilon here causes the assert on lower to trip
+				// in some cases. Apparently the use of epsilon was to make edge
+				// shapes work, but now those are handled separately.
+				//if (upper < lower - b2_epsilon)
+				if (upper < lower)
+				{
+					return false;
+				}
+			}
+
+			CONFIG::debug
+			{
+				assert(0.0 <= lower && lower <= p_rayCastData.maxFraction, "");
+			}
+
+			if (index >= 0)
+			{
+				p_rayCastData.fraction = lower;
+
+				var normalX:Number = b2Math.getX(m_normals, index);
+				var normalY:Number = b2Math.getY(m_normals, index);
+
+				p_rayCastData.normalX = cos * normalX - sin * normalY;
+				p_rayCastData.normalY = sin * normalX + cos * normalY;
+
+				return true;
+			}
+
 			return false;
 		}
 
@@ -190,7 +463,37 @@ package Box2D.Collision.Shapes
 		 */
 		override public function ComputeAABB(p_aabb:b2AABB, p_transform:b2Mat22, p_childIndex:int):void
 		{
+			var v0X:Number = b2Math.getX(m_vertices, 0);
+			var v0Y:Number = b2Math.getY(m_vertices, 0);
+			var cos:Number = p_transform.c11;
+			var sin:Number = p_transform.c12;
+			var tX:Number = p_transform.tx;
+			var tY:Number = p_transform.ty;
 
+			var lowerX:Number = (cos * v0X - sin * v0Y) + tX;
+			var lowerY:Number = (sin * v0X + cos * v0Y) + tY;
+			var upperX:Number = lowerX;
+			var upperY:Number = lowerY;
+
+			for (var i:int = 1; i < m_vertexCount; i++)
+			{
+				var viX:Number = b2Math.getX(m_vertices, i);
+				var viY:Number = b2Math.getY(m_vertices, i);
+				
+				var vX:Number = (cos * viX - sin * viY) + tX;
+				var vY:Number = (sin * viX + cos * viY) + tY;
+
+				lowerX = b2Math.Min(lowerX, vX);
+				lowerY = b2Math.Min(lowerY, vY);
+
+				upperX = b2Math.Max(upperX, vX);
+				upperY = b2Math.Max(upperY, vY);
+			}
+
+			p_aabb.lowerBoundX = lowerX - m_radius;
+			p_aabb.lowerBoundY = lowerY - m_radius;
+			p_aabb.upperBoundX = upperX + m_radius;
+			p_aabb.upperBoundY = upperY + m_radius;
 		}
 
 		/**
@@ -200,7 +503,115 @@ package Box2D.Collision.Shapes
 		 */
 		override public function ComputeMass(p_massData:b2MassData, p_density:Number):void
 		{
+			// Polygon mass, centroid, and inertia.
+			// Let rho be the polygon density in mass per unit area.
+			// Then:
+			// mass = rho * int(dA)
+			// centroid.x = (1/mass) * rho * int(x * dA)
+			// centroid.y = (1/mass) * rho * int(y * dA)
+			// I = rho * int((x*x + y*y) * dA)
+			//
+			// We can compute these integrals by summing all the integrals
+			// for each triangle of the polygon. To evaluate the integral
+			// for a single triangle, we make a change of variables to
+			// the (u,v) coordinates of the triangle:
+			// x = x0 + e1x * u + e2x * v
+			// y = y0 + e1y * u + e2y * v
+			// where 0 <= u && 0 <= v && u + v <= 1.
+			//
+			// We integrate u from [0,1-v] and then v from [0,1].
+			// We also need to use the Jacobian of the transformation:
+			// D = cross(e1, e2)
+			//
+			// Simplification: triangle centroid = (1/3) * (p1 + p2 + p3)
+			//
+			// The rest of the derivation is handled by computer algebra.
 
+			 CONFIG::debug
+			 {
+				 assert(m_vertexCount > 2, "degenerate polygon");
+			 }
+
+			var centerX:Number = 0;
+			var centerY:Number = 0;
+			var area:Number = 0;
+			var I:Number = 0;
+
+			// s is the reference point for forming triangles.
+			// It's location doesn't change the result (except for rounding error).
+			var sX:Number = 0;
+			var sY:Number = 0;
+
+			// This code would put the reference point inside the polygon.
+			var mCount:int = m_vertexCount;
+			for (var i:int = 0; i < mCount; i++)
+			{
+				sX += b2Math.getX(m_vertices, i);
+				sY += b2Math.getY(m_vertices, i);
+			}
+
+			var inv:Number = 1.0/mCount;
+
+			sX *= inv;
+			sY *= inv;
+
+			for (i = 0; i < mCount; i++)
+			{
+				var e1X:Number = b2Math.getX(m_vertices, i) - sX;
+				var e1Y:Number = b2Math.getY(m_vertices, i) - sY;
+
+				var e2X:Number;
+				var e2Y:Number;
+
+				if ((i+1) < mCount)
+				{
+					e2X = b2Math.getX(m_vertices, i+1) - sX;
+					e2Y = b2Math.getY(m_vertices, i+1) - sY;
+				}
+				else
+				{
+					e2X = b2Math.getX(m_vertices, 0) - sX;
+					e2Y = b2Math.getY(m_vertices, 0) - sY;
+				}
+
+				var D:Number = e1X * e2Y - e1Y * e2X;
+				var triangleArea:Number = D*0.5;
+				area += triangleArea;
+
+				centerX = triangleArea * b2Math.INV_3 * (e1X + e2X);
+				centerY = triangleArea * b2Math.INV_3 * (e1Y + e2Y);
+
+				var intx2:Number = e1X*e1X + e2X*e1X + e2X*e2X;
+				var inty2:Number = e1Y*e1Y + e2Y*e1Y + e2Y*e2Y;
+
+				I += (0.25 * b2Math.INV_3 * D) * (intx2+inty2);
+			}
+
+			// Total mass
+			p_massData.mass = p_density * area;
+
+			CONFIG::debug
+			{
+				assert(area > b2Math.EPSILON, "area too small: " + area);
+			}
+
+			var invArea:Number = 1.0/area;
+
+			centerX *= invArea;
+			centerY *= invArea;
+
+			var centerSX:Number = centerX + sX;
+			var centerSY:Number = centerY + sY;
+
+			p_massData.centerX = centerSX;
+			p_massData.centerY = centerSY;
+
+			// Shift to center of mass then to original body origin.
+			var d1:Number = centerSX * centerSX + centerSY * centerSY;
+			var d2:Number = centerX * centerX + centerY * centerY;
+
+			// Inertia tensor relative to the local origin (point s).
+			p_massData.I = p_density * I + p_massData.mass * (d1 - d2);
 		}
 
 		/**
@@ -258,7 +669,47 @@ package Box2D.Collision.Shapes
  		 */
 		final public function Validate():Boolean
 		{
-			return false;
+			var i1:int;
+			var i2:int;
+			var pX:Number;
+			var pY:Number;
+			var eX:Number;
+			var eY:Number;
+			var vX:Number;
+			var vY:Number;
+			var c:Number;
+			var mCount:int = m_vertexCount;
+
+			for (var i:int = 0; i < mCount; i++)
+			{
+				i1 = i;
+				i2 = (i < mCount-1) ? i1+1 : 0;
+
+				pX = b2Math.getX(m_vertices, i1);
+				pY = b2Math.getY(m_vertices, i1);
+
+				eX = b2Math.getX(m_vertices, i2) - pX;
+				eY = b2Math.getY(m_vertices, i2) - pY;
+
+				for (var j:int = 0; j < mCount; j++)
+				{
+					if (j == i1 || j == i2)
+					{
+						continue;
+					}
+
+					vX = b2Math.getX(m_vertices, j) - pX;
+					vY = b2Math.getY(m_vertices, j) - pY;
+					c = eX * vY - eY * vX;
+
+					if (c < 0.0)
+					{
+						return false;
+					}
+				}
+			}
+
+			return true;
 		}
 
 		/**
@@ -274,7 +725,19 @@ package Box2D.Collision.Shapes
 		 */
 		override public function Clone():IDisposable
 		{
-			return Get();
+			var polygon:b2PolygonShape = Get();
+			polygon.m_vertexCount = m_vertexCount;
+			polygon.m_radius = m_radius;
+			polygon.m_centroidX = m_centroidX;
+			polygon.m_centroidY = m_centroidY;
+
+			for (var i:int = 0; i < m_vertexCount; i++)
+			{
+				b2Math.setXY(b2Math.getX(m_vertices, i), b2Math.getY(m_vertices, i), polygon.m_vertices, i);
+				b2Math.setXY(b2Math.getX(m_normals, i), b2Math.getY(m_normals, i), polygon.m_normals, i);
+			}
+
+			return polygon;
 		}
 
 		/**
@@ -298,9 +761,9 @@ package Box2D.Collision.Shapes
 		 * @param	p_vs vector of Number specifying a polygon. Every two following numbers represents x and y.
 		 * @param	p_count	length of vs
 		 * @return the polygon centroid.
-		 * IMPORTANT! Method produces new instance of b2Vec2 as return value, so it is need manually to dispose it for free memory.
+		 * IMPORTANT! Method produces new instance of b2SPoint as return value, so it is need manually to dispose it for free memory.
 		 */
-		static public function ComputeCentroid(p_vs:Vector.<Number>, p_count:int):b2Vec2
+		static public function ComputeCentroid(p_vs:Vector.<Number>, p_count:int):b2SPoint
 		{
 			CONFIG::debug
 			{
@@ -371,7 +834,7 @@ package Box2D.Collision.Shapes
 			cX *= temp;
 			cY *= temp;
 
-			return b2Vec2.Get(cX, cY);
+			return b2SPoint.Get(cX, cY);
 		}
 
 		/**
@@ -385,7 +848,6 @@ package Box2D.Collision.Shapes
 
 			if (instance) polygon = instance as b2PolygonShape;
 			else polygon = new b2PolygonShape();
-			// TODO:
 
 			return polygon;
 		}
