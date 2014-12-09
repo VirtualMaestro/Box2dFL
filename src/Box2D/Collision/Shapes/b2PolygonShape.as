@@ -325,7 +325,7 @@ package Box2D.Collision.Shapes
 			var cos:Number = p_transform.c11;
 			var sin:Number = p_transform.c12;
 			
-			var localX:Number = cos * rX + sin * rY;
+			var localX:Number =  cos * rX + sin * rY;
 			var localY:Number = -sin * rX + cos * rY;
 
 			for (var i:int = 0; i < m_vertexCount; i++)
@@ -367,10 +367,10 @@ package Box2D.Collision.Shapes
 			var cos:Number = p_transform.c11;
 			var sin:Number = p_transform.c12;
 
-			var p1X:Number = cos * sX + sin * sY;
+			var p1X:Number =  cos * sX + sin * sY;
 			var p1Y:Number = -sin * sX + cos * sY;
 
-			var p2X:Number = cos * eX + sin * eY;
+			var p2X:Number =  cos * eX + sin * eY;
 			var p2Y:Number = -sin * eX + cos * eY;
 
 			var dX:Number = p2X - p1X;

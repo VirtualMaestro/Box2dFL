@@ -9,9 +9,12 @@ package Box2D.Dynamics
 	import Box2D.Collision.b2AABB;
 	import Box2D.Collision.b2RayCastData;
 	import Box2D.Common.IDisposable;
+	import Box2D.Common.Math.b2Mat22;
 	import Box2D.Common.b2Disposable;
 	import Box2D.Common.b2internal;
+	import Box2D.Dynamics.Def.b2FixtureDef;
 	import Box2D.Dynamics.filter.b2Filter;
+	import Box2D.assert;
 
 	use namespace b2internal;
 
@@ -28,9 +31,53 @@ package Box2D.Dynamics
 		static b2internal var classId:uint = b2Disposable.getClassId();
 
 		/**
+		 * Use for anu user data.
+		 */
+		public var userData:*;
+
+		private var _friction:Number;
+		private var _restitution:Number;
+		private var _density:Number;
+		private var _isSensor:Boolean;
+		private var _filter:b2Filter;
+
+		private var _body:b2Body;
+		private var _shape:b2Shape;
+
+		private var _next:b2Fixture;
+
+		private var _proxyCount:int;
+
+//		b2FixtureProxy* m_proxies; TODO:
+
+
+		/**
 		 */
 		public function b2Fixture()
 		{
+			_friction = 0.0;
+			_restitution = 0.0;
+			_density = 0.0;
+			_isSensor = false;
+			_filter = b2Filter.Get();
+			_proxyCount = 0;
+		}
+
+		/**
+		 */
+		b2internal function Create(p_body:b2Body, p_def:b2FixtureDef):void
+		{
+
+		}
+
+		b2internal function CreateProxies(p_broadPhase/*:b2BroadPhase*/, p_xf:b2Mat22):void
+		{
+			// TODO:
+		}
+
+		b2internal function Synchronize(p_broadPhase/*:b2BroadPhase*/, p_xf1:b2Mat22, p_xf2:b2Mat22):void
+		{
+			// TODO:
 		}
 
 		/**
@@ -38,9 +85,10 @@ package Box2D.Dynamics
 		 * You can use this to down cast to the concrete shape.
 		 * @return the shape type.
  		 */
-		public function GetType():int
+		[Inline]
+		final public function GetType():int
 		{
-			// TODO: b2Shape.CIRCLE
+			return _shape.GetType();
 		}
 
 		/**
@@ -48,9 +96,10 @@ package Box2D.Dynamics
 		 * number of vertices because this will crash some collision caching mechanisms.
 		 * Manipulating the shape may lead to non-physical behavior.
  		 */
-		public function GetShape():b2Shape
+		[Inline]
+		final public function GetShape():b2Shape
 		{
-			// TODO:
+			return _shape;
 		}
 
 		/**
@@ -65,9 +114,10 @@ package Box2D.Dynamics
 		 * Is this fixture a sensor (non-solid)?
 		 * @return the true if the shape is a sensor.
  		 */
-		public function IsSensor():Boolean
+		[Inline]
+		final public function IsSensor():Boolean
 		{
-			// TODO:
+			return _isSensor;
 		}
 
 		/**
@@ -75,7 +125,7 @@ package Box2D.Dynamics
 		 * This will not update contacts until the next time step when either parent body is active and awake.
 		 * This automatically calls Refilter.
  		 */
-		public function SetFilterData(p_filter:b2Filter):void
+		public function SetFilter(p_filter:b2Filter):void
 		{
 			// TODO:
 		}
@@ -83,9 +133,9 @@ package Box2D.Dynamics
 		/**
 		 * Get the contact filtering data.
 		 */
-		public function GetFilterData():b2Filter
+		public function GetFilter():b2Filter
 		{
-			// TODO:
+			return _filter;
 		}
 
 		/**
@@ -100,35 +150,20 @@ package Box2D.Dynamics
 		 * Get the parent body of this fixture. This is NULL if the fixture is not attached.
 		 * @return the parent body.
 		 */
-		public function GetBody()/*:b2Body*/
+		[Inline]
+		final public function GetBody():b2Body
 		{
-			// TODO:
+			return _body;
 		}
 
 		/**
 		 * Get the next fixture in the parent body's fixture list.
 		 * @return the next shape.
  		 */
-		public function GetNext():b2Fixture
+		[Inline]
+		final public function GetNext():b2Fixture
 		{
-			// TODO:
-		}
-
-		/**
-		 * Get the user data that was assigned in the fixture definition.
-		 * Use this to store your application specific data.
-		 */
-		public function GetUserData():*
-		{
-			// TODO:
-		}
-
-		/**
-		 * Set the user data. Use this to store your application specific data.
-		 */
-		public function SetUserData(p_data:*):void
-		{
-			// TODO:
+			return _next;
 		}
 
 		/**
@@ -138,7 +173,7 @@ package Box2D.Dynamics
 		 */
 		public function TestPoint(p_pX:Number, p_pY:Number):Boolean
 		{
-			// TODO:
+			_shape.TestPoint(_body.GetTransform(), p_pX, p_pY);
 		}
 
 		/**
@@ -148,7 +183,7 @@ package Box2D.Dynamics
 		 */
 		public function RayCast(p_rayCastData:b2RayCastData, p_childIndex:int):Boolean
 		{
-			// TODO:
+			_shape.RayCast(p_rayCastData, _body.GetTransform(), p_childIndex);
 		}
 
 		/**
@@ -157,9 +192,16 @@ package Box2D.Dynamics
 		 * The rotational inertia is about the shape's origin.
 		 * This operation may be expensive.
 		 */
-		public function GetMassData(p_massData:b2MassData):void
+		public function GetMassData(p_massData:b2MassData):b2MassData
 		{
-			// TODO:
+			if (p_massData == null)
+			{
+				p_massData = new b2MassData();
+			}
+
+			_shape.ComputeMass(p_massData, _density);
+
+			return p_massData;
 		}
 
 		/**
@@ -168,48 +210,58 @@ package Box2D.Dynamics
 		 */
 		public function SetDensity(p_density:Number):void
 		{
-			// TODO:
+			CONFIG::debug
+			{
+				assert(p_density >= 0.0, "value for density has to be positive");
+			}
+
+			_density = p_density;
 		}
 
 		/**
 		 * Get the density of this fixture.
 		 */
-		public function GetDensity():Number
+		[Inline]
+		final public function GetDensity():Number
 		{
-			// TODO:
+			return _density;
 		}
 
 		/**
 		 * Get the coefficient of friction.
 		 */
-		public function GetFriction():Number
+		[Inline]
+		final public function GetFriction():Number
 		{
-			// TODO:
+			return _friction;
 		}
 
 		/**
 		 * Set the coefficient of friction. This will _not_ change the friction of existing contacts.
 		 */
-		public function SetFriction(p_friction:Number):void
+		[Inline]
+		final public function SetFriction(p_friction:Number):void
 		{
-			// TODO:
+			_friction = p_friction;
 		}
 
 		/**
 		 * Get the coefficient of restitution.
 		 */
-		public function GetRestitution():Number
+		[Inline]
+		final public function GetRestitution():Number
 		{
-			// TODO:
+			return _restitution;
 		}
 
 		/**
 		 * Set the coefficient of restitution.
 		 * This will _not_ change the restitution of existing contacts.
 		 */
-		public function SetRestitution(p_restitution:Number):void
+		[Inline]
+		final public function SetRestitution(p_restitution:Number):void
 		{
-			// TODO:
+			_restitution = p_restitution;
 		}
 
 		/**
@@ -218,14 +270,15 @@ package Box2D.Dynamics
  		 */
 		public function GetAABB(p_childIndex:int):b2AABB
 		{
-			// TODO:
+			assert(p_childIndex >= 0 && p_childIndex < _proxyCount, "incorrect number of childIndex: " + p_childIndex);
+
 		}
 
 		/**
 		 */
 		override public function Clone():IDisposable
 		{
-			// TODO:
+			// TODO: Clone b2Fixture
 			var fixture:b2Fixture = Get();
 			return fixture;
 		}
