@@ -9,6 +9,7 @@ package Box2D.Dynamics
 	import Box2D.Common.Math.b2Mat22;
 	import Box2D.Common.Math.b2Sweep;
 	import Box2D.Common.Math.b2Vec2;
+	import Box2D.Common.Math.b2Vec2;
 	import Box2D.Common.b2internal;
 	import Box2D.Dynamics.Def.b2FixtureDef;
 
@@ -54,9 +55,20 @@ package Box2D.Dynamics
 		b2internal var m_I:Number;
 		b2internal var m_invI:Number;
 
-		b2internal var m_linearDamping:Number;
-		b2internal var m_angularDamping:Number;
-		b2internal var m_gravityScale:Number;
+		/**
+		 * Linear damping of the body.
+		 */
+		public var linearDamping:Number;
+
+		/**
+		 * Angular damping of the body.
+		 */
+		public var angularDamping:Number;
+
+		/**
+		 * Gravity scale of the body
+		 */
+		public var gravityScale:Number;
 
 		b2internal var m_sleepTime:Number;
 
@@ -459,7 +471,13 @@ package Box2D.Dynamics
 		 */
 		public function GetLocalVector(p_worldVectorX:Number, p_worldVectorY:Number):b2Vec2
 		{
-			// TODO:
+			var cos:Number = m_xf.c11;
+			var sin:Number = m_xf.c12;
+
+			var rX:Number =  cos * p_worldVectorX + sin * p_worldVectorY;
+			var rY:Number = -sin * p_worldVectorX + cos * p_worldVectorY;
+
+			return b2Vec2.Get(rX, rY);
 		}
 
 		/**
@@ -471,7 +489,16 @@ package Box2D.Dynamics
 		 */
 		public function GetLinearVelocityFromWorldPoint(p_worldPointX:Number, p_worldPointY:Number):b2Vec2
 		{
-			// TODO:
+			var rX:Number = p_worldPointX - m_sweep.worldCenterX;
+			var rY:Number = p_worldPointY - m_sweep.worldCenterY;
+
+			var r1X:Number = -m_angularVelocity * rY;
+			var r1Y:Number =  m_angularVelocity * rX;
+
+			var r2X:Number = m_linearVelocityX + r1X;
+			var r2Y:Number = m_linearVelocityY + r1Y;
+
+			return b2Vec2.Get(r2X, r2Y);
 		}
 
 		/**
@@ -479,62 +506,15 @@ package Box2D.Dynamics
 		 * @param p_localPointX point in local coordinates.
 		 * @param p_localPointY point in local coordinates.
 		 * @return the world velocity of a point.
+		 * NOTICE! Produces new instance of b2Vec2.
 		 */
 		public function GetLinearVelocityFromLocalPoint(p_localPointX:Number, p_localPointY:Number):b2Vec2
 		{
-			// TODO:
-		}
+			var wp:b2Vec2 = GetWorldPoint(p_localPointX, p_localPointY);
+			var lv:b2Vec2 = GetLinearVelocityFromWorldPoint(wp.x, wp.y);
+			wp.Dispose();
 
-		/**
-		 * Get the linear damping of the body.
-		 */
-		public function GetLinearDamping():Number
-		{
-			// TODO:
-		}
-
-		/**
-		 * Set the linear damping of the body.
-		 * @param p_linearDamping
-		 */
-		public function SetLinearDamping(p_linearDamping:Number):void
-		{
-			// TODO:
-		}
-
-		/**
-		 * Get the angular damping of the body.
-		 * @return
-		 */
-		public function GetAngularDamping():Number
-		{
-			// TODO:
-		}
-
-		/**
-		 * Set the angular damping of the body.
-		 * @param p_angularDamping
-		 */
-		public function SetAngularDamping(p_angularDamping:Number):void
-		{
-			// TODO:
-		}
-
-		/**
-		 * Get the gravity scale of the body.
-		 */
-		public function GetGravityScale():Number
-		{
-			// TODO:
-		}
-
-		/**
-		 * Set the gravity scale of the body.
-		 * @param p_scale
-		 */
-		public function SetGravityScale(p_scale:Number):void
-		{
-			// TODO:
+			return lv;
 		}
 
 		/**
