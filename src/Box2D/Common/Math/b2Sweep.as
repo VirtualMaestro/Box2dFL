@@ -37,8 +37,8 @@ package Box2D.Common.Math
 		/**
 		 * Center world position.
 		 */
-		public var worldCenter0X:Number = 0;
-		public var worldCenter0Y:Number = 0;
+		public var worldCenterX0:Number = 0;
+		public var worldCenterY0:Number = 0;
 		public var worldCenterX:Number = 0;
 		public var worldCenterY:Number = 0;
 
@@ -62,8 +62,8 @@ package Box2D.Common.Math
 		{
 			var oneSubAlpha:Number = 1.0 - alpha;
 
-			mat.tx = oneSubAlpha * worldCenter0X + alpha * worldCenterX;
-			mat.ty = oneSubAlpha * worldCenter0Y + alpha * worldCenterY;
+			mat.tx = oneSubAlpha * worldCenterX0 + alpha * worldCenterX;
+			mat.ty = oneSubAlpha * worldCenterY0 + alpha * worldCenterY;
 			mat.SetAngle(oneSubAlpha * worldAngle0 + alpha *  worldAngle);
 			mat.tx -= (mat.c11 * localCenterX + mat.c21 * localCenterY);
 			mat.ty -= (mat.c12 * localCenterX + mat.c22 * localCenterY);
@@ -81,8 +81,8 @@ package Box2D.Common.Math
 			}
 
 			var beta:Number = (t - t0) / (1.0 - t0);
-			worldCenter0X += beta * (worldCenterX - worldCenter0X);
-			worldCenter0Y += beta * (worldCenterY - worldCenter0Y);
+			worldCenterX0 += beta * (worldCenterX - worldCenterX0);
+			worldCenterY0 += beta * (worldCenterY - worldCenterY0);
 
 			worldAngle0 += beta * (worldAngle - worldAngle0);
 
@@ -121,8 +121,8 @@ package Box2D.Common.Math
 		{
 			localCenterX = p_sweep.localCenterX;
 			localCenterY = p_sweep.localCenterY;
-			worldCenter0X = p_sweep.worldCenter0X;
-			worldCenter0Y = p_sweep.worldCenter0Y;
+			worldCenterX0 = p_sweep.worldCenterX0;
+			worldCenterY0 = p_sweep.worldCenterY0;
 			worldCenterX = p_sweep.worldCenterX;
 			worldCenterY = p_sweep.worldCenterY;
 			worldAngle = p_sweep. worldAngle;

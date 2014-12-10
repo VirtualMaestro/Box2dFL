@@ -73,8 +73,10 @@ package Box2D.Common.Math
 		 * Returns angle in radians.
 		 * @return Number
 		 */
+		[Inline]
 		final public function GetAngle():Number
 		{
+			// TODO: Optimize - method should return stored 'angle' value
 			return Math.atan2(c12, c11);
 		}
 

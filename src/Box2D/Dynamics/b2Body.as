@@ -17,10 +17,22 @@ package Box2D.Dynamics
 
 	public class b2Body
 	{
+		// Body type
 		static public const STATIC:uint = 0;
 		static public const KINEMATIC:uint = 1;
 		static public const DYNAMIC:uint = 2;
 
+		// Flags
+		static b2internal const	e_islandFlag:uint = 0x0001;
+		static b2internal const e_awakeFlag:uint = 0x0002;
+		static b2internal const e_autoSleepFlag:uint = 0x0004;
+		static b2internal const	e_bulletFlag:uint = 0x0008;
+		static b2internal const e_fixedRotationFlag:uint = 0x0010;
+		static b2internal const e_activeFlag:uint = 0x0020;
+		static b2internal const	e_toiFlag:uint = 0x0040;
+
+
+		//
 		b2internal var m_type:uint;
 
 		b2internal var m_flags:uint;
@@ -541,7 +553,14 @@ package Box2D.Dynamics
 		 */
 		public function SetBullet(p_flag:Boolean):void
 		{
-			// TODO:
+			if (p_flag)
+			{
+				m_flags |= e_bulletFlag;
+			}
+			else
+			{
+				m_flags &= ~e_bulletFlag;
+			}
 		}
 
 		/**
@@ -549,7 +568,7 @@ package Box2D.Dynamics
 		 */
 		public function IsBullet():Boolean
 		{
-			// TODO:
+			return (m_flags & e_bulletFlag) == e_bulletFlag;
 		}
 
 		/**
@@ -557,7 +576,15 @@ package Box2D.Dynamics
 		 */
 		public function SetSleepingAllowed(p_flag:Boolean):void
 		{
-			// TODO:
+			if (p_flag)
+			{
+				m_flags |= e_autoSleepFlag;
+			}
+			else
+			{
+				m_flags &= ~e_autoSleepFlag;
+				SetAwake(true);
+			}
 		}
 
 		/**
@@ -566,7 +593,7 @@ package Box2D.Dynamics
 		 */
 		public function IsSleepingAllowed():Boolean
 		{
-			// TODO:
+			return (m_flags & e_autoSleepFlag) == e_autoSleepFlag;
 		}
 
 		/**
@@ -575,7 +602,25 @@ package Box2D.Dynamics
 		 */
 		public function SetAwake(p_flag:Boolean):void
 		{
-			// TODO:
+			if (p_flag)
+			{
+				if ((m_flags & e_awakeFlag) == 0)
+				{
+					m_flags |= e_awakeFlag;
+					m_sleepTime = 0.0;
+				}
+			}
+			else
+			{
+				m_flags &= ~e_awakeFlag;
+				m_sleepTime = 0.0;
+				m_linearVelocityX = 0.0;
+				m_linearVelocityY = 0.0;
+				m_angularVelocity = 0.0;
+				m_forceX = 0.0;
+				m_forceY = 0.0;
+				m_torque = 0.0;
+			}
 		}
 
 		/**
@@ -584,7 +629,7 @@ package Box2D.Dynamics
 		 */
 		public function IsAwake():Boolean
 		{
-			// TODO:
+			return (m_flags & e_awakeFlag) == e_awakeFlag;
 		}
 
 		/**
@@ -613,7 +658,7 @@ package Box2D.Dynamics
 		 */
 		public function IsActive():Boolean
 		{
-			// TODO:
+			return (m_flags & e_activeFlag) == e_activeFlag;
 		}
 
 		/**
@@ -631,22 +676,22 @@ package Box2D.Dynamics
 		 */
 		public function IsFixedRotation():Boolean
 		{
-			// TODO:
+			return (m_flags & e_fixedRotationFlag) == e_fixedRotationFlag;
 		}
 
 		/// Get the list of all fixtures attached to this body.
 		public function GetFixtureList():b2Fixture
 		{
-			// TODO:
+			return m_fixtureList;
 		}
 
 		/**
 		 * Get the list of all joints attached to this body.
 		 * @return b2JointEdge
 		 */
-		public function GetJointList()/*:b2JointEdge*/
+		public function GetJointList()/*:b2JointEdge TODO:*/
 		{
-			// TODO:
+			return m_jointList;
 		}
 
 		/**
@@ -654,9 +699,9 @@ package Box2D.Dynamics
 		 * @warning this list changes during the time step and you may
 		 * miss some collisions if you don't use b2ContactListener.
 		 */
-		public function GetContactList()/*:b2ContactEdge*/
+		public function GetContactList()/*:b2ContactEdge TODO*/
 		{
-			// TODO:
+			return m_contactList;
 		}
 
 		/**
@@ -665,16 +710,16 @@ package Box2D.Dynamics
 		 */
 		public function GetNext():b2Body
 		{
-			// TODO:
+			return m_next;
 		}
 
 		/**
 		 * Get the parent world of this body.
 		 * @return b2World
 		 */
-		public function GetWorld()/*:b2World*/
+		public function GetWorld()/*:b2World TODO*/
 		{
-			// TODO:
+			return m_world;
 		}
 
 		/**
@@ -688,9 +733,19 @@ package Box2D.Dynamics
 		/**
 		 *
 		 */
-		public function SynchronizeTransform():void
+		[Inline]
+		final public function SynchronizeTransform():void
 		{
-			// TODO:
+			m_xf.SetAngle(m_sweep.worldAngle);
+
+			var cos:Number = m_xf.c11;
+			var sin:Number = m_xf.c12;
+
+			var lcX:Number = m_sweep.localCenterX;
+			var lcY:Number = m_sweep.localCenterY;
+
+			m_xf.tx = m_sweep.worldCenterX - (cos * lcX - sin * lcY);
+			m_xf.ty = m_sweep.worldCenterY - (sin * lcX + cos * lcY);
 		}
 
 		/**
@@ -701,7 +756,26 @@ package Box2D.Dynamics
 		 */
 		public function ShouldCollide(p_other:b2Body):Boolean
 		{
-			//TODO:
+			// At least one body should be dynamic.
+			if (m_type != DYNAMIC && p_other.m_type != DYNAMIC)
+			{
+				return false;
+			}
+
+			// Does a joint prevent collision? TODO: When joint will implemented
+//			for (b2JointEdge* jn = m_jointList; jn; jn = jn->next)
+//			{
+//				if (jn->other == other)
+//				{
+//					if (jn->joint->m_collideConnected == false)
+//					{
+//						return false;
+//					}
+//				}
+//			}
+
+			return true;
+
 		}
 
 		/**
@@ -710,8 +784,15 @@ package Box2D.Dynamics
 		 */
 		public function Advance(p_t:Number):void
 		{
-			// TODO:
-		}
+			// Advance to the new safe time. This doesn't sync the broad-phase.
+			m_sweep.Advance(p_t);
 
+			m_sweep.worldCenterX = m_sweep.worldCenterX0;
+			m_sweep.worldCenterY = m_sweep.worldCenterY0;
+			m_sweep.worldAngle = m_sweep.worldAngle0;
+			m_xf.SetAngle(m_sweep.worldAngle);
+
+			SynchronizeTransform();
+		}
 	}
 }
