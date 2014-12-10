@@ -12,6 +12,7 @@ package Box2D.Dynamics
 	import Box2D.Common.Math.b2Vec2;
 	import Box2D.Common.b2internal;
 	import Box2D.Dynamics.Def.b2FixtureDef;
+	import Box2D.assert;
 
 	use namespace b2internal;
 
@@ -415,7 +416,103 @@ package Box2D.Dynamics
 		 */
 		public function ResetMassData():void
 		{
-			// TODO:
+			m_mass = 0.0;
+			m_invMass = 0.0;
+			m_I = 0.0;
+			m_invI = 0.0;
+			m_sweep.localCenterX = 0.0;
+			m_sweep.localCenterY = 0.0;
+
+			// Static and kinematic bodies have zero mass.
+			if (m_type == STATIC || m_type == KINEMATIC)
+			{
+				m_sweep.worldCenterX0 = m_xf.tx;
+				m_sweep.worldCenterY0 = m_xf.ty;
+
+				m_sweep.worldCenterX = m_xf.tx;
+				m_sweep.worldCenterY = m_xf.ty;
+
+				m_sweep.worldAngle0 = m_sweep.worldAngle;
+			}
+
+			CONFIG::debug
+			{
+				assert((m_type == DYNAMIC), "can't apply reset mass for non dynamic body");
+			}
+
+			var localCenterX:Number = 0;
+			var localCenterY:Number = 0;
+			var massData:b2MassData = new b2MassData();
+
+			for (var f:b2Fixture = m_fixtureList; f; f = f.m_next)
+			{
+				if (f.m_density > 0.0)
+				{
+					f.GetMassData(massData);
+					m_mass += massData.mass;
+					localCenterX += massData.mass * massData.centerX;
+					localCenterY += massData.mass * massData.centerY;
+					m_I += massData.I;
+				}
+			}
+
+			massData = null;
+
+			// Compute center of mass.
+			if (m_mass > 0.0)
+			{
+				m_invMass = 1.0 / m_mass;
+				localCenterX *= m_invMass;
+				localCenterY *= m_invMass;
+			}
+			else
+			{
+				// Force all dynamic bodies to have a positive mass.
+				m_mass = 1.0;
+				m_invMass = 1.0;
+			}
+
+			if (m_I > 0.0 && (m_flags & e_fixedRotationFlag) == 0)
+			{
+				// Center the inertia about the center of mass.
+				m_I -= m_mass * (localCenterX * localCenterX + localCenterY * localCenterY);
+
+				CONFIG::debug
+				{
+					assert(m_I > 0.0, "rotational inertia should be greater then 0");
+				}
+
+				m_invI = 1.0 / m_I;
+			}
+			else
+			{
+				m_I = 0.0;
+				m_invI = 0.0;
+			}
+
+			// Move center of mass.
+			var oldCenterX:Number = m_sweep.worldCenterX;
+			var oldCenterY:Number = m_sweep.worldCenterY;
+			m_sweep.localCenterX = localCenterX;
+			m_sweep.localCenterY = localCenterY;
+
+			var cos:Number = m_xf.c11;
+			var sin:Number = m_xf.c12;
+
+			var rX:Number = (cos * m_sweep.localCenterX - sin * m_sweep.localCenterY) + m_xf.tx;
+			var rY:Number = (sin * m_sweep.localCenterX + cos * m_sweep.localCenterY) + m_xf.ty;
+
+			m_sweep.worldCenterX = rX;
+			m_sweep.worldCenterY = rY;
+			m_sweep.worldCenterX0 = rX;
+			m_sweep.worldCenterY0 = rY;
+
+			// Update center of mass velocity.
+			var r1X:Number = m_sweep.worldCenterX - oldCenterX;
+			var r1Y:Number = m_sweep.worldCenterY - oldCenterY;
+			
+			m_linearVelocityX += -m_angularVelocity * r1Y ;
+			m_linearVelocityY +=  m_angularVelocity * r1X;
 		}
 
 		/**
@@ -667,7 +764,21 @@ package Box2D.Dynamics
 		 */
 		public function SetFixedRotation(p_flag:Boolean):void
 		{
-			// TODO:
+			if (((m_flags & e_fixedRotationFlag) == e_fixedRotationFlag) != p_flag)
+			{
+				if (p_flag)
+				{
+					m_flags |= e_fixedRotationFlag;
+				}
+				else
+				{
+					m_flags &= ~e_fixedRotationFlag;
+				}
+
+				m_angularVelocity = 0.0;
+
+				ResetMassData();
+			}
 		}
 
 		/**

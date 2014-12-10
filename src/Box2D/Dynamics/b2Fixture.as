@@ -37,14 +37,14 @@ package Box2D.Dynamics
 
 		private var _friction:Number;
 		private var _restitution:Number;
-		private var _density:Number;
+		b2internal var m_density:Number;
 		private var _isSensor:Boolean;
 		private var _filter:b2Filter;
 
 		private var _body:b2Body;
 		private var _shape:b2Shape;
 
-		private var _next:b2Fixture;
+		b2internal var m_next:b2Fixture;
 
 		private var _proxyCount:int;
 
@@ -57,7 +57,7 @@ package Box2D.Dynamics
 		{
 			_friction = 0.0;
 			_restitution = 0.0;
-			_density = 0.0;
+			m_density = 0.0;
 			_isSensor = false;
 			_filter = b2Filter.Get();
 			_proxyCount = 0;
@@ -163,7 +163,7 @@ package Box2D.Dynamics
 		[Inline]
 		final public function GetNext():b2Fixture
 		{
-			return _next;
+			return m_next;
 		}
 
 		/**
@@ -191,15 +191,16 @@ package Box2D.Dynamics
 		 * The mass data is based on the density and the shape.
 		 * The rotational inertia is about the shape's origin.
 		 * This operation may be expensive.
+		 * NOTICE! If p_massData isn't set method produces new instance of b2MassData.
 		 */
-		public function GetMassData(p_massData:b2MassData):b2MassData
+		public function GetMassData(p_massData:b2MassData = null):b2MassData
 		{
 			if (p_massData == null)
 			{
 				p_massData = new b2MassData();
 			}
 
-			_shape.ComputeMass(p_massData, _density);
+			_shape.ComputeMass(p_massData, m_density);
 
 			return p_massData;
 		}
@@ -215,7 +216,7 @@ package Box2D.Dynamics
 				assert(p_density >= 0.0, "value for density has to be positive");
 			}
 
-			_density = p_density;
+			m_density = p_density;
 		}
 
 		/**
@@ -224,7 +225,7 @@ package Box2D.Dynamics
 		[Inline]
 		final public function GetDensity():Number
 		{
-			return _density;
+			return m_density;
 		}
 
 		/**
