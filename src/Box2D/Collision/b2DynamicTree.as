@@ -12,6 +12,8 @@ package Box2D.Collision
 	 * object to move by small amounts without triggering a tree update.
 	 *
 	 * Nodes are pooled and relocatable, so we use node indices rather than pointers.
+	 *
+	 * TODO: Impl
 	 */
 	public class b2DynamicTree
 	{

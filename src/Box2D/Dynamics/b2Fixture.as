@@ -67,14 +67,45 @@ package Box2D.Dynamics
 		 */
 		b2internal function Create(p_body:b2Body, p_def:b2FixtureDef):void
 		{
-			// TODO:
+			userData = p_def.userData;
+			m_density = p_def.density;
+			_friction = p_def.friction;
+			_restitution = p_def.restitution;
+			_body = p_body;
+			_filter = p_def.filter.Clone() as b2Filter;
+			_isSensor = p_def.isSensor;
+			_shape = p_def.shape.Clone() as b2Shape;
+			_proxyCount = 0;
+
+			// Reserve proxy space
+			var childCount:int = _shape.GetChildCount();
+			if (m_proxies == null)
+			{
+				m_proxies = new Vector.<b2FixtureProxy>(childCount);
+			}
+
+			for (var i:int = 0; i < childCount; i++)
+			{
+				m_proxies[i] = new b2FixtureProxy();
+			}
 		}
 
+		/**
+		 *
+		 * @param p_broadPhase
+		 * @param p_xf
+		 */
 		b2internal function CreateProxies(p_broadPhase/*:b2BroadPhase*/, p_xf:b2Mat22):void
 		{
 			// TODO:
 		}
 
+		/**
+		 *
+		 * @param p_broadPhase
+		 * @param p_xf1
+		 * @param p_xf2
+		 */
 		b2internal function Synchronize(p_broadPhase/*:b2BroadPhase*/, p_xf1:b2Mat22, p_xf2:b2Mat22):void
 		{
 			// TODO:
@@ -290,6 +321,8 @@ package Box2D.Dynamics
 		}
 
 		/**
+		 *
+		 * TODO: Take care about disposing
 		 */
 		override public function Dispose():void
 		{

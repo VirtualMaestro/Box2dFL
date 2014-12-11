@@ -17,7 +17,7 @@ package Box2D.Collision
 	{
 		static b2internal const e_nullProxy:int = -1;
 
-		b2internal var m_tree/*:b2DynamicTree*/;
+		b2internal var m_tree:b2DynamicTree;
 
 		b2internal var m_proxyCount:int;
 

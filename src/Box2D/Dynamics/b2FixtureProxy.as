@@ -7,12 +7,13 @@ package Box2D.Dynamics
 
 	/**
 	 * This proxy is used internally to connect fixtures to the broad-phase
+	 * TODO: Think about pooling this
 	 */
 	internal class b2FixtureProxy
 	{
 		public var aabb:b2AABB;
 		public var fixture:b2Fixture;
 		public var childIndex:int;
-		public var proxyId:int;
+		public var proxyId:int = -1;
 	}
 }

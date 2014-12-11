@@ -15,6 +15,11 @@ package Box2D.Dynamics
 
 	use namespace b2internal;
 
+	/**
+	 * A rigid body.
+	 * These are created via b2World.CreateBody().
+	 * TODO: Implement b2Disposable
+	 */
 	public class b2Body
 	{
 		// Body type
