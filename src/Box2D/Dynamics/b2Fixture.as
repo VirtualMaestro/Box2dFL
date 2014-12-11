@@ -48,7 +48,7 @@ package Box2D.Dynamics
 
 		private var _proxyCount:int;
 
-//		b2FixtureProxy* m_proxies; TODO:
+		b2internal var m_proxies:Vector.<b2FixtureProxy>;
 
 
 		/**
