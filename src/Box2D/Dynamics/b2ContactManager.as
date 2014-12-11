@@ -3,6 +3,7 @@
  */
 package Box2D.Dynamics
 {
+	import Box2D.Collision.Contact.b2Contact;
 	import Box2D.Collision.b2BroadPhase;
 
 	/**
@@ -15,6 +16,15 @@ package Box2D.Dynamics
 
 		public function b2ContactManager()
 		{
+		}
+
+		/**
+		 *
+		 * @param p_contact
+		 */
+		public function Destroy(p_contact:b2Contact):void
+		{
+			// TODO:
 		}
 	}
 }

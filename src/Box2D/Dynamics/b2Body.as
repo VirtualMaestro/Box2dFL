@@ -5,8 +5,10 @@
  */
 package Box2D.Dynamics
 {
+	import Box2D.Collision.Contact.b2Contact;
 	import Box2D.Collision.Contact.b2ContactEdge;
 	import Box2D.Collision.Shapes.b2Shape;
+	import Box2D.Collision.b2BroadPhase;
 	import Box2D.Common.IDisposable;
 	import Box2D.Common.Math.b2Mat22;
 	import Box2D.Common.Math.b2Sweep;
@@ -15,6 +17,7 @@ package Box2D.Dynamics
 	import Box2D.Common.b2internal;
 	import Box2D.Dynamics.Def.b2BodyDef;
 	import Box2D.Dynamics.Def.b2FixtureDef;
+	import Box2D.Dynamics.b2World;
 	import Box2D.assert;
 
 	use namespace b2internal;
@@ -22,7 +25,6 @@ package Box2D.Dynamics
 	/**
 	 * A rigid body.
 	 * These are created via b2World.CreateBody().
-	 * TODO: Implement b2Disposable
 	 */
 	public class b2Body extends b2Disposable
 	{
@@ -196,7 +198,37 @@ package Box2D.Dynamics
 		 */
 		public function CreateFixture(p_def:b2FixtureDef):b2Fixture
 		{
-			// TODO:
+			CONFIG::debug
+			{
+				assert(!m_world.IsLocked, "world is locked");
+			}
+
+			var fixture:b2Fixture = b2Fixture.Get();
+			fixture.Create(this, p_def);
+
+			if ((m_flags & e_activeFlag) != 0)
+			{
+				var broadPhase:b2BroadPhase = m_world.m_contactManager.m_broadPhase;
+				fixture.CreateProxies(broadPhase, m_xf);
+			}
+
+			fixture.m_next = m_fixtureList;
+			m_fixtureList = fixture;
+			++m_fixtureCount;
+
+			fixture.m_body = this;
+
+			// Adjust mass properties if needed.
+			if (fixture.m_density > 0.0)
+			{
+				ResetMassData();
+			}
+
+			// Let the world know we have a new fixture. This will cause new contacts
+			// to be created at the beginning of the next time step.
+			m_world.m_flags |= b2World.e_newFixture;
+
+			return fixture;
 		}
 
 		/**
@@ -210,7 +242,11 @@ package Box2D.Dynamics
 		 */
 		public function CreateFixture2(p_shape:b2Shape, p_density:Number):b2Fixture
 		{
-			// TODO:
+			var def:b2FixtureDef = new b2FixtureDef();
+			def.shape = p_shape;
+			def.density = p_density;
+
+			return CreateFixture(def);
 		}
 
 		/**
@@ -224,7 +260,92 @@ package Box2D.Dynamics
 		 */
 		public function DestroyFixture(p_fixture:b2Fixture):void
 		{
-			// TODO:
+			CONFIG::debug
+			{
+				assert(!m_world.IsLocked, "world is locked");
+				assert(p_fixture.m_body == this, "fixture.m_body == this");
+				assert(m_fixtureCount > 0, "m_fixtureCount > 0");
+			}
+
+			// Remove the fixture from this body's singly linked list
+			var found:Boolean = false;
+
+			if (m_fixtureCount == 1)
+			{
+				if (m_fixtureList == p_fixture)
+				{
+					found = true;
+					m_fixtureList = null;
+				}
+			}
+			else
+			{
+				if (m_fixtureList == p_fixture)
+				{
+					found = true;
+					m_fixtureList = p_fixture.m_next;
+				}
+				else
+				{
+					var prevNode:b2Fixture = m_fixtureList;
+					var node:b2Fixture = m_fixtureList.m_next;
+
+					while (node)
+					{
+						if (node == p_fixture)
+						{
+							found = true;
+							prevNode.m_next = p_fixture.m_next;
+
+							break;
+						}
+
+						prevNode = node;
+						node = node.m_next;
+					}
+				}
+			}
+
+			--m_fixtureCount;
+
+			CONFIG::debug
+			{
+				assert(found, "You tried to remove a shape that is not attached to this body");
+			}
+
+		   // Destroy any contacts associated with the fixture.
+			var edge:b2ContactEdge = m_contactList;
+			var contact:b2Contact;
+			var fixtureA:b2Fixture;
+			var fixtureB:b2Fixture;
+
+			while (edge)
+			{
+				contact = edge.contact;
+				edge = edge.next;
+
+				fixtureA = contact.GetFixtureA();
+				fixtureB = contact.GetFixtureB();
+
+				if (p_fixture == fixtureA || p_fixture == fixtureB)
+				{
+					// This destroys the contact and removes it from
+					// this body's contact list.
+					m_world.m_contactManager.Destroy(contact);
+				}
+			}
+
+			if ((m_flags & e_activeFlag) != 0)
+			{
+				var broadPhase:b2BroadPhase = m_world.m_contactManager.m_broadPhase;
+				p_fixture.DestroyProxies(broadPhase);
+			}
+
+			// completely dispose fixture
+			p_fixture.Dispose();
+
+			// Reset the mass data.
+			ResetMassData();
 		}
 
 		/**

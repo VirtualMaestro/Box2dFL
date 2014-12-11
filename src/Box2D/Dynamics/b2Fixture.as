@@ -36,18 +36,18 @@ package Box2D.Dynamics
 		 */
 		public var userData:*;
 
-		private var _friction:Number;
-		private var _restitution:Number;
+		b2internal var m_friction:Number;
+		b2internal var m_restitution:Number;
 		b2internal var m_density:Number;
-		private var _isSensor:Boolean;
-		private var _filter:b2Filter;
+		b2internal var m_isSensor:Boolean;
+		b2internal var m_filter:b2Filter;
 
-		private var _body:b2Body;
-		private var _shape:b2Shape;
+		b2internal var m_body:b2Body;
+		b2internal var m_shape:b2Shape;
 
 		b2internal var m_next:b2Fixture;
 
-		private var _proxyCount:int;
+		b2internal var m_proxyCount:int;
 
 		b2internal var m_proxies:Vector.<b2FixtureProxy>;
 
@@ -55,26 +55,26 @@ package Box2D.Dynamics
 		 */
 		public function b2Fixture()
 		{
-			_friction = 0.0;
-			_restitution = 0.0;
+			m_friction = 0.0;
+			m_restitution = 0.0;
 			m_density = 0.0;
-			_isSensor = false;
-			_proxyCount = 0;
+			m_isSensor = false;
+			m_proxyCount = 0;
 		}
 
 		/**
 		 */
 		b2internal function Create(p_body:b2Body, p_def:b2FixtureDef):void
 		{
-			_body = p_body;
+			m_body = p_body;
 			userData = p_def.userData;
 			m_density = p_def.density;
-			_friction = p_def.friction;
-			_restitution = p_def.restitution;
-			_isSensor = p_def.isSensor;
-			_filter = p_def.filter.Clone() as b2Filter;
-			_shape = p_def.shape.Clone() as b2Shape;
-			_proxyCount = 0;
+			m_friction = p_def.friction;
+			m_restitution = p_def.restitution;
+			m_isSensor = p_def.isSensor;
+			m_filter = p_def.filter.Clone() as b2Filter;
+			m_shape = p_def.shape.Clone() as b2Shape;
+			m_proxyCount = 0;
 
 			// Reserve proxy space
 			ReserveProxySpace();
@@ -85,7 +85,7 @@ package Box2D.Dynamics
 		[Inline]
 		private function ReserveProxySpace():void
 		{
-			var childCount:int = _shape.GetChildCount();
+			var childCount:int = m_shape.GetChildCount();
 			if (m_proxies == null)
 			{
 				m_proxies = new Vector.<b2FixtureProxy>(childCount);
@@ -106,17 +106,17 @@ package Box2D.Dynamics
 		{
 			CONFIG::debug
 			{
-				assert((_proxyCount == 0), "count of proxies can't be 0");
+				assert((m_proxyCount == 0), "count of proxies can't be 0");
 			}
 
 			// Create proxies in the broad-phase.
-			_proxyCount = _shape.GetChildCount();
+			m_proxyCount = m_shape.GetChildCount();
 			var proxy:b2FixtureProxy;
 
-			for (var i:int = 0; i < _proxyCount; ++i)
+			for (var i:int = 0; i < m_proxyCount; ++i)
 			{
 				proxy = m_proxies[i];
-				_shape.ComputeAABB(proxy.aabb, p_xf, i);
+				m_shape.ComputeAABB(proxy.aabb, p_xf, i);
 				proxy.proxyId = p_broadPhase.CreateProxy(proxy.aabb, proxy);
 				proxy.fixture = this;
 				proxy.childIndex = i;
@@ -132,14 +132,14 @@ package Box2D.Dynamics
 			// Destroy proxies in the broad-phase.
 			var proxy:b2FixtureProxy;
 
-			for (var i:int = 0; i < _proxyCount; ++i)
+			for (var i:int = 0; i < m_proxyCount; ++i)
 			{
 				proxy = m_proxies[i];
 				p_broadPhase.DestroyProxy(proxy.proxyId);
 				proxy.proxyId = b2BroadPhase.e_nullProxy;
 			}
 
-			_proxyCount = 0;
+			m_proxyCount = 0;
 		}
 
 		/**
@@ -150,7 +150,7 @@ package Box2D.Dynamics
 		 */
 		b2internal function Synchronize(p_broadPhase:b2BroadPhase, p_xf1:b2Mat22, p_xf2:b2Mat22):void
 		{
-			if (_proxyCount > 0)
+			if (m_proxyCount > 0)
 			{
 				var proxy:b2FixtureProxy;
 				var aabb1:b2AABB = b2AABB.Get();
@@ -158,15 +158,15 @@ package Box2D.Dynamics
 				var prAABB:b2AABB;
 				var chIndex:int;
 
-				for (var i:int = 0; i < _proxyCount; i++)
+				for (var i:int = 0; i < m_proxyCount; i++)
 				{
 					proxy = m_proxies[i];
 					prAABB = proxy.aabb;
 					chIndex = proxy.childIndex;
 
 					// Compute an AABB that covers the swept shape (may miss some rotation effect).
-					_shape.ComputeAABB(aabb1, p_xf1, chIndex);
-					_shape.ComputeAABB(aabb2, p_xf2, chIndex);
+					m_shape.ComputeAABB(aabb1, p_xf1, chIndex);
+					m_shape.ComputeAABB(aabb2, p_xf2, chIndex);
 
 					prAABB.CombineTwo(aabb1, aabb2);
 
@@ -189,7 +189,7 @@ package Box2D.Dynamics
 		[Inline]
 		final public function GetType():int
 		{
-			return _shape.GetType();
+			return m_shape.GetType();
 		}
 
 		/**
@@ -200,7 +200,7 @@ package Box2D.Dynamics
 		[Inline]
 		final public function GetShape():b2Shape
 		{
-			return _shape;
+			return m_shape;
 		}
 
 		/**
@@ -208,10 +208,10 @@ package Box2D.Dynamics
 		 */
 		public function SetSensor(p_sensor:Boolean):void
 		{
-			if (p_sensor != _isSensor)
+			if (p_sensor != m_isSensor)
 			{
-				_body.SetAwake(true);
-				_isSensor = p_sensor;
+				m_body.SetAwake(true);
+				m_isSensor = p_sensor;
 			}
 		}
 
@@ -222,7 +222,7 @@ package Box2D.Dynamics
 		[Inline]
 		final public function IsSensor():Boolean
 		{
-			return _isSensor;
+			return m_isSensor;
 		}
 
 		/**
@@ -232,7 +232,7 @@ package Box2D.Dynamics
  		 */
 		public function SetFilter(p_filter:b2Filter):void
 		{
-			_filter = p_filter;
+			m_filter = p_filter;
 			Refilter();
 		}
 
@@ -242,7 +242,7 @@ package Box2D.Dynamics
 		[Inline]
 		final public function GetFilter():b2Filter
 		{
-			return _filter;
+			return m_filter;
 		}
 
 		/**
@@ -250,10 +250,10 @@ package Box2D.Dynamics
 		 */
 		public function Refilter():void
 		{
-			if (_body)
+			if (m_body)
 			{
 				// Flag associated contacts for filtering.
-				var edge:b2ContactEdge = _body.GetContactList();
+				var edge:b2ContactEdge = m_body.GetContactList();
 				var contact:b2Contact;
 				var fixtureA:b2Fixture;
 				var fixtureB:b2Fixture;
@@ -272,12 +272,12 @@ package Box2D.Dynamics
 					edge = edge.next;
 				}
 
-				var world:b2World = _body.GetWorld();
+				var world:b2World = m_body.GetWorld();
 				if (world)
 				{
 					// Touch each proxy so that new pairs may be created
 					var broadPhase:b2BroadPhase = world.m_contactManager.m_broadPhase;
-					for (var i:int = 0; i < _proxyCount; i++)
+					for (var i:int = 0; i < m_proxyCount; i++)
 					{
 						broadPhase.TouchProxy(m_proxies[i].proxyId);
 					}
@@ -292,7 +292,7 @@ package Box2D.Dynamics
 		[Inline]
 		final public function GetBody():b2Body
 		{
-			return _body;
+			return m_body;
 		}
 
 		/**
@@ -312,7 +312,7 @@ package Box2D.Dynamics
 		 */
 		public function TestPoint(p_pX:Number, p_pY:Number):Boolean
 		{
-			_shape.TestPoint(_body.GetTransform(), p_pX, p_pY);
+			m_shape.TestPoint(m_body.GetTransform(), p_pX, p_pY);
 		}
 
 		/**
@@ -322,7 +322,7 @@ package Box2D.Dynamics
 		 */
 		public function RayCast(p_rayCastData:b2RayCastData, p_childIndex:int):Boolean
 		{
-			_shape.RayCast(p_rayCastData, _body.GetTransform(), p_childIndex);
+			m_shape.RayCast(p_rayCastData, m_body.GetTransform(), p_childIndex);
 		}
 
 		/**
@@ -339,7 +339,7 @@ package Box2D.Dynamics
 				p_massData = new b2MassData();
 			}
 
-			_shape.ComputeMass(p_massData, m_density);
+			m_shape.ComputeMass(p_massData, m_density);
 
 			return p_massData;
 		}
@@ -373,7 +373,7 @@ package Box2D.Dynamics
 		[Inline]
 		final public function GetFriction():Number
 		{
-			return _friction;
+			return m_friction;
 		}
 
 		/**
@@ -382,7 +382,7 @@ package Box2D.Dynamics
 		[Inline]
 		final public function SetFriction(p_friction:Number):void
 		{
-			_friction = p_friction;
+			m_friction = p_friction;
 		}
 
 		/**
@@ -391,7 +391,7 @@ package Box2D.Dynamics
 		[Inline]
 		final public function GetRestitution():Number
 		{
-			return _restitution;
+			return m_restitution;
 		}
 
 		/**
@@ -401,7 +401,7 @@ package Box2D.Dynamics
 		[Inline]
 		final public function SetRestitution(p_restitution:Number):void
 		{
-			_restitution = p_restitution;
+			m_restitution = p_restitution;
 		}
 
 		/**
@@ -412,7 +412,7 @@ package Box2D.Dynamics
 		{
 			CONFIG::debug
 			{
-				assert(p_childIndex >= 0 && p_childIndex < _proxyCount, "incorrect number of childIndex: " + p_childIndex);
+				assert(p_childIndex >= 0 && p_childIndex < m_proxyCount, "incorrect number of childIndex: " + p_childIndex);
 			}
 
 			return m_proxies[p_childIndex].aabb;
@@ -446,11 +446,11 @@ package Box2D.Dynamics
 				super.Dispose();
 			}
 
-			_filter.Dispose();
-			_shape.Dispose();
+			m_filter.Dispose();
+			m_shape.Dispose();
 			userData = null;
 			m_next = null;
-			_body = null;
+			m_body = null;
 
 			b2Disposable.clearVectorWithDispose(m_proxies);
 			b2Disposable.Put(this, classId);
@@ -469,10 +469,10 @@ package Box2D.Dynamics
 			{
 				fixture = instance as b2Fixture;
 				fixture.m_density = 0.0;
-				fixture._friction = 0.0;
-				fixture._restitution = 0.0;
-				fixture._isSensor = false;
-				fixture._proxyCount = 0;
+				fixture.m_friction = 0.0;
+				fixture.m_restitution = 0.0;
+				fixture.m_isSensor = false;
+				fixture.m_proxyCount = 0;
 			}
 			else fixture = new b2Fixture();
 
