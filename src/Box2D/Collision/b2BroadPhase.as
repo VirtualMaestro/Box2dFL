@@ -45,7 +45,45 @@ package Box2D.Collision
 			m_moveBuffer = new Vector.<int>(m_moveCapacity);
 		}
 
+		/**
+		 * Create a proxy with an initial AABB. Pairs are not reported until
+		 * UpdatePairs is called.
+ 		 */
+		public function CreateProxy(p_aabb:b2AABB, p_userData:*):int
+		{
+			return 0; // TODO:
+		}
 
+		/**
+		 * Call MoveProxy as many times as you like, then when you are done
+		 * call UpdatePairs to finalized the proxy pairs (for your time step).
+		 * @param p_proxyId
+		 * @param p_aabb
+		 * @param p_displacementX
+		 * @param p_displacementY
+		 */
+		public function MoveProxy(p_proxyId:int, p_aabb:b2AABB, p_displacementX:Number, p_displacementY:Number):void
+		{
+			// TODO:
+		}
+
+		/**
+		 * Destroy a proxy. It is up to the client to remove any pairs.
+		 * @param p_proxyId
+		 */
+		public function DestroyProxy(p_proxyId:int):void
+		{
+			// TODO:
+		}
+
+		/**
+		 * Call to trigger a re-processing of it's pairs on the next call to UpdatePairs.
+		 * @param p_proxyId
+		 */
+		public function TouchProxy(p_proxyId:int):void
+		{
+			// TODO:
+		}
 	}
 }
 

@@ -5,6 +5,7 @@
  */
 package Box2D.Dynamics
 {
+	import Box2D.Collision.Contact.b2ContactEdge;
 	import Box2D.Collision.Shapes.b2Shape;
 	import Box2D.Common.Math.b2Mat22;
 	import Box2D.Common.Math.b2Sweep;
@@ -55,7 +56,7 @@ package Box2D.Dynamics
 		b2internal var m_forceY:Number;
 		b2internal var m_torque:Number;
 
-		b2internal var m_world/*:b2World*/; // TODO:
+		b2internal var m_world:b2World;
 		b2internal var m_prev:b2Body;
 		b2internal var m_next:b2Body;
 
@@ -63,7 +64,7 @@ package Box2D.Dynamics
 		b2internal var m_fixtureCount:int;
 
 		b2internal var m_jointList/*:b2JointEdge*/; // TODO:
-		b2internal var m_contactList/*:b2ContactEdge*/; // TODO:
+		b2internal var m_contactList:b2ContactEdge;
 
 		b2internal var m_mass:Number;
 		b2internal var m_invMass:Number;
@@ -887,7 +888,7 @@ package Box2D.Dynamics
 		 * @warning this list changes during the time step and you may
 		 * miss some collisions if you don't use b2ContactListener.
 		 */
-		public function GetContactList()/*:b2ContactEdge TODO*/
+		public function GetContactList():b2ContactEdge
 		{
 			return m_contactList;
 		}
@@ -905,7 +906,7 @@ package Box2D.Dynamics
 		 * Get the parent world of this body.
 		 * @return b2World
 		 */
-		public function GetWorld()/*:b2World TODO*/
+		public function GetWorld():b2World
 		{
 			return m_world;
 		}

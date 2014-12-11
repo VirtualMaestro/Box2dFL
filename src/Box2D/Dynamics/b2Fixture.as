@@ -5,6 +5,8 @@
  */
 package Box2D.Dynamics
 {
+	import Box2D.Collision.Contact.b2Contact;
+	import Box2D.Collision.Contact.b2ContactEdge;
 	import Box2D.Collision.Shapes.b2Shape;
 	import Box2D.Collision.b2AABB;
 	import Box2D.Collision.b2BroadPhase;
@@ -102,7 +104,42 @@ package Box2D.Dynamics
 		 */
 		b2internal function CreateProxies(p_broadPhase:b2BroadPhase, p_xf:b2Mat22):void
 		{
-			// TODO:
+			CONFIG::debug
+			{
+				assert((_proxyCount == 0), "count of proxies can't be 0");
+			}
+
+			// Create proxies in the broad-phase.
+			_proxyCount = _shape.GetChildCount();
+			var proxy:b2FixtureProxy;
+
+			for (var i:int = 0; i < _proxyCount; ++i)
+			{
+				proxy = m_proxies[i];
+				_shape.ComputeAABB(proxy.aabb, p_xf, i);
+				proxy.proxyId = p_broadPhase.CreateProxy(proxy.aabb, proxy);
+				proxy.fixture = this;
+				proxy.childIndex = i;
+			}
+		}
+
+		/**
+		 *
+		 * @param p_broadPhase
+		 */
+		public function DestroyProxies(p_broadPhase:b2BroadPhase):void
+		{
+			// Destroy proxies in the broad-phase.
+			var proxy:b2FixtureProxy;
+
+			for (var i:int = 0; i < _proxyCount; ++i)
+			{
+				proxy = m_proxies[i];
+				p_broadPhase.DestroyProxy(proxy.proxyId);
+				proxy.proxyId = b2BroadPhase.e_nullProxy;
+			}
+
+			_proxyCount = 0;
 		}
 
 		/**
@@ -113,7 +150,35 @@ package Box2D.Dynamics
 		 */
 		b2internal function Synchronize(p_broadPhase:b2BroadPhase, p_xf1:b2Mat22, p_xf2:b2Mat22):void
 		{
-			// TODO:
+			if (_proxyCount > 0)
+			{
+				var proxy:b2FixtureProxy;
+				var aabb1:b2AABB = b2AABB.Get();
+				var aabb2:b2AABB = b2AABB.Get();
+				var prAABB:b2AABB;
+				var chIndex:int;
+
+				for (var i:int = 0; i < _proxyCount; i++)
+				{
+					proxy = m_proxies[i];
+					prAABB = proxy.aabb;
+					chIndex = proxy.childIndex;
+
+					// Compute an AABB that covers the swept shape (may miss some rotation effect).
+					_shape.ComputeAABB(aabb1, p_xf1, chIndex);
+					_shape.ComputeAABB(aabb2, p_xf2, chIndex);
+
+					prAABB.CombineTwo(aabb1, aabb2);
+
+					var displacementX:Number = p_xf2.tx - p_xf1.tx;
+					var displacementY:Number = p_xf2.ty - p_xf1.ty;
+
+					p_broadPhase.MoveProxy(proxy.proxyId, prAABB, displacementX, displacementY);
+				}
+
+				aabb1.Dispose();
+				aabb2.Dispose();
+			}
 		}
 
 		/**
@@ -174,7 +239,8 @@ package Box2D.Dynamics
 		/**
 		 * Get the contact filtering data.
 		 */
-		public function GetFilter():b2Filter
+		[Inline]
+		final public function GetFilter():b2Filter
 		{
 			return _filter;
 		}
@@ -184,7 +250,39 @@ package Box2D.Dynamics
 		 */
 		public function Refilter():void
 		{
-			// TODO:
+			if (_body)
+			{
+				// Flag associated contacts for filtering.
+				var edge:b2ContactEdge = _body.GetContactList();
+				var contact:b2Contact;
+				var fixtureA:b2Fixture;
+				var fixtureB:b2Fixture;
+
+				while (edge)
+				{
+					contact = edge.contact;
+					fixtureA = contact.GetFixtureA();
+					fixtureB = contact.GetFixtureB();
+
+					if (fixtureA == this || fixtureB == this)
+					{
+						contact.FlagForFiltering();
+					}
+
+					edge = edge.next;
+				}
+
+				var world:b2World = _body.GetWorld();
+				if (world)
+				{
+					// Touch each proxy so that new pairs may be created
+					var broadPhase:b2BroadPhase = world.m_contactManager.m_broadPhase;
+					for (var i:int = 0; i < _proxyCount; i++)
+					{
+						broadPhase.TouchProxy(m_proxies[i].proxyId);
+					}
+				}
+			}
 		}
 
 		/**
@@ -312,8 +410,12 @@ package Box2D.Dynamics
  		 */
 		public function GetAABB(p_childIndex:int):b2AABB
 		{
-			assert(p_childIndex >= 0 && p_childIndex < _proxyCount, "incorrect number of childIndex: " + p_childIndex);
+			CONFIG::debug
+			{
+				assert(p_childIndex >= 0 && p_childIndex < _proxyCount, "incorrect number of childIndex: " + p_childIndex);
+			}
 
+			return m_proxies[p_childIndex].aabb;
 		}
 
 		/**

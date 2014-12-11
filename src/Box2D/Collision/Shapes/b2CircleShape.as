@@ -76,7 +76,10 @@ package Box2D.Collision.Shapes
 			return (dX * dX + dY * dY) <= (m_radius * m_radius);
 		}
 
-		/**
+		/** Given a transform, compute the associated axis aligned bounding box for a child shape.
+		 *  @param p_aabb returns the axis aligned box.
+		 *  @param p_transform the world transform matrix of the shape.
+		 *  @param p_childIndex the child shape
 		 */
 		override public function ComputeAABB(p_aabb:b2AABB, p_transform:b2Mat22, p_childIndex:int):void
 		{
