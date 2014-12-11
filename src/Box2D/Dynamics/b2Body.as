@@ -303,7 +303,25 @@ package Box2D.Dynamics
 		 */
 		public function ApplyForce(p_forceX:Number, p_forceY:Number, p_pointX:Number, p_pointY:Number, p_wake:Boolean):void
 		{
-			// TODO:
+			if (m_type == DYNAMIC)
+			{
+				if (p_wake && ((m_flags & e_awakeFlag) == 0))
+				{
+					SetAwake(true);
+				}
+
+				// Don't accumulate a force if the body is sleeping.
+				if ((m_flags & e_awakeFlag) != 0)
+				{
+					m_forceX += p_forceX;
+					m_forceY += p_forceY;
+
+					var rX:Number = p_pointX - m_sweep.worldCenterX;
+					var rY:Number = p_pointY - m_sweep.worldCenterY;
+
+					m_torque += (rX * p_forceY - rY * p_forceX);
+				}
+			}
 		}
 
 		/**
@@ -314,7 +332,20 @@ package Box2D.Dynamics
 		 */
 		public function ApplyForceToCenter(p_forceX:Number, p_forceY:Number, p_wake:Boolean):void
 		{
-			// TODO:
+			if (m_type == DYNAMIC)
+			{
+				if (p_wake && ((m_flags & e_awakeFlag) == 0))
+				{
+					SetAwake(true);
+				}
+
+				// Don't accumulate a force if the body is sleeping.
+				if ((m_flags & e_awakeFlag) != 0)
+				{
+					m_forceX += p_forceX;
+					m_forceY += p_forceY;
+				}
+			}
 		}
 
 		/**
@@ -326,7 +357,19 @@ package Box2D.Dynamics
 		 */
 		public function ApplyTorque(p_torque:Number, p_wake:Boolean):void
 		{
-			// TODO:
+			if (m_type == DYNAMIC)
+			{
+				if (p_wake && ((m_flags & e_awakeFlag) == 0))
+				{
+					SetAwake(true);
+				}
+
+				// Don't accumulate a torque if the body is sleeping.
+				if ((m_flags & e_awakeFlag) != 0)
+				{
+					m_torque += p_torque;
+				}
+			}
 		}
 
 		/**
@@ -341,7 +384,25 @@ package Box2D.Dynamics
 		 */
 		public function ApplyLinearImpulse(p_impulseX:Number, p_impulseY:Number, p_pointX:Number, p_pointY:Number, p_wake:Boolean):void
 		{
-			// TODO:
+			if (m_type == DYNAMIC)
+			{
+				if (p_wake && ((m_flags & e_awakeFlag) == 0))
+				{
+					SetAwake(true);
+				}
+
+				// Don't accumulate a velocity if the body is sleeping.
+				if ((m_flags & e_awakeFlag) != 0)
+				{
+					m_linearVelocityX += m_invMass * p_impulseX;
+					m_linearVelocityY += m_invMass * p_impulseY;
+
+					var rX:Number = p_pointX - m_sweep.worldCenterX;
+					var rY:Number = p_pointY - m_sweep.worldCenterY;
+
+					m_angularVelocity += m_invI * (rX * p_impulseY - rY * p_impulseX);
+				}
+			}
 		}
 
 		/**
@@ -351,7 +412,19 @@ package Box2D.Dynamics
 		 */
 		public function ApplyAngularImpulse(p_impulse:Number, p_wake:Boolean):void
 		{
-			// TODO:
+			if (m_type == DYNAMIC)
+			{
+				if (p_wake && ((m_flags & e_awakeFlag) == 0))
+				{
+					SetAwake(true);
+				}
+
+				// Don't accumulate a velocity if the body is sleeping.
+				if ((m_flags & e_awakeFlag) != 0)
+				{
+					m_angularVelocity += m_invI * p_impulse;
+				}
+			}
 		}
 
 		/**
