@@ -7,10 +7,13 @@ package Box2D.Dynamics
 {
 	import Box2D.Collision.Contact.b2ContactEdge;
 	import Box2D.Collision.Shapes.b2Shape;
+	import Box2D.Common.IDisposable;
 	import Box2D.Common.Math.b2Mat22;
 	import Box2D.Common.Math.b2Sweep;
 	import Box2D.Common.Math.b2Vec2;
+	import Box2D.Common.b2Disposable;
 	import Box2D.Common.b2internal;
+	import Box2D.Dynamics.Def.b2BodyDef;
 	import Box2D.Dynamics.Def.b2FixtureDef;
 	import Box2D.assert;
 
@@ -21,8 +24,10 @@ package Box2D.Dynamics
 	 * These are created via b2World.CreateBody().
 	 * TODO: Implement b2Disposable
 	 */
-	public class b2Body
+	public class b2Body extends b2Disposable
 	{
+		static b2internal var classId:uint = b2Disposable.getClassId();
+
 		// Body type
 		static public const STATIC:uint = 0;
 		static public const KINEMATIC:uint = 1;
@@ -76,17 +81,17 @@ package Box2D.Dynamics
 		/**
 		 * Linear damping of the body.
 		 */
-		public var linearDamping:Number;
+		b2internal var m_linearDamping:Number;
 
 		/**
 		 * Angular damping of the body.
 		 */
-		public var angularDamping:Number;
+		b2internal var m_angularDamping:Number;
 
 		/**
 		 * Gravity scale of the body
 		 */
-		public var gravityScale:Number;
+		b2internal var m_gravityScale:Number;
 
 		b2internal var m_sleepTime:Number;
 
@@ -94,8 +99,90 @@ package Box2D.Dynamics
 
 		/**
 		 */
-		public function b2Body()
+		public function b2Body(p_bd:b2BodyDef, p_world:b2World)
 		{
+			 init(p_bd, p_world);
+		}
+
+		/**
+		 */
+		[Inline]
+		private function init(p_bd:b2BodyDef, p_world:b2World):void
+		{
+			m_flags = 0;
+
+			if (p_bd.bullet)
+			{
+				m_flags |= e_bulletFlag;
+			}
+			if (p_bd.fixedRotation)
+			{
+				m_flags |= e_fixedRotationFlag;
+			}
+			if (p_bd.allowSleep)
+			{
+				m_flags |= e_autoSleepFlag;
+			}
+			if (p_bd.awake)
+			{
+				m_flags |= e_awakeFlag;
+			}
+			if (p_bd.active)
+			{
+				m_flags |= e_activeFlag;
+			}
+
+			m_world = p_world;
+
+			m_xf = b2Mat22.Get();
+			m_xf.tx = p_bd.positionX;
+			m_xf.ty = p_bd.positionY;
+			m_xf.SetAngle(p_bd.angle);
+
+			m_sweep = b2Sweep.Get();
+			m_sweep.localCenterX = 0.0;
+			m_sweep.localCenterY = 0.0;
+			m_sweep.worldCenterX0 = m_xf.tx;
+			m_sweep.worldCenterY0 = m_xf.ty;
+			m_sweep.worldCenterX  = m_xf.tx;
+			m_sweep.worldCenterY  = m_xf.ty;
+			m_sweep.worldAngle0 = p_bd.angle;
+			m_sweep.worldAngle = p_bd.angle;
+			m_sweep.t0 = 0.0;
+
+			m_linearVelocityX = p_bd.linearVelocityX;
+			m_linearVelocityY = p_bd.linearVelocityY;
+			m_angularVelocity = p_bd.angularVelocity;
+
+			m_linearDamping = p_bd.linearDamping;
+			m_angularDamping = p_bd.angularDamping;
+			m_gravityScale = p_bd.gravityScale;
+
+			m_forceX = 0.0;
+			m_forceY = 0.0;
+			m_torque = 0.0;
+
+			m_sleepTime = 0.0;
+
+			m_type = p_bd.type;
+
+			if (m_type == DYNAMIC)
+			{
+				m_mass = 1.0;
+				m_invMass = 1.0;
+			}
+			else
+			{
+				m_mass = 0.0;
+				m_invMass = 0.0;
+			}
+
+			m_I = 0.0;
+			m_invI = 0.0;
+
+			userData = p_bd.userData;
+
+			m_fixtureCount = 0;
 		}
 
 		/**
@@ -952,11 +1039,11 @@ package Box2D.Dynamics
 			}
 
 			// Does a joint prevent collision? TODO: When joint will implemented
-//			for (b2JointEdge* jn = m_jointList; jn; jn = jn->next)
+//			for (b2JointEdge* jn = m_jointList; jn; jn = jn.next)
 //			{
-//				if (jn->other == other)
+//				if (jn.other == other)
 //				{
-//					if (jn->joint->m_collideConnected == false)
+//					if (jn.joint.m_collideConnected == false)
 //					{
 //						return false;
 //					}
@@ -982,6 +1069,56 @@ package Box2D.Dynamics
 			m_xf.SetAngle(m_sweep.worldAngle);
 
 			SynchronizeTransform();
+		}
+
+		/**
+		 */
+		override public function Clone():IDisposable
+		{
+			// TODO:
+		}
+
+		/**
+		 */
+		override public function Dispose():void
+		{
+			CONFIG::debug
+			{
+				super.Dispose();
+			}
+
+			m_xf.Dispose();
+			m_sweep.Dispose();
+
+			m_xf = null;
+			m_sweep = null;
+			m_world = null;
+			m_prev = null;
+			m_next = null;
+			m_fixtureList = null;
+			m_jointList = null;
+			m_contactList = null;
+
+			b2Disposable.Put(this, classId);
+		}
+
+		/**
+		 * Returns new instance of b2Body.
+		 * @return b2Body
+		 */
+		static public function Get(p_bd:b2BodyDef, p_world:b2World):b2Body
+		{
+			var instance:b2Disposable = b2Disposable.Get(classId);
+			var body:b2Body;
+
+			if (instance)
+			{
+				body = instance as b2Body;
+				body.init(p_bd, p_world);
+			}
+			else body = new b2Body(p_bd, p_world);
+
+			return body;
 		}
 	}
 }
