@@ -21,10 +21,37 @@ package Box2D.Collision
 		static b2internal var classId:uint = b2Disposable.getClassId();
 
 		//
-		public var upperBoundX:Number = 0;
-		public var upperBoundY:Number = 0;
-		public var lowerBoundX:Number = 0;
-		public var lowerBoundY:Number = 0;
+		public var upperBoundX:Number;
+		public var upperBoundY:Number;
+		public var lowerBoundX:Number;
+		public var lowerBoundY:Number;
+
+		/**
+		 *
+		 * @param p_upperBoundX
+		 * @param p_upperBoundY
+		 * @param p_lowerBoundX
+		 * @param p_lowerBoundY
+		 */
+		public function b2AABB(p_upperBoundX:Number = 0, p_upperBoundY:Number = 0, p_lowerBoundX:Number = 0, p_lowerBoundY:Number = 0)
+		{
+			upperBoundX = p_upperBoundX;
+			upperBoundY = p_upperBoundY;
+			lowerBoundX = p_lowerBoundX;
+			lowerBoundY = p_lowerBoundY;
+		}
+
+		/**
+		 * Copy given
+		 * @param p_aabb
+		 */
+		public function SetTo(p_aabb:b2AABB):void
+		{
+			upperBoundX = p_aabb.upperBoundX;
+			upperBoundY = p_aabb.upperBoundY;
+			lowerBoundX = p_aabb.lowerBoundX;
+			lowerBoundY = p_aabb.lowerBoundY;
+		}
 
 		/**
 		 * Get the center of the AABB.
@@ -286,13 +313,15 @@ package Box2D.Collision
 			var instance:b2Disposable = b2Disposable.Get(classId);
 			var aabb:b2AABB;
 
-			if (instance) aabb = instance as b2AABB;
-			else aabb = new b2AABB();
-
-			aabb.upperBoundX = p_upperBoundX;
-			aabb.upperBoundY = p_upperBoundY;
-			aabb.lowerBoundX = p_lowerBoundX;
-			aabb.lowerBoundY = p_lowerBoundY;
+			if (instance)
+			{
+				aabb = instance as b2AABB;
+				aabb.upperBoundX = p_upperBoundX;
+				aabb.upperBoundY = p_upperBoundY;
+				aabb.lowerBoundX = p_lowerBoundX;
+				aabb.lowerBoundY = p_lowerBoundY;
+			}
+			else aabb = new b2AABB(p_upperBoundX, p_upperBoundY, p_lowerBoundX, p_lowerBoundY);
 
 			return aabb;
 		}

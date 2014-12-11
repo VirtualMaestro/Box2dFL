@@ -44,6 +44,14 @@ package Box2D.Collision.Shapes
 		b2internal var m_type:int = 0;
 
 		/**
+		 * Init instance with given one.
+		 */
+		public function SetTo(p_shape:b2Shape):void
+		{
+			// override in children
+		}
+
+		/**
 		 * Get the number of child primitives.
 		 * @return
 		 */

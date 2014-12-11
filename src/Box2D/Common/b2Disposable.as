@@ -79,6 +79,30 @@ package Box2D.Common
 			p_vector.length = 0;
 		}
 
+		/**
+		 * Clear vector and every element will disposed (invokes its Dispose method)
+		 * @param p_vector has to be Vector with type b2Disposable
+		 */
+		[Inline]
+		static public function clearVectorWithDispose(p_vector:*):void
+		{
+			CONFIG::debug
+			{
+				assert((p_vector is Vector.<b2Disposable>), "vector has to be Vector.<b2Disposable> type");
+			}
+
+			var vec:Vector.<b2Disposable> = p_vector as Vector.<b2Disposable>;
+			var len:int = vec.length;
+
+			for (var i:int = 0; i < len; i++)
+			{
+				vec[i].Dispose();
+				vec[i] = null;
+			}
+
+			vec.length = 0;
+		}
+
 		//***********
 		//** POOL****
 		//***********
@@ -93,7 +117,7 @@ package Box2D.Common
 		static b2internal function Get(p_classId:uint):b2Disposable
 		{
 			//
-			if (_counts == null) init();
+			if (_counts == null) initPools();
 
 			//
 			var count:int = _counts[p_classId];
@@ -116,7 +140,7 @@ package Box2D.Common
 		 * Initialize pools.
 		 */
 		[Inline]
-		static private function init():void
+		static private function initPools():void
 		{
 			_counts = new <int>[];
 

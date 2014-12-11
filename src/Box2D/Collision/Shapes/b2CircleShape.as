@@ -13,6 +13,12 @@ package Box2D.Collision.Shapes
 	import Box2D.Common.b2Disposable;
 	import Box2D.Common.b2internal;
 	import Box2D.Dynamics.b2MassData;
+	import Box2D.assert;
+
+	CONFIG::debug
+	{
+		import avmplus.getQualifiedClassName;
+	}
 
 	use namespace b2internal;
 
@@ -35,6 +41,23 @@ package Box2D.Collision.Shapes
 			m_radius = p_radius;
 			m_pX = p_x;
 			m_pY = p_y;
+		}
+
+		/**
+		 * Init current instance with given (copy properties from given to current).
+		 * @param p_shape b2CircleShape
+		 */
+		override public function SetTo(p_shape:b2Shape):void
+		{
+			CONFIG::debug
+			{
+				assert((p_shape is b2CircleShape), "given parameter has to be b2CircleShape class. Current instance has type: " + getQualifiedClassName(p_shape));
+			}
+
+			var circleShape:b2CircleShape = p_shape as b2CircleShape;
+			m_pX = circleShape.m_pX;
+			m_pX = circleShape.m_pX;
+			m_radius = circleShape.m_radius;
 		}
 
 		/**

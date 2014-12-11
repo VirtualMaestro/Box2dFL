@@ -50,6 +50,17 @@ package Box2D.Dynamics.filter
 		}
 
 		/**
+		 * Initialize current instance with given p_filter.
+		 * @param p_filter
+		 */
+		public function SetTo(p_filter:b2Filter):void
+		{
+			category = p_filter.category;
+			mask = p_filter.mask;
+			groupIndex = p_filter.groupIndex;
+		}
+
+		/**
 		 * Include category for possibility to collide with.
 		 * @param p_includeCategory
 		 */

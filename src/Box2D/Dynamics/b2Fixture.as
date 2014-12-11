@@ -7,6 +7,7 @@ package Box2D.Dynamics
 {
 	import Box2D.Collision.Shapes.b2Shape;
 	import Box2D.Collision.b2AABB;
+	import Box2D.Collision.b2BroadPhase;
 	import Box2D.Collision.b2RayCastData;
 	import Box2D.Common.IDisposable;
 	import Box2D.Common.Math.b2Mat22;
@@ -23,8 +24,6 @@ package Box2D.Dynamics
 	 * inherits its transform from its parent. Fixtures hold additional non-geometric data
 	 * such as friction, collision filters, etc.
 	 * Fixtures are created via b2Body::CreateFixture.
-	 *
-	 * TODO: Impl b2Fixture
 	 */
 	public class b2Fixture extends b2Disposable
 	{
@@ -50,7 +49,6 @@ package Box2D.Dynamics
 
 		b2internal var m_proxies:Vector.<b2FixtureProxy>;
 
-
 		/**
 		 */
 		public function b2Fixture()
@@ -59,7 +57,6 @@ package Box2D.Dynamics
 			_restitution = 0.0;
 			m_density = 0.0;
 			_isSensor = false;
-			_filter = b2Filter.Get();
 			_proxyCount = 0;
 		}
 
@@ -67,17 +64,25 @@ package Box2D.Dynamics
 		 */
 		b2internal function Create(p_body:b2Body, p_def:b2FixtureDef):void
 		{
+			_body = p_body;
 			userData = p_def.userData;
 			m_density = p_def.density;
 			_friction = p_def.friction;
 			_restitution = p_def.restitution;
-			_body = p_body;
-			_filter = p_def.filter.Clone() as b2Filter;
 			_isSensor = p_def.isSensor;
+			_filter = p_def.filter.Clone() as b2Filter;
 			_shape = p_def.shape.Clone() as b2Shape;
 			_proxyCount = 0;
 
 			// Reserve proxy space
+			ReserveProxySpace();
+		}
+
+		/**
+		 */
+		[Inline]
+		private function ReserveProxySpace():void
+		{
 			var childCount:int = _shape.GetChildCount();
 			if (m_proxies == null)
 			{
@@ -95,7 +100,7 @@ package Box2D.Dynamics
 		 * @param p_broadPhase
 		 * @param p_xf
 		 */
-		b2internal function CreateProxies(p_broadPhase/*:b2BroadPhase*/, p_xf:b2Mat22):void
+		b2internal function CreateProxies(p_broadPhase:b2BroadPhase, p_xf:b2Mat22):void
 		{
 			// TODO:
 		}
@@ -106,7 +111,7 @@ package Box2D.Dynamics
 		 * @param p_xf1
 		 * @param p_xf2
 		 */
-		b2internal function Synchronize(p_broadPhase/*:b2BroadPhase*/, p_xf1:b2Mat22, p_xf2:b2Mat22):void
+		b2internal function Synchronize(p_broadPhase:b2BroadPhase, p_xf1:b2Mat22, p_xf2:b2Mat22):void
 		{
 			// TODO:
 		}
@@ -315,14 +320,22 @@ package Box2D.Dynamics
 		 */
 		override public function Clone():IDisposable
 		{
-			// TODO: Clone b2Fixture
-			var fixture:b2Fixture = Get();
-			return fixture;
+			// TODO: Clone b2Fixture. Maybe clone for fixture has no sense (problem with m_proxies) because it is initialize through Create method.
+//			var fixture:b2Fixture = Get();
+//			fixture.m_density = m_density;
+//			fixture._friction = _friction;
+//			fixture._restitution = _restitution;
+//			fixture._isSensor = _isSensor;
+//			fixture._proxyCount = _proxyCount;
+//			fixture._filter.SetTo(_filter);
+//			fixture._shape.SetTo(_shape);
+//
+//			return fixture;
+			return null;
 		}
 
 		/**
-		 *
-		 * TODO: Take care about disposing
+		 * Dispose fixture and shape belongs to.
 		 */
 		override public function Dispose():void
 		{
@@ -331,6 +344,13 @@ package Box2D.Dynamics
 				super.Dispose();
 			}
 
+			_filter.Dispose();
+			_shape.Dispose();
+			userData = null;
+			m_next = null;
+			_body = null;
+
+			b2Disposable.clearVectorWithDispose(m_proxies);
 			b2Disposable.Put(this, classId);
 		}
 
@@ -346,6 +366,11 @@ package Box2D.Dynamics
 			if (instance)
 			{
 				fixture = instance as b2Fixture;
+				fixture.m_density = 0.0;
+				fixture._friction = 0.0;
+				fixture._restitution = 0.0;
+				fixture._isSensor = false;
+				fixture._proxyCount = 0;
 			}
 			else fixture = new b2Fixture();
 

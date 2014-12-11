@@ -17,8 +17,10 @@ package Box2D.Collision.Shapes
 	import Box2D.Common.b2internal;
 	import Box2D.Dynamics.b2MassData;
 
+
 	CONFIG::debug
 	{
+		import flash.utils.getQualifiedClassName;
 		import Box2D.assert;
 	}
 
@@ -62,6 +64,33 @@ package Box2D.Collision.Shapes
 			m_vertexCount = 0;
 			m_vertices = new <Number>[];
 			m_normals = new <Number>[];
+		}
+
+		/**
+		 * Init current instance with given (copy properties from given to current).
+		 * @param p_shape b2PolygonShape
+		 */
+		override public function SetTo(p_shape:b2Shape):void
+		{
+			CONFIG::debug
+			{
+				assert((p_shape is b2PolygonShape), "given parameter has to be b2PolygonShape class. Current instance has type: " + getQualifiedClassName(p_shape));
+			}
+
+			var polygonShape:b2PolygonShape = p_shape as b2PolygonShape;
+			m_radius = polygonShape.m_radius;
+			m_centroidX = polygonShape.m_centroidX;
+			m_centroidY = polygonShape.m_centroidY;
+			m_vertexCount = polygonShape.m_vertexCount;
+
+			var vertices:Vector.<Number> = polygonShape.m_vertices;
+			var normals:Vector.<Number> = polygonShape.m_normals;
+
+			for (var i:int = 0; i < m_vertexCount; i++)
+			{
+				m_vertices[i] = vertices[i];
+				m_normals[i] = normals[i];
+			}
 		}
 
 		/** Create a convex hull from the given array of local points.
