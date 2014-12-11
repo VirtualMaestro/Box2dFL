@@ -9,7 +9,6 @@ package Box2D.Dynamics
 	import Box2D.Common.Math.b2Mat22;
 	import Box2D.Common.Math.b2Sweep;
 	import Box2D.Common.Math.b2Vec2;
-	import Box2D.Common.Math.b2Vec2;
 	import Box2D.Common.b2internal;
 	import Box2D.Dynamics.Def.b2FixtureDef;
 	import Box2D.assert;

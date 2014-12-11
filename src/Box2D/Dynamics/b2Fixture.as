@@ -67,7 +67,7 @@ package Box2D.Dynamics
 		 */
 		b2internal function Create(p_body:b2Body, p_def:b2FixtureDef):void
 		{
-
+			// TODO:
 		}
 
 		b2internal function CreateProxies(p_broadPhase/*:b2BroadPhase*/, p_xf:b2Mat22):void
@@ -107,7 +107,11 @@ package Box2D.Dynamics
 		 */
 		public function SetSensor(p_sensor:Boolean):void
 		{
-			// TODO:
+			if (p_sensor != _isSensor)
+			{
+				_body.SetAwake(true);
+				_isSensor = p_sensor;
+			}
 		}
 
 		/**
@@ -127,7 +131,8 @@ package Box2D.Dynamics
  		 */
 		public function SetFilter(p_filter:b2Filter):void
 		{
-			// TODO:
+			_filter = p_filter;
+			Refilter();
 		}
 
 		/**
