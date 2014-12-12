@@ -17,7 +17,7 @@ package Box2D.Dynamics
 	import Box2D.Common.b2internal;
 	import Box2D.Dynamics.Def.b2BodyDef;
 	import Box2D.Dynamics.Def.b2FixtureDef;
-	import Box2D.Dynamics.b2World;
+	import Box2D.Dynamics.Joints.b2JointEdge;
 	import Box2D.assert;
 
 	use namespace b2internal;
@@ -70,7 +70,7 @@ package Box2D.Dynamics
 		b2internal var m_fixtureList:b2Fixture;
 		b2internal var m_fixtureCount:int;
 
-		b2internal var m_jointList/*:b2JointEdge*/; // TODO:
+		b2internal var m_jointList:b2JointEdge;
 		b2internal var m_contactList:b2ContactEdge;
 
 		b2internal var m_mass:Number;
@@ -200,7 +200,7 @@ package Box2D.Dynamics
 		{
 			CONFIG::debug
 			{
-				assert(!m_world.IsLocked, "world is locked");
+				assert(!m_world.IsLocked, "can't create a fixture while world is locked");
 			}
 
 			var fixture:b2Fixture = b2Fixture.Get();
@@ -401,7 +401,8 @@ package Box2D.Dynamics
 		 * @return the world position of the body's origin.
 		 * NOTICE! If param for result wasn't found, produces new instance of b2Vec2.
 		 */
-		public function GetPosition(p_positionOut:b2Vec2 = null):b2Vec2
+		[Inline]
+		final public function GetPosition(p_positionOut:b2Vec2 = null):b2Vec2
 		{
 			if (p_positionOut)
 			{
@@ -430,7 +431,8 @@ package Box2D.Dynamics
 		 * Get the world position of the center of mass.
 		 * NOTICE! If param for result wasn't found, produces new instance of b2Vec2.
 		 */
-		public function GetWorldCenter(p_worldCenterOut:b2Vec2 = null):b2Vec2
+		[Inline]
+		final public function GetWorldCenter(p_worldCenterOut:b2Vec2 = null):b2Vec2
 		{
 			if (p_worldCenterOut)
 			{
@@ -449,7 +451,8 @@ package Box2D.Dynamics
 		 * Get the local position of the center of mass.
 		 * NOTICE! If param for result wasn't found, produces new instance of b2Vec2.
 		 */
-		public function GetLocalCenter(p_localCenterOut:b2Vec2 = null):b2Vec2
+		[Inline]
+		final public function GetLocalCenter(p_localCenterOut:b2Vec2 = null):b2Vec2
 		{
 			if (p_localCenterOut)
 			{
@@ -488,7 +491,8 @@ package Box2D.Dynamics
 		 * @return the linear velocity of the center of mass.
 		 * NOTICE! If param for result wasn't found, produces new instance of b2Vec2.
 		 */
-		public function GetLinearVelocity(p_linearVelocityOut:b2Vec2 = null):b2Vec2
+		[Inline]
+		final public function GetLinearVelocity(p_linearVelocityOut:b2Vec2 = null):b2Vec2
 		{
 			if (p_linearVelocityOut)
 			{
@@ -524,7 +528,8 @@ package Box2D.Dynamics
 		 * Get the angular velocity.
 		 * @return the angular velocity in radians/second.
 		 */
-		public function GetAngularVelocity():Number
+		[Inline]
+		final public function GetAngularVelocity():Number
 		{
 			return m_angularVelocity;
 		}
@@ -679,7 +684,8 @@ package Box2D.Dynamics
 		 * Get the rotational inertia of the body about the local origin.
 		 * @return the rotational inertia, usually in kg-m^2.
 		 */
-		public function GetInertia():Number
+		[Inline]
+		final public function GetInertia():Number
 		{
 			var lcX:Number = m_sweep.localCenterX;
 			var lcY:Number = m_sweep.localCenterY;
@@ -983,7 +989,66 @@ package Box2D.Dynamics
 		 */
 		public function SetType(p_type:uint):void
 		{
-			// TODO:
+			CONFIG::debug
+			{
+				assert(!m_world.IsLocked, "can't set type while world is locked");
+			}
+
+			if (m_type != p_type)
+			{
+				m_type = p_type;
+
+				ResetMassData();
+
+				if (m_type == STATIC)
+				{
+					m_linearVelocityX = 0;
+					m_linearVelocityY = 0;
+					m_angularVelocity = 0;
+					m_sweep.worldAngle0 = m_sweep.worldAngle;
+					m_sweep.worldCenterX0 = m_sweep.worldCenterX;
+					m_sweep.worldCenterY0 = m_sweep.worldCenterY;
+
+					SynchronizeFixtures();
+				}
+
+				SetAwake(true);
+
+				m_forceX = 0;
+				m_forceY = 0;
+				m_torque = 0;
+
+				// Delete the attached contacts.
+				var ce:b2ContactEdge = m_contactList;
+				var ce0:b2ContactEdge;
+				var contactManager:b2ContactManager = m_world.m_contactManager;
+
+				while(ce)
+				{
+					ce0 = ce;
+					ce = ce.next;
+
+					contactManager.Destroy(ce0.contact);
+				}
+
+				m_contactList = null;
+
+				// Touch the proxies so that new contacts will be created (when appropriate)
+				var broadPhase:b2BroadPhase = contactManager.m_broadPhase;
+				var proxies:Vector.<b2FixtureProxy>;
+				var proxyCount:int;
+
+				for (var f:b2Fixture = m_fixtureList; f; f = f.m_next)
+				{
+					proxyCount = f.m_proxyCount;
+					proxies = f.m_proxies;
+
+					for (var i:int = 0; i < proxyCount; i++)
+					{
+						broadPhase.TouchProxy(proxies[i].proxyId);
+					}
+				}
+			}
 		}
 
 		/**
@@ -1075,7 +1140,8 @@ package Box2D.Dynamics
 		 * Get the sleeping state of this body.
 		 * @return true if the body is awake.
 		 */
-		public function IsAwake():Boolean
+		[Inline]
+		final public function IsAwake():Boolean
 		{
 			return (m_flags & e_awakeFlag) == e_awakeFlag;
 		}
@@ -1097,14 +1163,61 @@ package Box2D.Dynamics
 		 */
 		public function SetActive(p_flag:Boolean):void
 		{
-			// TODO:
+			CONFIG::debug
+			{
+				assert(!m_world.IsLocked, "can't set active while world is locked");
+			}
+
+			if (p_flag != IsActive())
+			{
+				var f:b2Fixture;
+				var contactManager:b2ContactManager = m_world.m_contactManager;
+				var broadPhase:b2BroadPhase = contactManager.m_broadPhase;
+
+				if (p_flag)
+				{
+					m_flags = m_flags | e_activeFlag;
+
+					// Create all proxies.
+					for (f = m_fixtureList; f; f = f.m_next)
+					{
+						f.CreateProxies(broadPhase, m_xf);
+					}
+
+					// Contacts are created the next time step
+				}
+				else
+				{
+					m_flags = m_flags & ~e_activeFlag;
+
+					for (f = m_fixtureList; f; f = f.m_next)
+					{
+						f.DestroyProxies(broadPhase);
+					}
+
+					// Destroy the attached contacts
+					var ce:b2ContactEdge = m_contactList;
+					var ce0:b2ContactEdge;
+
+					while(ce)
+					{
+						ce0 = ce;
+						ce = ce.next;
+
+						contactManager.Destroy(ce0.contact);
+					}
+
+					m_contactList = null;
+				}
+			}
 		}
 
 		/**
 		 * Get the active state of the body.
 		 * @return Boolean
 		 */
-		public function IsActive():Boolean
+		[Inline]
+		final public function IsActive():Boolean
 		{
 			return (m_flags & e_activeFlag) == e_activeFlag;
 		}
@@ -1151,7 +1264,7 @@ package Box2D.Dynamics
 		 * Get the list of all joints attached to this body.
 		 * @return b2JointEdge
 		 */
-		public function GetJointList()/*:b2JointEdge TODO:*/
+		public function GetJointList():b2JointEdge
 		{
 			return m_jointList;
 		}
@@ -1185,15 +1298,36 @@ package Box2D.Dynamics
 		}
 
 		/**
-		 *
 		 */
-		public function SynchronizeFixtures():void
+		[Inline]
+		final public function SynchronizeFixtures():void
 		{
-			// TODO:
+			var xf1:b2Mat22 = b2Mat22.Get();
+			xf1.SetAngle(m_sweep.worldAngle0);
+
+			var cos:Number = xf1.c11;
+			var sin:Number = xf1.c12;
+
+			var lcX:Number = m_sweep.localCenterX;
+			var lcY:Number = m_sweep.localCenterY;
+
+			var rX:Number = cos * lcX - sin * lcY;
+			var rY:Number = sin * lcX + cos * lcY;
+
+			xf1.tx = m_sweep.worldCenterX0 - rX;
+			xf1.ty = m_sweep.worldCenterY0 - rY;
+
+			var broadPhase:b2BroadPhase = m_world.m_contactManager.m_broadPhase;
+
+			for (var f:b2Fixture = m_fixtureList; f; f = f.m_next)
+			{
+				f.Synchronize(broadPhase, xf1, m_xf);
+			}
+
+			xf1.Dispose();
 		}
 
 		/**
-		 *
 		 */
 		[Inline]
 		final public function SynchronizeTransform():void
@@ -1224,20 +1358,19 @@ package Box2D.Dynamics
 				return false;
 			}
 
-			// Does a joint prevent collision? TODO: When joint will implemented
-//			for (b2JointEdge* jn = m_jointList; jn; jn = jn.next)
-//			{
-//				if (jn.other == other)
-//				{
-//					if (jn.joint.m_collideConnected == false)
-//					{
-//						return false;
-//					}
-//				}
-//			}
+			// Does a joint prevent collision?
+			for (var jn:b2JointEdge = m_jointList; jn; jn = jn.next)
+			{
+				if (jn.other == p_other)
+				{
+					if (jn.joint.m_collideConnected == false)
+					{
+						return false;
+					}
+				}
+			}
 
 			return true;
-
 		}
 
 		/**
@@ -1258,10 +1391,11 @@ package Box2D.Dynamics
 		}
 
 		/**
+		 * TODO: Impl Clone method
 		 */
 		override public function Clone():IDisposable
 		{
-			// TODO:
+
 		}
 
 		/**
