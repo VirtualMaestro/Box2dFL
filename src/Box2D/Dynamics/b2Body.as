@@ -358,7 +358,32 @@ package Box2D.Dynamics
 		 */
 		public function SetTransform(p_posX:Number, p_posY:Number, p_angle:Number):void
 		{
-			// TODO:
+			CONFIG::debug
+			{
+				assert(m_world.IsLocked() == false, "can't set transform while world is locked");
+			}
+
+			m_xf.SetAngle(p_angle);
+			m_xf.tx = p_posX;
+			m_xf.ty = p_posY;
+
+			var cos:Number = m_xf.c11;
+			var sin:Number = m_xf.c12;
+
+			m_sweep.worldCenterX = (cos * m_sweep.localCenterX - sin * m_sweep.localCenterY) + m_xf.tx;
+			m_sweep.worldCenterY = (sin * m_sweep.localCenterX + cos * m_sweep.localCenterY) + m_xf.ty;
+
+			m_sweep.worldAngle = p_angle;
+			m_sweep.worldCenterX0 = m_sweep.worldCenterX;
+			m_sweep.worldCenterY0 = m_sweep.worldCenterY;
+			m_sweep.worldAngle0 = p_angle;
+
+			var broadPhase:b2BroadPhase = m_world.m_contactManager.m_broadPhase;
+
+			for (var f:b2Fixture = m_fixtureList; f; f = f.m_next)
+			{
+				f.Synchronize(broadPhase, m_xf, m_xf);
+			}
 		}
 
 		/**
