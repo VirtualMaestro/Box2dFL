@@ -713,11 +713,46 @@ package Box2D.Dynamics
 		 * Note that this changes the center of mass position.
 		 * Note that creating or destroying fixtures can also alter the mass.
 		 * This function has no effect if the body isn't dynamic.
-		 * @param p_data the mass properties.
+		 * @param p_massData the mass properties.
 		 */
-		public function SetMassData(p_data:b2MassData):void
+		public function SetMassData(p_massData:b2MassData):void
 		{
-			// TODO:
+			CONFIG::debug
+			{
+				assert((!m_world.IsLocked), "can't to set mass data while world is lock");
+			}
+
+			if (m_type == DYNAMIC)
+			{
+				m_invMass = 0.0;
+				m_I = 0.0;
+				m_invI = 0.0;
+
+				m_mass = p_massData.mass;
+				if (m_mass <= 0.0)
+				{
+					m_mass = 1.0;
+				}
+
+				m_invMass = 1.0 / m_mass;
+
+				if (p_massData.I > 0.0 && ((m_flags & e_fixedRotationFlag) == 0))
+				{
+					var cx:Number = p_massData.centerX;
+					var cy:Number = p_massData.centerY;
+					m_I = p_massData.I - m_mass * (cx*cx + cy*cy);
+
+					CONFIG::debug
+					{
+						assert(m_I > 0.0, "rotational inertia can't be equal or less 0");
+					}
+
+					m_invI = 1.0 / m_I;
+				}
+
+				// Move center of mass.
+				moveCenterMass(p_massData.centerX, p_massData.centerY);
+			}
 		}
 
 		/**
@@ -802,16 +837,24 @@ package Box2D.Dynamics
 			}
 
 			// Move center of mass.
+			moveCenterMass(localCenterX, localCenterY);
+		}
+
+		/**
+		 */
+		[Inline]
+		private function moveCenterMass(p_centerX:Number, p_centerY:Number):void
+		{
 			var oldCenterX:Number = m_sweep.worldCenterX;
 			var oldCenterY:Number = m_sweep.worldCenterY;
-			m_sweep.localCenterX = localCenterX;
-			m_sweep.localCenterY = localCenterY;
+			m_sweep.localCenterX = p_centerX;
+			m_sweep.localCenterY = p_centerY;
 
 			var cos:Number = m_xf.c11;
 			var sin:Number = m_xf.c12;
 
-			var rX:Number = (cos * m_sweep.localCenterX - sin * m_sweep.localCenterY) + m_xf.tx;
-			var rY:Number = (sin * m_sweep.localCenterX + cos * m_sweep.localCenterY) + m_xf.ty;
+			var rX:Number = (cos * p_centerX - sin * p_centerY) + m_xf.tx;
+			var rY:Number = (sin * p_centerX + cos * p_centerY) + m_xf.ty;
 
 			m_sweep.worldCenterX = rX;
 			m_sweep.worldCenterY = rY;
@@ -819,11 +862,8 @@ package Box2D.Dynamics
 			m_sweep.worldCenterY0 = rY;
 
 			// Update center of mass velocity.
-			var r1X:Number = m_sweep.worldCenterX - oldCenterX;
-			var r1Y:Number = m_sweep.worldCenterY - oldCenterY;
-			
-			m_linearVelocityX += -m_angularVelocity * r1Y ;
-			m_linearVelocityY +=  m_angularVelocity * r1X;
+			m_linearVelocityX += -m_angularVelocity * (rY - oldCenterY) ;
+			m_linearVelocityY +=  m_angularVelocity * (rX - oldCenterX);
 		}
 
 		/**
