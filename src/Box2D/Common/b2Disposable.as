@@ -47,6 +47,7 @@ package Box2D.Common
 		 */
 		public function Clone():IDisposable
 		{
+			b2Assert(false, "for current class 'Clone' method wasn't overridden, so you can't use this method");
 			return null;
 		}
 

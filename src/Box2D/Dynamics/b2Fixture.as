@@ -419,24 +419,6 @@ package Box2D.Dynamics
 		}
 
 		/**
-		 */
-		override public function Clone():IDisposable
-		{
-			// TODO: Clone b2Fixture. Maybe clone for fixture has no sense (problem with m_proxies) because it is initialize through Create method.
-//			var fixture:b2Fixture = Get();
-//			fixture.m_density = m_density;
-//			fixture._friction = _friction;
-//			fixture._restitution = _restitution;
-//			fixture._isSensor = _isSensor;
-//			fixture._proxyCount = _proxyCount;
-//			fixture._filter.SetTo(_filter);
-//			fixture._shape.SetTo(_shape);
-//
-//			return fixture;
-			return null;
-		}
-
-		/**
 		 * Dispose fixture and shape belongs to.
 		 */
 		override public function Dispose():void
