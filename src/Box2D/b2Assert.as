@@ -7,7 +7,7 @@ package Box2D
 {
 	import flash.utils.getQualifiedClassName;
 
-	public function assert(p_expression:Boolean, p_message:String, p_causeObject:* = null):void
+	public function b2Assert(p_expression:Boolean, p_message:String, p_causeObject:* = null):void
 	{
 		 if (!p_expression)
 		 {

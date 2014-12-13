@@ -10,6 +10,7 @@ package Box2D.Collision.Contact
 	import Box2D.Common.b2internal;
 	import Box2D.Dynamics.b2Body;
 	import Box2D.Dynamics.b2Fixture;
+	import Box2D.b2Assert;
 
 	use namespace b2internal;
 
@@ -54,7 +55,12 @@ package Box2D.Collision.Contact
 
 		/**
 		 */
-		static b2internal var s_initialized:Boolean;
+		static b2internal var s_initialized:Boolean = false;
+
+		/**
+		 */
+		static b2internal var s_registers:Vector.<Vector.<b2ContactRegister>>;
+
 
 		/**
 		 *
@@ -63,33 +69,115 @@ package Box2D.Collision.Contact
 		 * @param p_typeA
 		 * @param p_typeB
 		 */
-		static public function AddType(p_createFcn/*:b2ContactCreateFcn*/, p_destroyFcn/*:b2ContactDestroyFcn*/, p_typeA:int, p_typeB:int):void
+		static b2internal function AddType(p_createFcn:Function, p_destroyFcn:Function, p_typeA:int, p_typeB:int):void
+		{
+			CONFIG::debug
+			{
+				b2Assert(0 <= p_typeA && p_typeA < b2Shape.TYPE_COUNT, "type A out of range");
+				b2Assert(0 <= p_typeB && p_typeB < b2Shape.TYPE_COUNT, "type B out of range");
+			}
+
+			s_registers[p_typeA][p_typeB].createFcn = p_createFcn;
+			s_registers[p_typeA][p_typeB].destroyFcn = p_destroyFcn;
+			s_registers[p_typeA][p_typeB].primary = true;
+
+			if (p_typeA != p_typeB)
+			{
+				s_registers[p_typeB][p_typeA].createFcn = p_createFcn;
+				s_registers[p_typeB][p_typeA].destroyFcn = p_destroyFcn;
+				s_registers[p_typeB][p_typeA].primary = false;
+			}
+		}
+
+		/**
+		 */
+		static b2internal function InitializeRegisters():void
+		{
+			s_registers = new <Vector.<b2ContactRegister>>[];
+			var ar:Vector.<b2ContactRegister>;
+
+			for (var i:int = 0; i < b2Shape.TYPE_COUNT; i++)
+			{
+				ar = new <b2ContactRegister>[];
+				s_registers[i] = ar;
+
+				for (var j:int = 0; j < b2Shape.TYPE_COUNT; j++)
+				{
+					ar[j] = new b2ContactRegister();
+				}
+			}
+
+			//
+			AddType(b2CircleContact.Create, b2CircleContact.Destroy, b2Shape.CIRCLE, b2Shape.CIRCLE);
+//			AddType(b2PolygonAndCircleContact.Create, b2PolygonAndCircleContact.Destroy, b2Shape.POLYGON, b2Shape.CIRCLE);
+//			AddType(b2PolygonContact.Create, b2PolygonContact.Destroy, b2Shape.POLYGON, b2Shape.POLYGON);
+//			AddType(b2EdgeAndCircleContact.Create, b2EdgeAndCircleContact.Destroy, b2Shape.EDGE, b2Shape.CIRCLE);
+//			AddType(b2EdgeAndPolygonContact.Create, b2EdgeAndPolygonContact.Destroy, b2Shape.EDGE, b2Shape.POLYGON);
+//			AddType(b2ChainAndCircleContact.Create, b2ChainAndCircleContact.Destroy, b2Shape.CHAIN, b2Shape.CIRCLE);
+//			AddType(b2ChainAndPolygonContact.Create, b2ChainAndPolygonContact.Destroy, b2Shape.CHAIN, b2Shape.POLYGON);
+			// TODO:
+		}
+
+		/**
+		 *
+		 * @param p_fixtureA
+		 * @param p_indexA
+		 * @param p_fixtureB
+		 * @param p_indexB
+		 * @return
+		 */
+		static b2internal function Create(p_fixtureA:b2Fixture, p_indexA:int, p_fixtureB:b2Fixture, p_indexB:int):b2Contact
+		{
+			if (s_initialized == false)
+			{
+				InitializeRegisters();
+				s_initialized = true;
+			}
+
+			var typeA:int = p_fixtureA.GetType();
+			var typeB:int = p_fixtureB.GetType();
+
+			CONFIG::debug
+			{
+				b2Assert(0 <= typeA && typeA < b2Shape.TYPE_COUNT, "type A out of range");
+				b2Assert(0 <= typeB && typeB < b2Shape.TYPE_COUNT, "type B out of range");
+			}
+
+			var createFcn:Function = s_registers[typeA][typeB].createFcn;
+
+			if (createFcn)
+			{
+				if (s_registers[typeA][typeB].primary)
+				{
+					return createFcn(p_fixtureA, p_indexA, p_fixtureB, p_indexB);
+				}
+				else
+				{
+					return createFcn(p_fixtureB, p_indexB, p_fixtureA, p_indexA);
+				}
+			}
+
+			return null;
+		}
+
+		/**
+		 *
+		 * @param p_contact
+		 * @param p_typeA
+		 * @param p_typeB
+		 */
+		static b2internal function Destroy(p_contact:b2Contact, p_typeA:int, p_typeB:int):void
 		{
 			// TODO:
 		}
 
-		static public function InitializeRegisters():void
+		/**
+		 * @param p_contact
+		 */
+		static b2internal function Destroy2(p_contact:b2Contact):void
 		{
 			// TODO:
 		}
-
-		static public function Create(p_fixtureA:b2Fixture, p_indexA:int, p_fixtureB:b2Fixture, p_indexB:int):b2Contact
-		{
-			// TODO:
-		}
-
-		static public function Destroy(p_contact:b2Contact, p_typeA:int, p_typeB:int):void
-		{
-			// TODO:
-		}
-
-		static public function Destroy2(p_contact:b2Contact):void
-		{
-			// TODO:
-		}
-
-		// TODO:
-//		static public var s_registers[b2Shape.TYPE_COUNT][b2Shape.TYPE_COUNT] /*b2ContactRegister */;
 
 		/**
 		 * Friction mixing law. The idea is to allow either fixture to drive the restitution to zero.
@@ -141,9 +229,27 @@ package Box2D.Collision.Contact
 
 		protected var m_tangentSpeed:Number;
 
-
-		public function b2Contact()
+		/**
+		 *
+		 * @param p_fixtureA
+		 * @param p_indexA
+		 * @param p_fixtureB
+		 * @param p_indexB
+		 */
+		public function b2Contact(p_fixtureA:b2Fixture, p_indexA:int, p_fixtureB:b2Fixture, p_indexB:int)
 		{
+			m_flags = e_enabledFlag;
+			m_fixtureA = p_fixtureA;
+			m_fixtureB = p_fixtureB;
+			m_indexA = p_indexA;
+			m_indexB = p_indexB;
+			m_manifold = new b2Manifold();
+			m_nodeA = new b2ContactEdge();
+			m_nodeB = new b2ContactEdge();
+			m_toiCount = 0;
+			m_friction = b2MixFriction(m_fixtureA.m_friction, m_fixtureB.m_friction);
+			m_restitution = b2MixRestitution(m_fixtureA.m_restitution, m_fixtureB.m_restitution);
+			m_tangentSpeed = 0;
 		}
 
 		// public //

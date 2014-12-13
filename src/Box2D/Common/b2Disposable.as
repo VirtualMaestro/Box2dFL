@@ -7,7 +7,7 @@ package Box2D.Common
 {
 	CONFIG::debug
 	{
-		import Box2D.assert;
+		import Box2D.b2Assert;
 	}
 
 	use namespace b2internal;
@@ -28,7 +28,7 @@ package Box2D.Common
 		{
 			CONFIG::debug
 			{
-				assert(!disposed, "attempt to destroy the already destroyed instance");
+				b2Assert(!disposed, "attempt to destroy the already destroyed instance");
 			}
 		}
 
@@ -88,7 +88,7 @@ package Box2D.Common
 		{
 			CONFIG::debug
 			{
-				assert((p_vector is Vector.<b2Disposable>), "vector has to be Vector.<b2Disposable> type");
+				b2Assert((p_vector is Vector.<b2Disposable>), "vector has to be Vector.<b2Disposable> type");
 			}
 
 			var vec:Vector.<b2Disposable> = p_vector as Vector.<b2Disposable>;
@@ -159,7 +159,7 @@ package Box2D.Common
 		{
 			CONFIG::debug
 			{
-				assert(!p_instance.disposed, "try to add already disposed shape to pool");
+				b2Assert(!p_instance.disposed, "try to add already disposed shape to pool");
 			}
 
 			p_instance.disposed = true;

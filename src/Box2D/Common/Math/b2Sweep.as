@@ -12,7 +12,7 @@ package Box2D.Common.Math
 
 	CONFIG::debug
 	{
-		import Box2D.assert;
+		import Box2D.b2Assert;
 	}
 
 	use namespace b2internal;
@@ -77,7 +77,7 @@ package Box2D.Common.Math
 		{
 			CONFIG::debug
 			{
-				assert(t0 < 1.0, "t0 has to be < 1.0");
+				b2Assert(t0 < 1.0, "t0 has to be < 1.0");
 			}
 
 			var beta:Number = (t - t0) / (1.0 - t0);

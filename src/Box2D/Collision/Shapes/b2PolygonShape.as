@@ -21,7 +21,7 @@ package Box2D.Collision.Shapes
 	CONFIG::debug
 	{
 		import flash.utils.getQualifiedClassName;
-		import Box2D.assert;
+		import Box2D.b2Assert;
 	}
 
 	use namespace b2internal;
@@ -74,7 +74,7 @@ package Box2D.Collision.Shapes
 		{
 			CONFIG::debug
 			{
-				assert((p_shape is b2PolygonShape), "given parameter has to be b2PolygonShape class. Current instance has type: " + getQualifiedClassName(p_shape));
+				b2Assert((p_shape is b2PolygonShape), "given parameter has to be b2PolygonShape class. Current instance has type: " + getQualifiedClassName(p_shape));
 			}
 
 			var polygonShape:b2PolygonShape = p_shape as b2PolygonShape;
@@ -103,8 +103,8 @@ package Box2D.Collision.Shapes
 		{
 			CONFIG::debug
 			{
-				assert(p_count <= b2Settings.maxPolygonVertices, "too many vertices of polygon ("+p_count+"). Acceptable count is " + b2Settings.maxPolygonVertices);
-				assert(p_count > 2, "Polygon is degenerate");
+				b2Assert(p_count <= b2Settings.maxPolygonVertices, "too many vertices of polygon ("+p_count+"). Acceptable count is " + b2Settings.maxPolygonVertices);
+				b2Assert(p_count > 2, "Polygon is degenerate");
 			}
 
 			var n:int = b2Math.Min(p_count, b2Settings.maxPolygonVertices);
@@ -143,7 +143,7 @@ package Box2D.Collision.Shapes
 
 			CONFIG::debug
 			{
-				assert(n > 2, "Polygon is degenerate");
+				b2Assert(n > 2, "Polygon is degenerate");
 			}
 
 			// Create the convex hull using the Gift wrapping algorithm
@@ -218,7 +218,7 @@ package Box2D.Collision.Shapes
 
 			CONFIG::debug
 			{
-				assert(m>2, "Polygon is degenerate");
+				b2Assert(m>2, "Polygon is degenerate");
 			}
 
 			m_vertexCount = m;
@@ -240,7 +240,7 @@ package Box2D.Collision.Shapes
 
 				CONFIG::debug
 				{
-					assert((edgeX*edgeX + edgeY*edgeY) > b2Math.EPSILON_SQUARED, "edge has zero length");
+					b2Assert((edgeX*edgeX + edgeY*edgeY) > b2Math.EPSILON_SQUARED, "edge has zero length");
 				}
 
 				var nX:Number = edgeY;
@@ -465,7 +465,7 @@ package Box2D.Collision.Shapes
 
 			CONFIG::debug
 			{
-				assert(0.0 <= lower && lower <= p_rayCastData.maxFraction, "");
+				b2Assert(0.0 <= lower && lower <= p_rayCastData.maxFraction, "");
 			}
 
 			if (index >= 0)
@@ -558,7 +558,7 @@ package Box2D.Collision.Shapes
 
 			 CONFIG::debug
 			 {
-				 assert(m_vertexCount > 2, "degenerate polygon");
+				 b2Assert(m_vertexCount > 2, "degenerate polygon");
 			 }
 
 			var centerX:Number = 0;
@@ -621,7 +621,7 @@ package Box2D.Collision.Shapes
 
 			CONFIG::debug
 			{
-				assert(area > b2Math.EPSILON, "area too small: " + area);
+				b2Assert(area > b2Math.EPSILON, "area too small: " + area);
 			}
 
 			var invArea:Number = 1.0/area;
@@ -664,7 +664,7 @@ package Box2D.Collision.Shapes
 		{
 			CONFIG::debug
 			{
-				assert((0 <= p_index && p_index < m_vertexCount), "index out of range");
+				b2Assert((0 <= p_index && p_index < m_vertexCount), "index out of range");
 			}
 
 			return b2Vec2.Get(m_vertices[p_index], m_vertices[p_index+1]);
@@ -796,7 +796,7 @@ package Box2D.Collision.Shapes
 		{
 			CONFIG::debug
 			{
-				assert(p_count >= 3, "Given vertices count is " + p_count + ". Polygon should has at least 3 vertices");
+				b2Assert(p_count >= 3, "Given vertices count is " + p_count + ". Polygon should has at least 3 vertices");
 			}
 
 			var cX:Number = 0;
@@ -856,7 +856,7 @@ package Box2D.Collision.Shapes
 			// Centroid
 			CONFIG::debug
 			{
-				assert(area > b2Math.EPSILON, "area too small. Area: " + area);
+				b2Assert(area > b2Math.EPSILON, "area too small. Area: " + area);
 			}
 
 			temp = 1.0/area;

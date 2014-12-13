@@ -18,7 +18,7 @@ package Box2D.Dynamics
 	import Box2D.Dynamics.Def.b2BodyDef;
 	import Box2D.Dynamics.Def.b2FixtureDef;
 	import Box2D.Dynamics.Joints.b2JointEdge;
-	import Box2D.assert;
+	import Box2D.b2Assert;
 
 	use namespace b2internal;
 
@@ -200,7 +200,7 @@ package Box2D.Dynamics
 		{
 			CONFIG::debug
 			{
-				assert(!m_world.IsLocked, "can't create a fixture while world is locked");
+				b2Assert(!m_world.IsLocked, "can't create a fixture while world is locked");
 			}
 
 			var fixture:b2Fixture = b2Fixture.Get();
@@ -262,9 +262,9 @@ package Box2D.Dynamics
 		{
 			CONFIG::debug
 			{
-				assert(!m_world.IsLocked, "world is locked");
-				assert(p_fixture.m_body == this, "fixture.m_body == this");
-				assert(m_fixtureCount > 0, "m_fixtureCount > 0");
+				b2Assert(!m_world.IsLocked, "world is locked");
+				b2Assert(p_fixture.m_body == this, "fixture.m_body == this");
+				b2Assert(m_fixtureCount > 0, "m_fixtureCount > 0");
 			}
 
 			// Remove the fixture from this body's singly linked list
@@ -310,7 +310,7 @@ package Box2D.Dynamics
 
 			CONFIG::debug
 			{
-				assert(found, "You tried to remove a shape that is not attached to this body");
+				b2Assert(found, "You tried to remove a shape that is not attached to this body");
 			}
 
 		   // Destroy any contacts associated with the fixture.
@@ -360,7 +360,7 @@ package Box2D.Dynamics
 		{
 			CONFIG::debug
 			{
-				assert(m_world.IsLocked() == false, "can't set transform while world is locked");
+				b2Assert(m_world.IsLocked() == false, "can't set transform while world is locked");
 			}
 
 			m_xf.SetAngle(p_angle);
@@ -725,7 +725,7 @@ package Box2D.Dynamics
 		{
 			CONFIG::debug
 			{
-				assert((!m_world.IsLocked), "can't to set mass data while world is lock");
+				b2Assert((!m_world.IsLocked), "can't to set mass data while world is lock");
 			}
 
 			if (m_type == DYNAMIC)
@@ -750,7 +750,7 @@ package Box2D.Dynamics
 
 					CONFIG::debug
 					{
-						assert(m_I > 0.0, "rotational inertia can't be equal or less 0");
+						b2Assert(m_I > 0.0, "rotational inertia can't be equal or less 0");
 					}
 
 					m_invI = 1.0 / m_I;
@@ -789,7 +789,7 @@ package Box2D.Dynamics
 
 			CONFIG::debug
 			{
-				assert((m_type == DYNAMIC), "can't apply reset mass for non dynamic body");
+				b2Assert((m_type == DYNAMIC), "can't apply reset mass for non dynamic body");
 			}
 
 			var localCenterX:Number = 0;
@@ -831,7 +831,7 @@ package Box2D.Dynamics
 
 				CONFIG::debug
 				{
-					assert(m_I > 0.0, "rotational inertia should be greater then 0");
+					b2Assert(m_I > 0.0, "rotational inertia should be greater then 0");
 				}
 
 				m_invI = 1.0 / m_I;
@@ -991,7 +991,7 @@ package Box2D.Dynamics
 		{
 			CONFIG::debug
 			{
-				assert(!m_world.IsLocked, "can't set type while world is locked");
+				b2Assert(!m_world.IsLocked, "can't set type while world is locked");
 			}
 
 			if (m_type != p_type)
@@ -1165,7 +1165,7 @@ package Box2D.Dynamics
 		{
 			CONFIG::debug
 			{
-				assert(!m_world.IsLocked, "can't set active while world is locked");
+				b2Assert(!m_world.IsLocked, "can't set active while world is locked");
 			}
 
 			if (p_flag != IsActive())

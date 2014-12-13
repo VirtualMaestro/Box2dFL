@@ -57,6 +57,7 @@ package Box2D.Collision.Manifold
 		 */
 		public function b2Manifold()
 		{
+			pointCount = 0;
 			points = new Vector.<b2ManifoldPoint>(b2Settings.maxManifoldPoints, true);
 		}
 	}

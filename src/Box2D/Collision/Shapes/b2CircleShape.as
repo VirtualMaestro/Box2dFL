@@ -13,7 +13,7 @@ package Box2D.Collision.Shapes
 	import Box2D.Common.b2Disposable;
 	import Box2D.Common.b2internal;
 	import Box2D.Dynamics.b2MassData;
-	import Box2D.assert;
+	import Box2D.b2Assert;
 
 	CONFIG::debug
 	{
@@ -51,7 +51,7 @@ package Box2D.Collision.Shapes
 		{
 			CONFIG::debug
 			{
-				assert((p_shape is b2CircleShape), "given parameter has to be b2CircleShape class. Current instance has type: " + getQualifiedClassName(p_shape));
+				b2Assert((p_shape is b2CircleShape), "given parameter has to be b2CircleShape class. Current instance has type: " + getQualifiedClassName(p_shape));
 			}
 
 			var circleShape:b2CircleShape = p_shape as b2CircleShape;

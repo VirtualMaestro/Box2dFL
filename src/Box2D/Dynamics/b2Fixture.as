@@ -17,7 +17,7 @@ package Box2D.Dynamics
 	import Box2D.Common.b2internal;
 	import Box2D.Dynamics.Def.b2FixtureDef;
 	import Box2D.Dynamics.filter.b2Filter;
-	import Box2D.assert;
+	import Box2D.b2Assert;
 
 	use namespace b2internal;
 
@@ -106,7 +106,7 @@ package Box2D.Dynamics
 		{
 			CONFIG::debug
 			{
-				assert((m_proxyCount == 0), "count of proxies can't be 0");
+				b2Assert((m_proxyCount == 0), "count of proxies can't be 0");
 			}
 
 			// Create proxies in the broad-phase.
@@ -352,7 +352,7 @@ package Box2D.Dynamics
 		{
 			CONFIG::debug
 			{
-				assert(p_density >= 0.0, "value for density has to be positive");
+				b2Assert(p_density >= 0.0, "value for density has to be positive");
 			}
 
 			m_density = p_density;
@@ -412,7 +412,7 @@ package Box2D.Dynamics
 		{
 			CONFIG::debug
 			{
-				assert(p_childIndex >= 0 && p_childIndex < m_proxyCount, "incorrect number of childIndex: " + p_childIndex);
+				b2Assert(p_childIndex >= 0 && p_childIndex < m_proxyCount, "incorrect number of childIndex: " + p_childIndex);
 			}
 
 			return m_proxies[p_childIndex].aabb;
