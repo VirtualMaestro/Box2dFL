@@ -9,12 +9,9 @@ package Box2D.Collision.Shapes
 	import Box2D.Collision.b2RayCastData;
 	import Box2D.Common.IDisposable;
 	import Box2D.Common.Math.b2Mat22;
-	import Box2D.Common.Math.b2Vec2;
+	import Box2D.Common.Math.b2Math;
 	import Box2D.Common.b2Disposable;
 	import Box2D.Common.b2Settings;
-	import Box2D.Common.b2internal;
-	import Box2D.Common.b2internal;
-	import Box2D.Common.b2internal;
 	import Box2D.Common.b2internal;
 	import Box2D.Dynamics.b2MassData;
 
@@ -198,26 +195,47 @@ package Box2D.Collision.Shapes
 		/**
 		 *
 		 * @param p_aabb
-		 * @param p_transform
-		 * @param p_childIndex
-		 *
-		 * TODO:
+		 * @param p_xf
+         * @param p_childIndex
 		 */
-		override public function ComputeAABB(p_aabb:b2AABB, p_transform:b2Mat22, p_childIndex:int):void
+		override public function ComputeAABB(p_aabb:b2AABB, p_xf:b2Mat22, p_childIndex:int):void
 		{
+			var cos:Number = p_xf.c11;
+			var sin:Number = p_xf.c12;
 
+			var tX:Number = p_xf.tx;
+			var tY:Number = p_xf.ty;
+			var v1X:Number = (cos * m_vertex1X - sin * m_vertex1Y) + tX;
+			var v1Y:Number = (sin * m_vertex1X + cos * m_vertex1Y) + tY;
+			var v2X:Number = (cos * m_vertex2X - sin * m_vertex2Y) + tX;
+			var v2Y:Number = (sin * m_vertex2X + cos * m_vertex2Y) + tY;
+
+			var lowerX:Number = b2Math.Min(v1X, v2X);
+			var lowerY:Number = b2Math.Min(v1Y, v2Y);
+			var upperX:Number = b2Math.Max(v1X, v2X);
+			var upperY:Number = b2Math.Max(v1Y, v2Y);
+
+			var rX:Number = m_radius;
+			var rY:Number = m_radius;
+
+			p_aabb.lowerBoundX = lowerX - rX;
+			p_aabb.lowerBoundY = lowerY - rY;
+
+			p_aabb.upperBoundX = upperX + rX;
+			p_aabb.upperBoundY = upperY + rY;
 		}
 
 		/**
 		 *
 		 * @param p_massData
 		 * @param p_density
-		 *
-		 * TODO:
 		 */
 		override public function ComputeMass(p_massData:b2MassData, p_density:Number):void
 		{
-
+			p_massData.mass = 0;
+			p_massData.centerX = 0.5 * (m_vertex1X + m_vertex2X);
+			p_massData.centerY = 0.5 * (m_vertex1Y + m_vertex2Y);
+			p_massData.I = 0;
 		}
 
 		/**
