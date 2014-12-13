@@ -61,6 +61,17 @@ package Box2D.Collision
 		}
 
 		/**
+		* Algorithm:
+		* 1. Classify v1 and v2
+		* 2. Classify polygon centroid as front or back
+		* 3. Flip normal if necessary
+		* 4. Initialize normal range to [-pi, pi] about face normal
+		* 5. Adjust normal range according to adjacent edges
+		* 6. Visit each separating axes, only accept axes within the range
+		* 7. Return if _any_ axis indicates separation
+		* 8. Clip
+		*
+		*
 		 *
 		 * @param p_manifold
 		 * @param p_edgeA
@@ -93,6 +104,5 @@ package Box2D.Collision
 		{
 
 		}
-
 	}
 }

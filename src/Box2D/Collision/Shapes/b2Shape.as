@@ -11,6 +11,7 @@ package Box2D.Collision.Shapes
 	import Box2D.Common.Math.b2Mat22;
 	import Box2D.Common.b2internal;
 	import Box2D.Dynamics.b2MassData;
+	import Box2D.b2Assert;
 
 	use namespace b2internal;
 
@@ -48,6 +49,7 @@ package Box2D.Collision.Shapes
 		public function SetTo(p_shape:b2Shape):void
 		{
 			// override in children
+			b2Assert(false, "this method is not supported for current class");
 		}
 
 		/**
@@ -100,6 +102,7 @@ package Box2D.Collision.Shapes
 		public function ComputeAABB(p_aabb:b2AABB, p_transform:b2Mat22, p_childIndex:int):void
 		{
 			 // override in children
+			b2Assert(false, "this method is not supported for current class");
 		}
 
 		/** Compute the mass properties of this shape using its dimensions and density.
@@ -110,7 +113,7 @@ package Box2D.Collision.Shapes
 		public function ComputeMass(p_massData:b2MassData, p_density:Number):void
 		{
 			// override in children
-
+			b2Assert(false, "this method is not supported for current class");
 		}
 	}
 }

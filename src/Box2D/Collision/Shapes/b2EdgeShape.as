@@ -21,7 +21,6 @@ package Box2D.Collision.Shapes
 	 * A line segment (edge) shape. These can be connected in chains or loops
 	 * to other edge shapes. The connectivity information is used to ensure
 	 * correct contact normals.
-	 * TODO:
 	 */
 	public class b2EdgeShape extends b2Shape
 	{

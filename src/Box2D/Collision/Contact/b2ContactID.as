@@ -16,7 +16,8 @@ package Box2D.Collision.Contact
 		public var key:uint;
 
 		/**********************
-		 * Following functionality merged from structure 'b2ContactFeature'.
+		 * NOTE: Following functionality merged from structure 'b2ContactFeature'.
+		 *
 		 * The features that intersect to form the contact point
 		 * This must be 4 bytes or less.
 		 **********************/

@@ -11,8 +11,8 @@ package Box2D.Collision
 	public class b2EPAxis
 	{
 		static public const e_unknown:int = 0;
-		static public const e_edgeA:int = 0;
-		static public const e_edgeB:int = 0;
+		static public const e_edgeA:int = 1;
+		static public const e_edgeB:int = 2;
 
 		//
 		public var type:int;
