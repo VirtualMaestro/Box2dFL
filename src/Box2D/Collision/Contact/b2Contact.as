@@ -113,9 +113,8 @@ package Box2D.Collision.Contact
 			AddType(b2PolygonContact.Create, b2PolygonContact.Destroy, b2Shape.POLYGON, b2Shape.POLYGON);
 			AddType(b2EdgeAndCircleContact.Create, b2EdgeAndCircleContact.Destroy, b2Shape.EDGE, b2Shape.CIRCLE);
 			AddType(b2EdgeAndPolygonContact.Create, b2EdgeAndPolygonContact.Destroy, b2Shape.EDGE, b2Shape.POLYGON);
-//			AddType(b2ChainAndCircleContact.Create, b2ChainAndCircleContact.Destroy, b2Shape.CHAIN, b2Shape.CIRCLE);
-//			AddType(b2ChainAndPolygonContact.Create, b2ChainAndPolygonContact.Destroy, b2Shape.CHAIN, b2Shape.POLYGON);
-			// TODO:
+			AddType(b2ChainAndCircleContact.Create, b2ChainAndCircleContact.Destroy, b2Shape.CHAIN, b2Shape.CIRCLE);
+			AddType(b2ChainAndPolygonContact.Create, b2ChainAndPolygonContact.Destroy, b2Shape.CHAIN, b2Shape.POLYGON);
 		}
 
 		/**
