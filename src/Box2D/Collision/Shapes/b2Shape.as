@@ -37,7 +37,7 @@ package Box2D.Collision.Shapes
 		static public const TYPE_COUNT:int = 4;
 
 		//
-		b2internal var m_radius:int = 0;
+		b2internal var m_radius:Number = 0;
 
 		//
 		b2internal var m_type:int = 0;
