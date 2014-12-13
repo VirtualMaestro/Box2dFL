@@ -9,7 +9,7 @@ package Box2D.Collision
 	import Box2D.Collision.Shapes.b2EdgeShape;
 	import Box2D.Collision.Shapes.b2PolygonShape;
 	import Box2D.Common.Math.b2Mat22;
-	import Box2D.Common.Math.b2Vec2;
+	import Box2D.Common.Math.b2Math;
 
 	/**
 	 * This class collides and edge and a polygon, taking into account edge adjacency.
@@ -88,12 +88,35 @@ package Box2D.Collision
 		}
 
 		/**
-		 * TODO:
-		 * @return
+		 * @return b2EPAxis
 		 */
 		public function ComputeEdgeSeparation():b2EPAxis
 		{
+			var axis:b2EPAxis = new b2EPAxis();
+			axis.type = b2EPAxis.e_edgeA;
+			axis.index = m_front ? 0 : 1;
+			axis.separation = Number.MAX_VALUE;
 
+			var vertices:Vector.<Number>;
+			var vX:Number;
+			var vY:Number;
+			var s:Number;
+			var count:int = m_polygonB.count;
+			for (var i:int = 0; i < count; i++)
+			{
+				vertices = m_polygonB.vertices;
+				vX = b2Math.getX(vertices, i) - m_v1X;
+				vY = b2Math.getY(vertices, i) - m_v1Y;
+
+				s = m_normalX * vX + m_normalY * vY;
+
+				if (s < axis.separation)
+				{
+					axis.separation = s;
+				}
+			}
+
+			return axis;
 		}
 
 		/**

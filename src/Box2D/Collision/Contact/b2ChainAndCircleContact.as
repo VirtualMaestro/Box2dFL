@@ -9,9 +9,7 @@ package Box2D.Collision.Contact
 	import Box2D.Collision.Shapes.b2ChainShape;
 	import Box2D.Collision.Shapes.b2CircleShape;
 	import Box2D.Collision.Shapes.b2EdgeShape;
-	import Box2D.Collision.Shapes.b2PolygonShape;
 	import Box2D.Collision.Shapes.b2Shape;
-	import Box2D.Collision.b2CollideCircle;
 	import Box2D.Collision.b2CollideEdge;
 	import Box2D.Common.Math.b2Mat22;
 	import Box2D.Dynamics.b2Fixture;

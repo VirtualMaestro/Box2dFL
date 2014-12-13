@@ -21,10 +21,6 @@ package Box2D.Collision
 	 */
 	public class b2CollideEdge
 	{
-		public function b2CollideEdge()
-		{
-		}
-
 		/**
 		 * Compute contact points for edge versus circle.
 		 * This accounts for edge connectivity.
@@ -261,6 +257,5 @@ package Box2D.Collision
 			var collider:b2EPCollider = new b2EPCollider();
 			collider.Collide(p_manifold, p_edgeA, p_xfA, p_polygonB, p_xfB);
 		}
-
 	}
 }
