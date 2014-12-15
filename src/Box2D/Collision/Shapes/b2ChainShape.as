@@ -54,7 +54,7 @@ package Box2D.Collision.Shapes
 		/**
 		 */
 		[Inline]
-		private function init():void
+		final private function init():void
 		{
 			m_count = 0;
 			m_hasPrevVertex = false;
@@ -69,6 +69,15 @@ package Box2D.Collision.Shapes
 		{
 
 		}
+
+		/**\
+		 */
+		override public function GetChildCount():int
+		{
+			// edge count = vertex count - 1
+			return m_count - 1;
+		}
+
 
 		/**
 		 */

@@ -109,7 +109,7 @@ package Box2D.Dynamics
 		/**
 		 */
 		[Inline]
-		private function init(p_bd:b2BodyDef, p_world:b2World):void
+		final private function init(p_bd:b2BodyDef, p_world:b2World):void
 		{
 			m_flags = 0;
 
@@ -712,6 +712,8 @@ package Box2D.Dynamics
 			p_data.I = m_I + m_mass * (lcX * lcX + lcY * lcY);
 			p_data.centerX = lcX;
 			p_data.centerY = lcY;
+
+			return p_data;
 		}
 
 		/**
@@ -849,7 +851,7 @@ package Box2D.Dynamics
 		/**
 		 */
 		[Inline]
-		private function moveCenterMass(p_centerX:Number, p_centerY:Number):void
+		final private function moveCenterMass(p_centerX:Number, p_centerY:Number):void
 		{
 			var oldCenterX:Number = m_sweep.worldCenterX;
 			var oldCenterY:Number = m_sweep.worldCenterY;
@@ -1395,7 +1397,7 @@ package Box2D.Dynamics
 		 */
 		override public function Clone():IDisposable
 		{
-
+			return super .Clone();
 		}
 
 		/**

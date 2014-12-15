@@ -125,7 +125,7 @@ package Box2D.Collision
 		 */
 		public function ComputePolygonSeparation():b2EPAxis
 		{
-
+			return null;
 		}
 	}
 }

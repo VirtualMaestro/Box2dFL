@@ -56,7 +56,7 @@ package Box2D.Collision.Shapes
 		/**
 		 */
 		[Inline]
-		private function init():void
+		final private function init():void
 		{
 			m_vertex0X = 0.0;
 			m_vertex0Y = 0.0;

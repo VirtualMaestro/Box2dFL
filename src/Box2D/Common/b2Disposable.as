@@ -5,10 +5,7 @@
  */
 package Box2D.Common
 {
-	CONFIG::debug
-	{
-		import Box2D.b2Assert;
-	}
+	import Box2D.b2Assert;
 
 	use namespace b2internal;
 

@@ -62,7 +62,7 @@ package Box2D.Collision
 													 p_poly1:b2PolygonShape, p_xf1:b2Mat22,
 													 p_poly2:b2PolygonShape, p_xf2:b2Mat22):Number
         {
-
+	        return 0;
         }
 	}
 }

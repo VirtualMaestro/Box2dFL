@@ -11,7 +11,6 @@ package Box2D.Dynamics
 	import Box2D.Collision.b2AABB;
 	import Box2D.Collision.b2BroadPhase;
 	import Box2D.Collision.b2RayCastData;
-	import Box2D.Common.IDisposable;
 	import Box2D.Common.Math.b2Mat22;
 	import Box2D.Common.b2Disposable;
 	import Box2D.Common.b2internal;
@@ -83,7 +82,7 @@ package Box2D.Dynamics
 		/**
 		 */
 		[Inline]
-		private function ReserveProxySpace():void
+		final private function ReserveProxySpace():void
 		{
 			var childCount:int = m_shape.GetChildCount();
 			if (m_proxies == null)
@@ -312,7 +311,7 @@ package Box2D.Dynamics
 		 */
 		public function TestPoint(p_pX:Number, p_pY:Number):Boolean
 		{
-			m_shape.TestPoint(m_body.GetTransform(), p_pX, p_pY);
+			return m_shape.TestPoint(m_body.GetTransform(), p_pX, p_pY);
 		}
 
 		/**
@@ -322,7 +321,7 @@ package Box2D.Dynamics
 		 */
 		public function RayCast(p_rayCastData:b2RayCastData, p_childIndex:int):Boolean
 		{
-			m_shape.RayCast(p_rayCastData, m_body.GetTransform(), p_childIndex);
+			return m_shape.RayCast(p_rayCastData, m_body.GetTransform(), p_childIndex);
 		}
 
 		/**

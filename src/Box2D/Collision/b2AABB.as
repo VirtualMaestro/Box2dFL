@@ -57,7 +57,6 @@ package Box2D.Collision
 		 * Get the center of the AABB.
 		 * IMPORTANT! Method returns new instance of b2SPoint.
 		 */
-		[Inline]
 		final public function GetCenter():b2SPoint // const
 		{
 			return b2SPoint.Get((upperBoundX + lowerBoundX) * 0.5, (upperBoundY + lowerBoundY) * 0.5);
@@ -85,7 +84,6 @@ package Box2D.Collision
 		 * Get the extents of the AABB (half-widths).
 		 * IMPORTANT! Method returns new instance of b2SPoint.
 		 */
-		[Inline]
 		final public function GetExtents():b2SPoint
 		{
 			return b2SPoint.Get((upperBoundX - lowerBoundX) * 0.5, (upperBoundY - lowerBoundY) * 0.5);
@@ -307,7 +305,6 @@ package Box2D.Collision
 		 * Returns new instance of b2AABB.
 		 * @return b2AABB
 		 */
-		[Inline]
 		static public function Get(p_upperBoundX:Number = 0, p_upperBoundY:Number = 0, p_lowerBoundX:Number = 0, p_lowerBoundY:Number = 0):b2AABB
 		{
 			var instance:b2Disposable = b2Disposable.Get(classId);

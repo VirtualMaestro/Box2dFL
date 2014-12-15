@@ -51,6 +51,8 @@ package Box2D.Dynamics
 			proxy.fixture = fixture;
 			proxy.childIndex = childIndex;
 			proxy.proxyId = proxyId;
+
+			return proxy;
 		}
 
 		/**

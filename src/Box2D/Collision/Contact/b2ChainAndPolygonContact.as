@@ -37,7 +37,7 @@ package Box2D.Collision.Contact
 		/**
 		 * @param p_contact
 		 */
-		static public function Destroy(p_contact:b2Contact)
+		static public function Destroy(p_contact:b2Contact):void
 		{
 			// TODO: Maybe need invocation of Dispose method of p_contact. In that case need to extends b2Contact from b2Disposable
 		}
