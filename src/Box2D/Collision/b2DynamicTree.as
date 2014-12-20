@@ -3,6 +3,7 @@
  */
 package Box2D.Collision
 {
+	import Box2D.Common.Math.b2Math;
 	import Box2D.Common.b2Settings;
 	import Box2D.b2Assert;
 
@@ -235,26 +236,144 @@ package Box2D.Collision
 			return 0;
 		}
 
-//		/**
-//		 * @return
-//		 */
-//		private function ComputeHeight():int
-//		{
-//
-//		}
-
 		/**
-		 * @param p_nodeId
-		 * @return
-		 * TODO:
+		 * Compute the height of the binary tree in O(N) time. Should not be called often.
+ 		 * @return
 		 */
-		private function ComputeHeight(p_nodeId:int):int
+		public function GetHeight():int
 		{
-			return 0;
+			if (m_root == b2TreeNode.b2_nullNode)
+			{
+				return 0;
+			}
+
+			return m_nodes[m_root].height;
 		}
 
 		/**
-		 * TODO:
+		 * Get the ratio of the sum of the node areas to the root area.
+		 * @return  Number
+		 */
+		public function GetAreaRatio():Number
+		{
+			if (m_root == b2TreeNode.b2_nullNode)
+			{
+				return 0.0;
+			}
+
+			var root:b2TreeNode = m_nodes[m_root];
+			var rootArea:Number = root.aabb.GetPerimeter();
+
+			var totalArea:Number = 0.0;
+			for (var i:int = 0; i < m_nodeCapacity; ++i)
+			{
+				var node:b2TreeNode = m_nodes[i];
+
+				if (node.height < 0)
+				{
+					// Free node in pool
+					continue;
+				}
+
+				totalArea += node.aabb.GetPerimeter();
+			}
+
+			return totalArea / rootArea;
+		}
+
+		/**
+		 * @return
+		 */
+		[Inline]
+		final private function ComputeHeightRoot():int
+		{
+			return ComputeHeight(m_root);
+		}
+
+		/**
+		 * Compute the height of a sub-tree.
+		 * @param p_nodeId
+		 * @return
+		 */
+		[Inline]
+		final private function ComputeHeight(p_nodeId:int):int
+		{
+			CONFIG::debug
+			{
+				b2Assert(0 <= p_nodeId && p_nodeId < m_nodeCapacity, "p_nodeId is invalid");
+			}
+
+			var node:b2TreeNode = m_nodes[p_nodeId];
+
+			if (node.IsLeaf())
+			{
+				return 0;
+			}
+
+			var height1:int = ComputeHeight(node.child1);
+			var height2:int = ComputeHeight(node.child2);
+
+			return 1 + b2Math.Max(height1, height2);
+		}
+
+		/**
+		 * Shift the world origin. Useful for large worlds.
+		 * The shift formula is: position -= newOrigin
+		 * @param p_newOriginX the new origin with respect to the old origin
+		 * @param p_newOriginY the new origin with respect to the old origin
+ 		 */
+		[Inline]
+		final public function ShiftOrigin(p_newOriginX:Number, p_newOriginY:Number):void
+		{
+			var aabb:b2AABB;
+			var numNodes:int = m_nodeCapacity;
+
+			// Build array of leaves. Free the rest.
+			for (var i:int = 0; i < numNodes; ++i)
+			{
+				aabb = m_nodes[i].aabb;
+				aabb.lowerBoundX -= p_newOriginX;
+				aabb.lowerBoundY -= p_newOriginY;
+				aabb.upperBoundX -= p_newOriginX;
+				aabb.upperBoundY -= p_newOriginY;
+			}
+		}
+
+		/**
+		 * Get the maximum balance of an node in the tree.
+		 * The balance is the difference in height of the two children of a node.
+		 * @return int
+		 */
+		[Inline]
+		final public function GetMaxBalance():int
+		{
+			var maxBalance:int = 0;
+			var node:b2TreeNode;
+			var numNodes:int = m_nodeCapacity;
+
+			for (var i:int = 0; i < numNodes; i++)
+			{
+				node = m_nodes[i];
+
+				if (node.height <= 1)
+				{
+					continue;
+				}
+
+				CONFIG::debug
+				{
+					b2Assert(node.IsLeaf() == false, "node isn't leaf");
+				}
+
+				var balance:int = b2Math.Abs(m_nodes[node.child2].height - m_nodes[node.child1].height);
+				maxBalance = b2Math.Max(maxBalance, balance);
+			}
+
+			return maxBalance;
+		}
+
+		/**
+		 * TODO: Not necessary
 		 * @param p_index
 		 */
 		private function ValidateStructure(p_index:int):void
@@ -263,7 +382,7 @@ package Box2D.Collision
 		}
 
 		/**
-		 * TODO
+		 * TODO: Not necessary
 		 * @param p_index
 		 */
 		private function ValidateMetrics(p_index:int):void
@@ -271,7 +390,15 @@ package Box2D.Collision
 
 		}
 
+		/**
+		 * Build an optimal tree. Very expensive.
+		 * For testing.
+		 * TODO: Not necessary
+ 		 */
+		private function RebuildBottomUp():void
+		{
 
+		}
 
 	}
 }
