@@ -3,6 +3,7 @@
  */
 package Box2D.Collision
 {
+	import Box2D.Common.b2Settings;
 	import Box2D.b2Assert;
 
 	/**
@@ -102,6 +103,115 @@ package Box2D.Collision
 		}
 
 		/**
+		 *  Create a proxy in the tree as a leaf node.
+		 *  We return the index of the node instead of a pointer so that we can grow the node pool.
+		 * @param p_aabb
+		 * @param p_userData
+		 * @return
+		 */
+		public function CreateProxy(p_aabb:b2AABB, p_userData:*):int
+		{
+			var proxyId:int = AllocateNode();
+
+			var rX:Number = b2Settings.aabbExtension;
+			var rY:Number = b2Settings.aabbExtension;
+			var node:b2TreeNode = m_nodes[proxyId];
+			var	aabb:b2AABB = node.aabb;
+			aabb.lowerBoundX = aabb.lowerBoundX - rX;
+			aabb.lowerBoundY = aabb.lowerBoundY - rY;
+			aabb.upperBoundX = aabb.upperBoundX + rX;
+			aabb.upperBoundY = aabb.upperBoundY + rY;
+			node.userData = p_userData;
+			node.height = 0;
+
+			InsertLeaf(proxyId);
+
+			return proxyId;
+		}
+
+		/**
+		 * Destroy a proxy. This asserts if the id is invalid.
+		 * @param p_proxyId
+		 */
+		public function DestroyProxy(p_proxyId:int):void
+		{
+			CONFIG::debug
+			{
+				b2Assert(0 <= p_proxyId && p_proxyId < m_nodeCapacity, "proxyId is invalid");
+				b2Assert(m_nodes[p_proxyId].IsLeaf(), "proxyId is not leaf");
+			}
+
+			RemoveLeaf(p_proxyId);
+			FreeNode(p_proxyId);
+		}
+
+		/**
+		 * Move a proxy with a swepted AABB. If the proxy has moved outside of its fattened AABB,
+		 * then the proxy is removed from the tree and re-inserted.
+		 * Otherwise the function returns immediately.
+		 *
+		 * @param p_proxyId
+		 * @param p_aabb
+		 * @param p_displacementX
+		 * @param p_displacementY
+		 * @return true if the proxy was re-inserted.
+		 */
+		public function MoveProxy(p_proxyId:int, p_aabb:b2AABB, p_displacementX:Number, p_displacementY:Number):Boolean
+		{
+			CONFIG::debug
+			{
+				b2Assert(0 <= p_proxyId && p_proxyId < m_nodeCapacity, "proxyId is invalid");
+				b2Assert(m_nodes[p_proxyId].IsLeaf(), "proxyId is not leaf");
+			}
+
+			var nodeAABB:b2AABB = m_nodes[p_proxyId].aabb;
+
+			if (!nodeAABB.Contains(p_aabb))
+			{
+				RemoveLeaf(p_proxyId);
+
+				// Extend AABB
+				var lbX:Number = p_aabb.lowerBoundX - b2Settings.aabbExtension;
+				var lbY:Number = p_aabb.lowerBoundY - b2Settings.aabbExtension;
+				var ubX:Number = p_aabb.upperBoundX + b2Settings.aabbExtension;
+				var ubY:Number = p_aabb.upperBoundY + b2Settings.aabbExtension;
+
+				// Predict AABB displacement.
+				var dX:Number = b2Settings.aabbMultiplier * p_displacementX;
+				var dY:Number = b2Settings.aabbMultiplier * p_displacementY;
+
+				if (dX < 0.0)
+				{
+					lbX += dX;
+				}
+				else
+				{
+					ubX += dX;
+				}
+
+				if (dY < 0.0)
+				{
+					lbY += dY;
+				}
+				else
+				{
+					ubY += dY;
+				}
+
+				nodeAABB.lowerBoundX = lbX;
+				nodeAABB.lowerBoundY = lbY;
+				nodeAABB.upperBoundX = ubX;
+				nodeAABB.upperBoundY = ubY;
+
+				InsertLeaf(p_proxyId);
+
+				return true;
+			}
+
+			return false;
+		}
+
+		/**
 		 * TODO:
 		 */
 		private function InsertLeaf(p_node:int):void
@@ -165,8 +275,6 @@ package Box2D.Collision
 
 	}
 }
-
-import Box2D.Collision.b2AABB;
 
 /**
  *

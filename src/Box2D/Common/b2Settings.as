@@ -34,5 +34,19 @@ package Box2D.Common
 		 * Making it larger may create artifacts for vertex collision.
  		 */
 		static public const polygonRadius:Number = 2.0 * linearSlop;
+
+		/**
+		 * This is used to fatten AABBs in the dynamic tree.
+		 * This allows proxies to move by a small amount without triggering a tree adjustment.
+		 * This is in meters.
+		 */
+		static public const aabbExtension:Number = 0.1;
+
+		/**
+		 * This is used to fatten AABBs in the dynamic tree.
+		 * This is used to predict the future position based on the current displacement.
+		 * This is a dimensionless multiplier.
+ 		 */
+		static public const aabbMultiplier:Number = 2.0;
 	}
 }
