@@ -17,7 +17,7 @@ package Box2D.Collision
 	 *
 	 * Nodes are pooled and relocatable, so we use node indices rather than pointers.
 	 *
-	 * TODO: Impl
+	 * TODO: Optimize methods - Balance, RemoveLeaf, InsertLeaf
 	 */
 	public class b2DynamicTree
 	{
@@ -139,7 +139,7 @@ package Box2D.Collision
 			CONFIG::debug
 			{
 				b2Assert(0 <= p_proxyId && p_proxyId < m_nodeCapacity, "proxyId is invalid");
-				b2Assert(m_nodes[p_proxyId].IsLeaf(), "proxyId is not leaf");
+				b2Assert(m_nodes[p_proxyId].IsLeaf, "proxyId is not leaf");
 			}
 
 			RemoveLeaf(p_proxyId);
@@ -162,7 +162,7 @@ package Box2D.Collision
 			CONFIG::debug
 			{
 				b2Assert(0 <= p_proxyId && p_proxyId < m_nodeCapacity, "proxyId is invalid");
-				b2Assert(m_nodes[p_proxyId].IsLeaf(), "proxyId is not leaf");
+				b2Assert(m_nodes[p_proxyId].IsLeaf, "proxyId is not leaf");
 			}
 
 			var nodeAABB:b2AABB = m_nodes[p_proxyId].aabb;
@@ -221,19 +221,245 @@ package Box2D.Collision
 		}
 
 		/**
-		 * TODO:
 		 */
-		private function RemoveLeaf(p_node:int):void
+		private function RemoveLeaf(p_leaf:int):void
 		{
+			if (p_leaf == m_root)
+			{
+				m_root = b2TreeNode.b2_nullNode;
+				return;
+			}
 
+			var parent:int = m_nodes[p_leaf].parent;
+			var grandParent:int = m_nodes[parent].parent;
+			var sibling:int;
+
+			if (m_nodes[parent].child1 == p_leaf)
+			{
+				sibling = m_nodes[parent].child2;
+			}
+			else
+			{
+				sibling = m_nodes[parent].child1;
+			}
+
+			//
+			if (grandParent != b2TreeNode.b2_nullNode)
+			{
+				// Destroy parent and connect sibling to grandParent.
+				if (m_nodes[grandParent].child1 == parent)
+				{
+					m_nodes[grandParent].child1 = sibling;
+				}
+				else
+				{
+					m_nodes[grandParent].child2 = sibling;
+				}
+
+				m_nodes[sibling].parent = grandParent;
+
+				FreeNode(parent);
+
+				// Adjust ancestor bounds.
+				var index:int = grandParent;
+				var child1:int;
+				var child2:int;
+
+				while(index != b2TreeNode.b2_nullNode)
+				{
+					index = Balance(index);
+
+					child1 = m_nodes[index].child1;
+					child2 = m_nodes[index].child2;
+
+					m_nodes[index].aabb.CombineTwo(m_nodes[child1].aabb, m_nodes[child2].aabb);
+					m_nodes[index].height = 1 + b2Math.Max(m_nodes[child1].height, m_nodes[child2].height);
+
+					index = m_nodes[index].parent;
+				}
+			}
+			else
+			{
+				m_root = sibling;
+				m_nodes[sibling].parent = b2TreeNode.b2_nullNode;
+				FreeNode(parent);
+			}
 		}
 
 		/**
-		 * TODO:
+		 * Perform a left or right rotation if node A is imbalanced.
+		 * Returns the new root index.
 		 */
-		private function Balance(p_index:int):int
+		private function Balance(p_iA:int):int
 		{
-			return 0;
+			CONFIG::debug
+			{
+				b2Assert(p_iA != b2TreeNode.b2_nullNode, "incorrect node, iA == " + p_iA);
+			}
+
+			var A:b2TreeNode = m_nodes[p_iA];
+			if (A.IsLeaf || A.height < 2)
+			{
+				return p_iA;
+			}
+
+			var iB:int = A.child1;
+			var iC:int = A.child2;
+
+			CONFIG::debug
+			{
+				b2Assert(0 <= iB && iB < m_nodeCapacity, "incorrect node index iB");
+				b2Assert(0 <= iC && iC < m_nodeCapacity, "incorrect node index iC");
+			}
+
+			var B:b2TreeNode = m_nodes[iB];
+			var C:b2TreeNode = m_nodes[iC];
+
+			var balance:int = C.height - B.height;
+
+			// Rotate C up
+			if (balance > 1)
+			{
+				var iF:int = C.child1;
+				var iG:int = C.child2;
+
+				var F:b2TreeNode = m_nodes[iF];
+				var G:b2TreeNode = m_nodes[iG];
+
+				CONFIG::debug
+				{
+					b2Assert(0 <= iF && iF < m_nodeCapacity, "incorrect node index iF");
+					b2Assert(0 <= iG && iG < m_nodeCapacity, "incorrect node index iG");
+				}
+
+				// Swap A and C
+				C.child1 = p_iA;
+				C.parent = A.parent;
+				A.parent = iC;
+
+				// A's old parent should point to C
+				if (C.parent != b2TreeNode.b2_nullNode)
+				{
+					if (m_nodes[C.parent].child1 == p_iA)
+					{
+						m_nodes[C.parent].child1 = iC;
+					}
+					else
+					{
+						 CONFIG::debug
+						 {
+							 b2Assert(m_nodes[C.parent].child2 == p_iA, "m_nodes[C.parent].child2 == p_iA");
+						 }
+
+						m_nodes[C.parent].child2 = iC;
+					}
+				}
+				else
+				{
+					m_root = iC;
+				}
+
+				// Rotate
+				if (F.height > G.height)
+				{
+					C.child2 = iF;
+					A.child2 = iG;
+					G.parent = p_iA;
+
+					A.aabb.CombineTwo(B.aabb, G.aabb);
+					C.aabb.CombineTwo(A.aabb, F.aabb);
+
+					A.height = 1 + b2Math.Max(B.height, G.height);
+					C.height = 1 + b2Math.Max(A.height, F.height);
+				}
+				else
+				{
+					C.child2 = iG;
+					A.child2 = iF;
+					F.parent = p_iA;
+
+					A.aabb.CombineTwo(B.aabb, F.aabb);
+					C.aabb.CombineTwo(A.aabb, G.aabb);
+
+					A.height = 1 + b2Math.Max(B.height, F.height);
+					C.height = 1 + b2Math.Max(A.height, G.height);
+				}
+
+				return iC;
+			}
+
+			// Rotate B up
+			if (balance < -1)
+			{
+				var iD:int = B.child1;
+				var iE:int = B.child2;
+
+				var D:b2TreeNode = m_nodes[iD];
+				var E:b2TreeNode = m_nodes[iE];
+
+				CONFIG::debug
+				{
+					b2Assert(0 <= iD && iD < m_nodeCapacity, "0 <= iD && iD < m_nodeCapacity");
+					b2Assert(0 <= iE && iE < m_nodeCapacity, "0 <= iE && iE < m_nodeCapacity");
+				}
+
+				// Swap A and B
+				B.child1 = p_iA;
+				B.parent = A.parent;
+				A.parent = iB;
+
+				// A's old parent should point to B
+				if (B.parent != b2TreeNode.b2_nullNode)
+				{
+					if (m_nodes[B.parent].child1 == p_iA)
+					{
+						m_nodes[B.parent].child1 = iB;
+					}
+					else
+					{
+						CONFIG::debug
+						{
+							b2Assert(m_nodes[B.parent].child2 == p_iA, "m_nodes[B.parent].child2 == p_iA");
+						}
+
+						m_nodes[B.parent].child2 = iB;
+					}
+				}
+				else
+				{
+					m_root = iB;
+				}
+
+				// Rotate
+				if (D.height > E.height)
+				{
+					B.child2 = iD;
+					A.child1 = iE;
+					E.parent = p_iA;
+
+					A.aabb.CombineTwo(C.aabb, E.aabb);
+					B.aabb.CombineTwo(A.aabb, D.aabb);
+
+					A.height = 1 + b2Math.Max(C.height, E.height);
+					B.height = 1 + b2Math.Max(A.height, D.height);
+				}
+				else
+				{
+					B.child2 = iE;
+					A.child1 = iD;
+					D.parent = p_iA;
+
+					A.aabb.CombineTwo(C.aabb, D.aabb);
+					B.aabb.CombineTwo(A.aabb, E.aabb);
+
+					A.height = 1 + b2Math.Max(C.height, D.height);
+					B.height = 1 + b2Math.Max(A.height, E.height);
+				}
+
+				return iB;
+			}
+
+			return p_iA;
 		}
 
 		/**
@@ -263,9 +489,10 @@ package Box2D.Collision
 
 			var root:b2TreeNode = m_nodes[m_root];
 			var rootArea:Number = root.aabb.GetPerimeter();
+			var numNodes:int = m_nodeCapacity;
 
 			var totalArea:Number = 0.0;
-			for (var i:int = 0; i < m_nodeCapacity; ++i)
+			for (var i:int = 0; i < numNodes; ++i)
 			{
 				var node:b2TreeNode = m_nodes[i];
 
@@ -305,7 +532,7 @@ package Box2D.Collision
 
 			var node:b2TreeNode = m_nodes[p_nodeId];
 
-			if (node.IsLeaf())
+			if (node.IsLeaf)
 			{
 				return 0;
 			}
@@ -362,7 +589,7 @@ package Box2D.Collision
 
 				CONFIG::debug
 				{
-					b2Assert(node.IsLeaf() == false, "node isn't leaf");
+					b2Assert(node.IsLeaf == false, "node isn't leaf");
 				}
 
 				var balance:int = b2Math.Abs(m_nodes[node.child2].height - m_nodes[node.child1].height);
@@ -399,7 +626,6 @@ package Box2D.Collision
 		{
 
 		}
-
 	}
 }
 
@@ -477,7 +703,7 @@ internal class b2TreeNode
 	/**
 	 */
 	[Inline]
-	final public function IsLeaf():Boolean
+	final public function get IsLeaf():Boolean
 	{
 		return child1 == b2_nullNode;
 	}
