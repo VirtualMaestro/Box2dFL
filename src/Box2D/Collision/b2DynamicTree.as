@@ -30,7 +30,7 @@ package Box2D.Collision
 		private var m_freeList:int;
 
 		/// This is used to incrementally traverse the tree for re-balancing.
-		private var m_path:uint;
+//		private var m_path:uint;
 
 		private var m_insertionCount:int;
 
@@ -42,7 +42,7 @@ package Box2D.Collision
 			m_nodeCount = 0;     // nodes in use
 			m_nodeCapacity = 0;  // total existing nodes, in pool
 			m_freeList = 0;
-			m_path = 0;
+//			m_path = 0;
 			m_insertionCount = 0;
 			m_nodes = new <b2TreeNode>[];
 		}
@@ -213,11 +213,147 @@ package Box2D.Collision
 		}
 
 		/**
-		 * TODO:
 		 */
-		private function InsertLeaf(p_node:int):void
+		private function InsertLeaf(p_leaf:int):void
 		{
+			++m_insertionCount;
 
+			if (m_root == b2TreeNode.b2_nullNode)
+			{
+				m_root = p_leaf;
+				m_nodes[m_root].parent = b2TreeNode.b2_nullNode;
+				return;
+			}
+
+			// Find the best sibling for this node
+			var leafAABB:b2AABB = m_nodes[p_leaf].aabb.Clone() as b2AABB;
+			var index:int = m_root;
+			var combinedAABB:b2AABB = b2AABB.Get();
+
+			while (m_nodes[index].IsLeaf == false)
+			{
+				var child1:int = m_nodes[index].child1;
+				var child2:int = m_nodes[index].child2;
+
+				var area:Number = m_nodes[index].aabb.GetPerimeter();
+
+
+				combinedAABB.CombineTwo(m_nodes[index].aabb, leafAABB);
+				var combinedArea:Number = combinedAABB.GetPerimeter();
+
+				// Cost of creating a new parent for this node and the new leaf
+				var cost:Number = 2.0 * combinedArea;
+
+				// Minimum cost of pushing the leaf further down the tree
+				var inheritanceCost:Number = 2.0 * (combinedArea - area);
+
+				// Cost of descending into child1
+				var cost1:Number;
+				if (m_nodes[child1].IsLeaf)
+				{
+					combinedAABB.CombineTwo(leafAABB, m_nodes[child1].aabb);
+					cost1 = combinedAABB.GetPerimeter() + inheritanceCost;
+				}
+				else
+				{
+					combinedAABB.CombineTwo(leafAABB, m_nodes[child1].aabb);
+					var oldArea:Number = m_nodes[child1].aabb.GetPerimeter();
+					var newArea:Number = combinedAABB.GetPerimeter();
+					cost1 = (newArea - oldArea) + inheritanceCost;
+				}
+
+				// Cost of descending into child2
+				var cost2:Number;
+
+				if (m_nodes[child2].IsLeaf)
+				{
+					combinedAABB.CombineTwo(leafAABB, m_nodes[child2].aabb);
+					cost2 = combinedAABB.GetPerimeter() + inheritanceCost;
+				}
+				else
+				{
+					combinedAABB.CombineTwo(leafAABB, m_nodes[child2].aabb);
+					var oldArea:Number = m_nodes[child2].aabb.GetPerimeter();
+					var newArea:Number = combinedAABB.GetPerimeter();
+					cost2 = newArea - oldArea + inheritanceCost;
+				}
+
+				// Descend according to the minimum cost.
+				if (cost < cost1 && cost < cost2)
+				{
+					break;
+				}
+
+				// Descend
+				if (cost1 < cost2)
+				{
+					index = child1;
+				}
+				else
+				{
+					index = child2;
+				}
+			}
+
+			combinedAABB.Dispose();
+
+			var sibling:int = index;
+
+			// Create a new parent.
+			var oldParent:int = m_nodes[sibling].parent;
+			var newParent:int = AllocateNode();
+			m_nodes[newParent].parent = oldParent;
+			m_nodes[newParent].userData = null;
+			m_nodes[newParent].aabb.CombineTwo(leafAABB, m_nodes[sibling].aabb);
+			m_nodes[newParent].height = m_nodes[sibling].height + 1;
+
+			if (oldParent != b2TreeNode.b2_nullNode)
+			{
+				// The sibling was not the root.
+				if (m_nodes[oldParent].child1 == sibling)
+				{
+					m_nodes[oldParent].child1 = newParent;
+				}
+				else
+				{
+					m_nodes[oldParent].child2 = newParent;
+				}
+
+				m_nodes[newParent].child1 = sibling;
+				m_nodes[newParent].child2 = p_leaf;
+				m_nodes[sibling].parent = newParent;
+				m_nodes[p_leaf].parent = newParent;
+			}
+			else
+			{
+				// The sibling was the root.
+				m_nodes[newParent].child1 = sibling;
+				m_nodes[newParent].child2 = p_leaf;
+				m_nodes[sibling].parent = newParent;
+				m_nodes[p_leaf].parent = newParent;
+				m_root = newParent;
+			}
+
+			// Walk back up the tree fixing heights and AABBs
+			index = m_nodes[p_leaf].parent;
+			while (index != b2TreeNode.b2_nullNode)
+			{
+				index = Balance(index);
+
+				var child1:int = m_nodes[index].child1;
+				var child2:int = m_nodes[index].child2;
+
+				CONFIG::debug
+				{
+					b2Assert(child1 != b2TreeNode.b2_nullNode, "child1 can't be nullNode");
+					b2Assert(child2 != b2TreeNode.b2_nullNode, "child2 can't be nullNode");
+				}
+
+				m_nodes[index].height = 1 + b2Math.Max(m_nodes[child1].height, m_nodes[child2].height);
+				m_nodes[index].aabb.CombineTwo(m_nodes[child1].aabb, m_nodes[child2].aabb);
+
+				index = m_nodes[index].parent;
+			}
 		}
 
 		/**
@@ -597,6 +733,33 @@ package Box2D.Collision
 			}
 
 			return maxBalance;
+		}
+
+		/**
+		 * Query an AABB for overlapping proxies. The callback class
+		 * is called for each proxy that overlaps the supplied AABB.
+		 * @param p_callback
+		 * @param p_aabb
+		 * TODO:
+		 */
+		public function Query(p_callback:Function, p_aabb:b2AABB):void
+		{
+			b2Assert(false, "current method isn't implemented yet and can't be used!");
+		}
+
+		/**
+		* Ray-cast against the proxies in the tree. This relies on the callback
+		* to perform a exact ray-cast in the case were the proxy contains a shape.
+		* The callback also performs the any collision filtering. This has performance
+		* roughly equal to k * log(n), where k is the number of collisions and n is the
+		* number of proxies in the tree.
+		* @param p_input the ray-cast input data. The ray extends from p1 to p1 + maxFraction * (p2 - p1).
+		* @param p_callback a callback class that is called for each proxy that is hit by the ray.
+		* TODO:
+		*/
+		public function RayCast(p_callback:Function, p_input:b2RayCastData):void
+		{
+			b2Assert(false, "current method isn't implemented yet and can't be used!");
 		}
 
 		/**
