@@ -3,7 +3,7 @@
  * Date: 13.12.2014
  * Time: 15:05
  */
-package Box2D.Collision
+package Box2D.Collision.Structures
 {
 	import Box2D.Collision.Contact.b2ContactID;
 	import Box2D.Common.b2Disposable;
@@ -43,7 +43,7 @@ package Box2D.Collision
 
 		/**
 		 * Returns new instance of b2ClipVertex.
-		 * @return b2ClipVertex
+		 * @return Box2D.Collision.Structures.b2ClipVertex
 		 */
 		static public function Get():b2ClipVertex
 		{

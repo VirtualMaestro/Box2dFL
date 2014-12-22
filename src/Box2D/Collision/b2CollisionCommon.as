@@ -6,6 +6,7 @@
 package Box2D.Collision
 {
 	import Box2D.Collision.Shapes.b2Shape;
+	import Box2D.Collision.Structures.b2ClipVertex;
 	import Box2D.Common.Math.b2Mat22;
 	import Box2D.Common.Math.b2Vec2;
 

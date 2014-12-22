@@ -5,6 +5,7 @@
  */
 package Box2D.Collision
 {
+	import Box2D.Collision.Structures.b2RayCastData;
 	import Box2D.Common.b2Disposable;
 	import Box2D.Common.IDisposable;
 	import Box2D.Common.Math.b2Math;

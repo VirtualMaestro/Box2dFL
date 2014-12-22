@@ -8,6 +8,7 @@ package Box2D.Collision
 	import Box2D.Collision.Manifold.b2Manifold;
 	import Box2D.Collision.Shapes.b2EdgeShape;
 	import Box2D.Collision.Shapes.b2PolygonShape;
+	import Box2D.Collision.Structures.b2EPAxis;
 	import Box2D.Common.Math.b2Mat22;
 	import Box2D.Common.Math.b2Math;
 
@@ -88,7 +89,7 @@ package Box2D.Collision
 		}
 
 		/**
-		 * @return b2EPAxis
+		 * @return Box2D.Collision.Structures.b2EPAxis
 		 */
 		public function ComputeEdgeSeparation():b2EPAxis
 		{

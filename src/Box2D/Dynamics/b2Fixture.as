@@ -10,12 +10,12 @@ package Box2D.Dynamics
 	import Box2D.Collision.Shapes.b2Shape;
 	import Box2D.Collision.b2AABB;
 	import Box2D.Collision.b2BroadPhase;
-	import Box2D.Collision.b2RayCastData;
+	import Box2D.Collision.Structures.b2RayCastData;
 	import Box2D.Common.Math.b2Mat22;
 	import Box2D.Common.b2Disposable;
 	import Box2D.Common.b2internal;
 	import Box2D.Dynamics.Def.b2FixtureDef;
-	import Box2D.Dynamics.filter.b2Filter;
+	import Box2D.Dynamics.Filters.b2Filter;
 	import Box2D.b2Assert;
 
 	use namespace b2internal;

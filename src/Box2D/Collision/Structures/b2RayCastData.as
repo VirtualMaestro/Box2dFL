@@ -3,7 +3,7 @@
  * Date: 01.12.2014
  * Time: 21:39
  */
-package Box2D.Collision
+package Box2D.Collision.Structures
 {
 	import Box2D.Common.b2Disposable;
 	import Box2D.Common.b2Disposable;
@@ -103,7 +103,7 @@ package Box2D.Collision
 
 		/**
 		 * Returns new instance of b2RayCastData.
-		 * @return b2RayCastData
+		 * @return Box2D.Collision.Structures.b2RayCastData
 		 */
 		[Inline]
 		static public function Get(p_startX:Number, p_startY:Number, p_endX:Number, p_endY:Number, p_maxFraction:Number = 1.0):b2RayCastData

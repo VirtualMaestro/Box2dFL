@@ -3,7 +3,7 @@
  * Date: 27.11.2014
  * Time: 20:30
  */
-package Box2D.Dynamics.filter
+package Box2D.Dynamics.Filters
 {
 	import Box2D.Common.b2Disposable;
 	import Box2D.Common.IDisposable;

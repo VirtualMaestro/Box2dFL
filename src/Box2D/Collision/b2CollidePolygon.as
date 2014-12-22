@@ -7,6 +7,7 @@ package Box2D.Collision
 {
 	import Box2D.Collision.Manifold.b2Manifold;
 	import Box2D.Collision.Shapes.b2PolygonShape;
+	import Box2D.Collision.Structures.b2ClipVertex;
 	import Box2D.Common.Math.b2Mat22;
 
 	/**

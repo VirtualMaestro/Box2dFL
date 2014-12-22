@@ -3,6 +3,7 @@
  */
 package Box2D.Collision
 {
+	import Box2D.Collision.Structures.b2RayCastData;
 	import Box2D.Common.Math.b2Math;
 	import Box2D.Common.b2Settings;
 	import Box2D.b2Assert;

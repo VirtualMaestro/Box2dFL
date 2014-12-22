@@ -6,7 +6,7 @@
 package Box2D.Dynamics.Def
 {
 	import Box2D.Collision.Shapes.b2Shape;
-	import Box2D.Dynamics.filter.b2Filter;
+	import Box2D.Dynamics.Filters.b2Filter;
 
 	/**
 	 * A fixture definition is used to create a fixture. This class defines an
