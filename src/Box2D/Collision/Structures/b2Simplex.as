@@ -137,11 +137,20 @@ package Box2D.Collision.Structures
 		}
 
 		/**
-		 * TODO:
 		 */
 		public function WriteCache(p_cache:b2SimplexCache):void
 		{
-			b2Assert(false, "current method isn't implemented yet and can't be used!");
+			p_cache.metric = GetMetric();
+			p_cache.count = m_count;
+
+			var v:b2SimplexVertex;
+
+			for (var i:int = 0; i < m_count; i++)
+			{
+				v = _simpleVertexList[i];
+				p_cache.indexA[i] = v.indexA;
+				p_cache.indexB[i] = v.indexB;
+			}
 		}
 
 		/**
