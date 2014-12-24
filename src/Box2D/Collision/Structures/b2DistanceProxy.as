@@ -186,5 +186,27 @@ package Box2D.Collision.Structures
 
 			return b2Vec2.Get(b2Math.getX(m_vertices, p_index), b2Math.getY(m_vertices, p_index));
 		}
+
+		/**
+		 * Get a vertex by index. Used by b2Distance.
+		 * @param p_index
+		 * @return  X component of vertex.
+		 */
+		[Inline]
+		final public function GetVertexX(p_index:int):Number
+		{
+			return b2Math.getX(m_vertices, p_index);
+		}
+
+			/**
+		 * Get a vertex by index. Used by b2Distance.
+		 * @param p_index
+		 * @return  Y component of vertex.
+		 */
+		[Inline]
+		final public function GetVertexY(p_index:int):Number
+		{
+			return b2Math.getY(m_vertices, p_index);
+		}
 	}
 }

@@ -25,8 +25,8 @@ package Box2D.Collision.Structures
 		public var a:Number;
 
 		/** wA index*/
-		public var indexA:Number;
+		public var indexA:int;
 		/** wB index*/
-		public var indexB:Number;
+		public var indexB:int;
 	}
 }
