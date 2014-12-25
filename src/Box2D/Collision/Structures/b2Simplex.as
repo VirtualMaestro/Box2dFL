@@ -156,11 +156,40 @@ package Box2D.Collision.Structures
 		/**
 		 *
 		 * @return new instance of b2Vec2
-		 * TODO
 		 */
 		public function GetSearchDirection():b2Vec2
 		{
-		   	b2Assert(false, "current method isn't implemented yet and can't be used!");
+			CONFIG::debug
+			{
+				b2Assert(m_count == 1 || m_count == 2, "m_count is incorrect: " + m_count);
+			}
+
+			var result:b2Vec2;
+
+			if (m_count == 1)
+			{
+				result = b2Vec2.Get(-m_v1.wX, -m_v1.wY);
+			}
+			else
+			{
+				var e12X:Number = m_v2.wX - m_v1.wX;
+				var e12Y:Number = m_v2.wY - m_v1.wY;
+				
+				var sign:Number = e12X * -m_v1.wY - e12Y * -m_v1.wX;
+				
+				if (sign > 0.0)
+				{
+					//Origin is left of e12
+					result = b2Vec2.Get(-e12Y, e12X);
+				}
+				else
+				{
+					// Origin is right of e12
+					result = b2Vec2.Get(e12Y, -e12X);
+				}
+			}
+
+		   	return result;
 		}
 
 		/**
