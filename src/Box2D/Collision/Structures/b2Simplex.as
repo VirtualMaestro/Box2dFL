@@ -195,11 +195,38 @@ package Box2D.Collision.Structures
 		/**
 		 *
 		 * @return new instance of b2Vec2
-		 * TODO
 		 */
 		public function GetClosestPoint():b2Vec2
 		{
-		   	b2Assert(false, "current method isn't implemented yet and can't be used!");
+			CONFIG::debug
+			{
+				b2Assert(m_count == 1 || m_count == 2 || m_count == 3, "m_count is incorrect: " + m_count);
+			}
+
+			var result:b2Vec2;
+
+			if (m_count == 1)
+			{
+				result = b2Vec2.Get(m_v1.wX, m_v1.wY);
+			}
+			else if (m_count == 2)
+			{
+				var r1X:Number = m_v1.wX * m_v1.a;
+				var r1Y:Number = m_v1.wY * m_v1.a;
+				var r2X:Number = m_v2.wX * m_v2.a;
+				var r2Y:Number = m_v2.wY * m_v2.a;
+
+				var rX:Number = r1X + r2X;
+				var rY:Number = r1Y + r2Y;
+
+				result = b2Vec2.Get(rX, rY);
+			}
+			else
+			{
+				result = b2Vec2.Get();
+			}
+
+			return result;
 		}
 
 		/**
