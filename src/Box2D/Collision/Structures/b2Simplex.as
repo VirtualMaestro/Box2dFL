@@ -230,11 +230,41 @@ package Box2D.Collision.Structures
 		}
 
 		/**
-		 * TODO
 		 */
-		public function GetWitnessPoints(p_pAX:Number, p_pAY:Number, p_pBX:Number, p_pBY:Number):void
+		public function GetWitnessPoints(p_pA:b2Vec2,p_pB:b2Vec2):void
 		{
-		   	b2Assert(false, "current method isn't implemented yet and can't be used!");
+			CONFIG::debug
+			{
+				b2Assert(m_count == 1 || m_count == 2 || m_count == 3, "m_count is incorrect: " + m_count);
+			}
+
+			if (m_count == 1)
+			{
+				p_pA.x = m_v1.wAX;
+				p_pA.y = m_v1.wAY;
+
+				p_pB.x = m_v1.wBX;
+				p_pB.y = m_v1.wBY;
+			}
+			else if (m_count == 2)
+			{
+				var a1:Number = m_v1.a;
+				var a2:Number = m_v2.a;
+
+				p_pA.x = a1*m_v1.wAX + a2*m_v2.wAX;
+				p_pA.y = a1*m_v1.wAY + a2*m_v2.wAY;
+
+				p_pB.x = a1*m_v1.wBX + a2*m_v2.wBX;
+				p_pB.y = a1*m_v1.wBY + a2*m_v2.wBY;
+			}
+			else
+			{
+				p_pA.x = a1*m_v1.wAX + a2*m_v2.wAX + m_v3.a*m_v3.wAX;
+				p_pA.y = a1*m_v1.wAY + a2*m_v2.wAY + m_v3.a*m_v3.wAY;
+
+				p_pB.x = p_pA.x;
+				p_pB.y = p_pA.y;
+			}
 		}
 
 		/**
