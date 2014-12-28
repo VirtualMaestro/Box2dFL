@@ -362,11 +362,133 @@ package Box2D.Collision.Structures
 		}
 
 		/**
-		 * TODO:
-		 */
+		* Possible regions:
+		* - points[2]
+		* - edge points[0]-points[2]
+		* - edge points[1]-points[2]
+		* - inside the triangle
+		*/
 		public function Solve3():void
 		{
-			b2Assert(false, "current method isn't implemented yet and can't be used!");
+			var w1X:Number = m_v1.wX;
+			var w1Y:Number = m_v1.wY;
+
+			var w2X:Number = m_v2.wX;
+			var w2Y:Number = m_v2.wY;
+
+			var w3X:Number = m_v3.wX;
+			var w3Y:Number = m_v3.wY;
+
+			// Edge12
+			// [1      1     ][a1] = [1]
+			// [w1.e12 w2.e12][a2] = [0]
+			// a3 = 0
+
+			var e12X:Number = w2X - w1X;
+			var e12Y:Number = w2Y - w1Y;
+
+			var w1e12:Number = w1X * e12X + w1Y * e12Y;
+			var w2e12:Number = w2X * e12X + w2Y * e12Y;
+
+			var d12_1:Number = w2e12;
+			var d12_2:Number = -w1e12;
+
+			// Edge13
+			// [1      1     ][a1] = [1]
+			// [w1.e13 w3.e13][a3] = [0]
+			// a2 = 0
+			var e13X:Number = w3X - w1X;
+			var e13Y:Number = w3Y - w1Y;
+
+			var w1e13:Number = w1X * e13X + w1Y * e13Y;
+			var w3e13:Number = w3X * e13X + w3Y * e13Y;
+			var d13_1:Number = w3e13;
+			var d13_2:Number = -w1e13;
+
+
+			// Edge23
+			// [1      1     ][a2] = [1]
+			// [w2.e23 w3.e23][a3] = [0]
+			// a1 = 0
+
+			var e23X:Number = w3X - w2X;
+			var e23Y:Number = w3Y - w2Y;
+			var w2e23:Number = w2X * e23X + w2Y * e23Y;
+			var w3e23:Number = w3X * e23X + w3Y * e23Y;
+			var d23_1:Number = w3e23;
+			var d23_2:Number = -w2e23;
+
+			// Triangle123
+			var n123:Number = e12X * e13Y - e12Y * e13X;
+
+			var d123_1:Number = n123 * (w2X * w3Y - w2Y * w3X);
+			var d123_2:Number = n123 * (w3X * w1Y - w3Y * w1X);
+			var d123_3:Number = n123 * (w1X * w2Y - w1Y * w2X);
+
+			// w1 region
+			if (d12_2 <= 0.0 && d13_2 <= 0.0)
+			{
+				m_v1.a = 1.0;
+				m_count = 1;
+				return;
+			}
+
+			// e12
+			if (d12_1 > 0.0 && d12_2 > 0.0 && d123_3 <= 0.0)
+			{
+				var inv_d12:Number = 1.0 / (d12_1 + d12_2);
+				m_v1.a = d12_1 * inv_d12;
+				m_v2.a = d12_2 * inv_d12;
+				m_count = 2;
+				return;
+			}
+
+			// e13
+			if (d13_1 > 0.0 && d13_2 > 0.0 && d123_2 <= 0.0)
+			{
+				var inv_d13:Number = 1.0 / (d13_1 + d13_2);
+				m_v1.a = d13_1 * inv_d13;
+				m_v3.a = d13_2 * inv_d13;
+				m_count = 2;
+				m_v2 = m_v3;
+				return;
+			}
+
+		    // w2 region
+			if (d12_1 <= 0.0 && d23_2 <= 0.0)
+			{
+				m_v2.a = 1.0;
+				m_count = 1;
+				m_v1 = m_v2;
+				return;
+			}
+
+			// w3 region
+			if (d13_1 <= 0.0 && d23_1 <= 0.0)
+			{
+				m_v3.a = 1.0;
+				m_count = 1;
+				m_v1 = m_v3;
+				return;
+			}
+
+			// e23
+			if (d23_1 > 0.0 && d23_2 > 0.0 && d123_1 <= 0.0)
+			{
+				var inv_d23:Number = 1.0 / (d23_1 + d23_2);
+				m_v2.a = d23_1 * inv_d23;
+				m_v3.a = d23_2 * inv_d23;
+				m_count = 2;
+				m_v1 = m_v3;
+				return;
+			}
+
+			// Must be in triangle123
+			var inv_d123:Number = 1.0 / (d123_1 + d123_2 + d123_3);
+			m_v1.a = d123_1 * inv_d123;
+			m_v2.a = d123_2 * inv_d123;
+			m_v3.a = d123_3 * inv_d123;
+			m_count = 3;
 		}
 	}
 }
