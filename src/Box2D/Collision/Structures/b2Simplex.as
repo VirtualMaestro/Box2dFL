@@ -268,20 +268,97 @@ package Box2D.Collision.Structures
 		}
 
 		/**
-		 * TODO:
 		 */
 		public function GetMetric():Number
 		{
-			b2Assert(false, "current method isn't implemented yet and can't be used!");
-			return 0.0;
+			CONFIG::debug
+			{
+				b2Assert(m_count == 1 || m_count == 2 || m_count == 3, "m_count is incorrect: " + m_count);
+			}
+
+			var result:Number = 0.0;
+
+			if (m_count == 2)
+			{
+				// distance two vectors
+				var rX:Number = m_v1.wX - m_v2.wX;
+				var rY:Number = m_v1.wY - m_v2.wY;
+
+				result =  Math.sqrt(rX*rX + rY*rY);
+			}
+			else if (m_count == 3)
+			{
+				var r1X:Number = m_v2.wX - m_v1.wX;
+				var r1Y:Number = m_v2.wY - m_v1.wY;
+				var r2X:Number = m_v3.wX - m_v1.wX;
+				var r2Y:Number = m_v3.wY - m_v1.wY;
+
+				result = r1X * r2Y - r1Y * r2X;
+			}
+
+			return result;
 		}
 
 		/**
-		 * TODO:
-		 */
+		* Solve a line segment using barycentric coordinates.
+		*
+		* p = a1 * w1 + a2 * w2
+		* a1 + a2 = 1
+		*
+		* The vector from the origin to the closest point on the line is
+		* perpendicular to the line.
+		* e12 = w2 - w1
+		* dot(p, e) = 0
+		* a1 * dot(w1, e) + a2 * dot(w2, e) = 0
+		*
+		* 2-by-2 linear system
+		* [1      1     ][a1] = [1]
+		* [w1.e12 w2.e12][a2] = [0]
+		*
+		* Define
+		* d12_1 =  dot(w2, e12)
+		* d12_2 = -dot(w1, e12)
+		* d12 = d12_1 + d12_2
+		*
+		* Solution
+		* a1 = d12_1 / d12
+		* a2 = d12_2 / d12
+		*/
 		public function Solve2():void
 		{
-			b2Assert(false, "current method isn't implemented yet and can't be used!");
+			var e12X:Number = m_v2.wX - m_v1.wX;
+			var e12Y:Number = m_v2.wY - m_v1.wY;
+
+			 // w1 region
+			var d12_2:Number = -(m_v1.wX * e12X + m_v1.wY * e12Y);
+
+			if (d12_2 <= 0.0)
+			{
+				// a2 <= 0, so we clamp it to 0
+				m_v1.a = 1.0;
+				m_count = 1;
+
+				return;
+			}
+
+			// w2 region
+			var d12_1:Number = (m_v2.wX * e12X + m_v2.wY * e12Y);
+
+			if (d12_1 <= 0.0)
+			{
+				// a1 <= 0, so we clamp it to 0
+				m_v2.a = 1.0;
+				m_count = 1;
+				m_v1.Set(m_v2);
+
+				return;
+			}
+
+			// Must be in e12 region.
+			var inv_d12:Number = 1.0 / (d12_1 + d12_2);
+			m_v1.a = d12_1 * inv_d12;
+			m_v2.a = d12_2 * inv_d12;
+			m_count = 2;
 		}
 
 		/**

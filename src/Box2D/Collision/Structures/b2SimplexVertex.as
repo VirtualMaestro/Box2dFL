@@ -28,5 +28,24 @@ package Box2D.Collision.Structures
 		public var indexA:int;
 		/** wB index*/
 		public var indexB:int;
+
+		/**
+		 */
+		public function Set(p_simpleVertex:b2SimplexVertex):void
+		{
+			wAX = p_simpleVertex.wAX;
+			wAY = p_simpleVertex.wAY;
+
+			wBX = p_simpleVertex.wBX;
+			wBY = p_simpleVertex.wBY;
+
+			wX = p_simpleVertex.wX;
+			wY = p_simpleVertex.wY;
+
+			a = p_simpleVertex.a;
+
+			indexA = p_simpleVertex.indexA;
+			indexB = p_simpleVertex.indexB;
+		}
 	}
 }
