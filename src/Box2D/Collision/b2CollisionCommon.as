@@ -237,10 +237,8 @@ package Box2D.Collision
 				++simplex.m_count;
 			}
 
-			p.Dispose();
-
 			// Prepare output TODO: Optimize start//
-			var pointA:b2Vec2 = b2Vec2.Get();
+			var pointA:b2Vec2 = p;
 			var pointB:b2Vec2 = b2Vec2.Get();
 			simplex.GetWitnessPoints(pointA, pointB);
 
