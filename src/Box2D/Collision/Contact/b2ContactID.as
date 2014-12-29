@@ -51,5 +51,17 @@ package Box2D.Collision.Contact
 		 * The feature type on shapeB
 		 */
 		public var typeB:uint;
+
+		/**
+		 * Initialize instance by given one.
+		 */
+		public function Set(p_contactId:b2ContactID):void
+		{
+			key = p_contactId.key;
+			indexA = p_contactId.indexA;
+			indexB = p_contactId.indexB;
+			typeA = p_contactId.typeA;
+			typeB = p_contactId.typeB;
+		}
 	}
 }

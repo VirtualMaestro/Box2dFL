@@ -5,6 +5,7 @@
  */
 package Box2D.Collision
 {
+	import Box2D.Collision.Contact.b2ContactID;
 	import Box2D.Collision.Shapes.b2Shape;
 	import Box2D.Collision.Structures.b2ClipVertex;
 	import Box2D.Collision.Structures.b2DistanceData;
@@ -35,12 +36,44 @@ package Box2D.Collision
 		 * @param p_offset
 		 * @param p_vertexIndexA
 		 * @return
-		 * TODO:
 		 */
 		static public function b2ClipSegmentToLine(p_vOut:Vector.<b2ClipVertex>/*2 elem*/, p_vIn:Vector.<b2ClipVertex> /*2 elem*/,
 		                                           p_normalX:Number, p_normalY:Number, p_offset:Number, p_vertexIndexA:int):int
 		{
-			return 0;
+			// Start with no output points
+			var numOut:int = 0;
+
+			var vIn0:b2ClipVertex = p_vIn[0];
+			var vIn1:b2ClipVertex = p_vIn[1];
+
+			// Calculate the distance of end points to the line
+			var distance0:Number = (p_normalX * vIn0.vX + p_normalY * vIn0.vY) - p_offset;
+			var distance1:Number = (p_normalX * vIn1.vX + p_normalY * vIn1.vY) - p_offset;
+
+			// If the points are behind the plane
+			if (distance0 <= 0.0) p_vOut[numOut++].Set(vIn0);
+			if (distance1 <= 0.0) p_vOut[numOut++].Set(vIn1);
+
+			// If the points are on different sides of the plane
+			if (distance0 * distance1 < 0.0)
+			{
+				// Find intersection point of edge and plane
+				var interp:Number = distance0 / (distance0 - distance1);
+				var clipVertexOut:b2ClipVertex = p_vOut[numOut];
+
+				clipVertexOut.vX = vIn0.vX + interp * (vIn1.vX - vIn0.vX);
+				clipVertexOut.vY = vIn0.vY + interp * (vIn1.vY - vIn0.vY);
+
+				// VertexA is hitting edgeB
+				var contactId:b2ContactID = clipVertexOut.id;
+				contactId.indexA = p_vertexIndexA;
+				contactId.indexB = vIn0.id.indexB;
+				contactId.typeA = b2ContactID.VERTEX_CF_TYPE;
+				contactId.typeB = b2ContactID.FACE_CF_TYPE;
+				++numOut;
+			}
+
+			return numOut;
 		}
 
 		/**
@@ -53,13 +86,23 @@ package Box2D.Collision
 		 * @param p_xfA
 		 * @param p_xfB
 		 * @return
-		 * TODO:
+		 * TODO: Optimize allocation memory
 		 */
 		static public function b2TestOverlap(p_shapeA:b2Shape, p_indexA:int,
 		                                     p_shapeB:b2Shape, p_indexB:int,
 											 p_xfA:b2Mat22, p_xfB:b2Mat22):Boolean
 		{
+			var distanceData:b2DistanceData = new b2DistanceData();
+			distanceData.proxyA.Set(p_shapeA, p_indexA);
+			distanceData.proxyB.Set(p_shapeB, p_indexB);
+			distanceData.transformA = p_xfA;
+			distanceData.transformB = p_xfB;
+			distanceData.useRadii = true;
 
+			var cache:b2SimplexCache = new b2SimplexCache();
+			b2Distance(distanceData, cache);
+
+			return distanceData.distance < 10.0*b2Math.EPSILON
 		}
 
 		/**

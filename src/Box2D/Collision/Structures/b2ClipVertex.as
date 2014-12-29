@@ -30,6 +30,16 @@ package Box2D.Collision.Structures
 		}
 
 		/**
+		 * Init instance from given one.
+		 */
+		public function Set(p_clipVertex:b2ClipVertex):void
+		{
+			vX = p_clipVertex.vX;
+			vY = p_clipVertex.vY;
+			id.Set(p_clipVertex.id);
+		}
+
+		/**
 		 */
 		override public function Dispose():void
 		{
