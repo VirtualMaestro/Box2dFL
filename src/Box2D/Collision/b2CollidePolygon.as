@@ -40,16 +40,18 @@ package Box2D.Collision
 			p_manifold.pointCount = 0;
 
 			var totalRadius:Number = p_polyA.m_radius + p_polyB.m_radius;
-			var edgeA:int = 0;
-			var separationA:Number = b2FindMaxSeparation(edgeA, p_polyA, p_xfA, p_polyB, p_xfB);
+			var result:Object = b2FindMaxSeparation(p_polyA, p_xfA, p_polyB, p_xfB);
+			var edgeA:int = result.bestIndex;
+			var separationA:Number = result.maxSeparation;
 
 			if (separationA > totalRadius)
 			{
 				return;
 			}
 
-			var edgeB:int = 0;
-			var separationB:Number = b2FindMaxSeparation(edgeB, p_polyB, p_xfB, p_polyA, p_xfA);
+			result = b2FindMaxSeparation(p_polyB, p_xfB, p_polyA, p_xfA);
+			var edgeB:int = result.bestIndex;
+			var separationB:Number = result.maxSeparation;
 
 			if (separationB > totalRadius)
 			{
@@ -311,20 +313,93 @@ package Box2D.Collision
 		}
 
 		/**
-		 * Find the max separation between poly1 and poly2 using edge normals from poly1.
-		 * @param p_edgeIndex
-		 * @param p_poly1
-		 * @param p_xf1
-		 * @param p_poly2
-		 * @param p_xf2
-		 * @return
-		 * TODO:
+		 * Use as holder for returning results of b2FindMaxSeparation method.
+		 * Prevent creation and destroying new instances.
 		 */
-        static public function b2FindMaxSeparation(p_edgeIndex:int,
-													 p_poly1:b2PolygonShape, p_xf1:b2Mat22,
-													 p_poly2:b2PolygonShape, p_xf2:b2Mat22):Number
+		static private var _maxSeparationResult:Object = {bestIndex:0, maxSeparation:0};
+
+		/**
+		 * Find the max separation between poly1 and poly2 using edge normals from poly1.
+		 * @return Object where two properties - 'maxSeparation' and 'bestIndex'.
+		 * Impossible to use returning object in own needs, should to copy values from it.
+		 */
+        static public function b2FindMaxSeparation(p_poly1:b2PolygonShape, p_xf1:b2Mat22,
+                                                   p_poly2:b2PolygonShape, p_xf2:b2Mat22):Object
         {
-	        return 0;
+	        var count1:int = p_poly1.m_count;
+	        var count2:int = p_poly2.m_count;
+	        var n1s:Vector.<Number> = p_poly1.m_normals;
+	        var v1s:Vector.<Number> = p_poly1.m_vertices;
+	        var v2s:Vector.<Number> = p_poly2.m_vertices;
+
+	        // -- b2Transform xf = b2MulT(xf2, xf1); --//
+	        var cos1:Number = p_xf2.c11;
+	        var sin1:Number = p_xf2.c12;
+	        var cos2:Number = p_xf1.c11;
+	        var sin2:Number = p_xf1.c12;
+
+	        var mSin:Number = (cos1 * sin2 - sin1 * cos2);
+	        var mCos:Number = (cos1 * cos2 + sin1 * sin2);
+
+	        var pX:Number = p_xf1.tx - p_xf2.tx;
+	        var pY:Number = p_xf1.ty - p_xf2.ty;
+
+	        var mTX:Number =  cos1 * pX + sin1 * pY;
+	        var mTY:Number = -sin1 * pX + cos1 * pY;
+	        //--------------------------------------//
+
+	        var bestIndex:int = 0;
+	        var maxSeparation:Number = -Number.MAX_VALUE;
+
+	        var nX:Number;
+	        var nY:Number;
+	        var vX:Number;
+	        var vY:Number;
+
+	        for (var i:int = 0; i < count1; i++)
+	        {
+		        // Get poly1 normal in frame2.
+		        nX = b2Math.getX(n1s, i);
+		        nY = b2Math.getY(n1s, i);
+		        vX = b2Math.getX(v1s, i);
+		        vY = b2Math.getY(v1s, i);
+
+		        var n1X:Number = mCos * nX - mSin * nY;
+		        var n1Y:Number = mSin * nX + mCos * nY;
+
+		        var v1X:Number = (mCos * vX - mSin * vY) + mTX;
+		        var v1Y:Number = (mSin * vX + mCos * vY) + mTY;
+
+		        // Find deepest point for normal i.
+		        var si:Number = Number.MAX_VALUE;
+		        var sij:Number;
+		        var v2X:Number;
+		        var v2Y:Number;
+
+		        for (var j:int = 0; j < count2; j++)
+		        {
+			        v2X = b2Math.getX(v2s, j) - v1X;
+			        v2Y = b2Math.getY(v2s, j) - v1Y;
+
+			        sij = n1X * v2X + n1Y * v2Y;
+
+			        if (sij < si)
+			        {
+				        si = sij;
+			        }
+		        }
+
+		        if (si > maxSeparation)
+		        {
+			        maxSeparation = si;
+			        bestIndex = i;
+		        }
+	        }
+
+	        _maxSeparationResult.bestIndex = bestIndex;
+	        _maxSeparationResult.maxSeparation = maxSeparation;
+
+	        return _maxSeparationResult;
         }
 	}
 }
