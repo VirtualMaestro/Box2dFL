@@ -5,6 +5,7 @@
  */
 package Box2D.Collision
 {
+	import Box2D.Collision.Contact.b2ContactID;
 	import Box2D.Collision.Manifold.b2Manifold;
 	import Box2D.Collision.Manifold.b2ManifoldPoint;
 	import Box2D.Collision.Shapes.b2PolygonShape;
@@ -14,6 +15,7 @@ package Box2D.Collision
 	import Box2D.Common.b2Disposable;
 	import Box2D.Common.b2Settings;
 	import Box2D.Common.b2internal;
+	import Box2D.b2Assert;
 
 	use namespace b2internal;
 
@@ -218,13 +220,94 @@ package Box2D.Collision
 		 * @param p_edge1
 		 * @param p_poly2
 		 * @param p_xf2
-		 * TODO:
 		 */
 		static public function b2FindIncidentEdge(p_c:Vector.<b2ClipVertex> /*2 elements*/,
 													 p_poly1:b2PolygonShape, p_xf1:b2Mat22, p_edge1:int,
 													 p_poly2:b2PolygonShape, p_xf2:b2Mat22):void
 		{
+			var normals1:Vector.<Number> = p_poly1.m_normals;
+			var normals2:Vector.<Number> = p_poly2.m_normals;
+			var vertices2:Vector.<Number> = p_poly2.m_vertices;
+			var count2:int = p_poly2.m_count;
 
+			CONFIG::debug
+			{
+				b2Assert(0 <= p_edge1 && p_edge1 < p_poly1.m_count, "");
+			}
+
+			// Get the normal of the reference edge in poly2's frame.
+			var nX:Number = b2Math.getX(normals1, p_edge1);
+			var nY:Number = b2Math.getY(normals1, p_edge1);
+
+			var cos:Number = p_xf1.c11;
+			var sin:Number = p_xf1.c12;
+
+			var rX:Number = cos * nX - sin * nY;
+			var rY:Number = sin * nX + cos * nY;
+
+			cos = p_xf2.c11;
+			sin = p_xf2.c12;
+
+			var normal1X:Number =  cos * rX + sin * rY;
+			var normal1Y:Number = -sin * rX + cos * rY;
+
+			// Find the incident edge on poly2
+			var index:int = 0;
+			var minDot:Number = Number.MAX_VALUE;
+			var dot:Number;
+
+			for (var i:int = 0; i < count2; i++)
+			{
+				nX = b2Math.getX(normals2, i);
+				nY = b2Math.getY(normals2, i);
+
+				dot = normal1X * nX + normal1Y * nY;
+
+				if (dot < minDot)
+				{
+					minDot = dot;
+					index = i;
+				}
+			}
+
+			// Build the clip vertices for the incident edge.
+			var i1:int = index;
+			var i2:int = (i1 + 1) < count2 ? i1+1 : 0;
+			var clipVertex:b2ClipVertex = p_c[0];
+			var id:b2ContactID = clipVertex.id;
+
+			nX = b2Math.getX(vertices2, i1);
+			nY = b2Math.getY(vertices2, i1);
+
+			var tX:Number = p_xf2.tx;
+			var tY:Number = p_xf2.ty;
+
+			var vX:Number = (cos * nX - sin * nY) + tX;
+			var vY:Number = (sin * nX + cos * nY) + tY;
+
+			clipVertex.vX = vX;
+			clipVertex.vY = vY;
+			id.indexA = p_edge1;
+			id.indexB = i1;
+			id.typeA = b2ContactID.FACE_CF_TYPE;
+			id.typeB = b2ContactID.VERTEX_CF_TYPE;
+
+			//
+			clipVertex = p_c[1];
+			id = clipVertex.id;
+
+			nX = b2Math.getX(vertices2, i2);
+			nY = b2Math.getY(vertices2, i2);
+
+			vX = (cos * nX - sin * nY) + tX;
+			vY = (sin * nX + cos * nY) + tY;
+
+			clipVertex.vX = vX;
+			clipVertex.vY = vY;
+			id.indexA = p_edge1;
+			id.indexB = i2;
+			id.typeA = b2ContactID.FACE_CF_TYPE;
+			id.typeB = b2ContactID.VERTEX_CF_TYPE;
 		}
 
 		/**
