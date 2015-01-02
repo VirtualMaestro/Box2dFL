@@ -11,6 +11,7 @@ package Box2D.Collision
 	import Box2D.Collision.Structures.b2EPAxis;
 	import Box2D.Common.Math.b2Mat22;
 	import Box2D.Common.Math.b2Math;
+	import Box2D.b2Assert;
 
 	/**
 	 * This class collides and edge and a polygon, taking into account edge adjacency.
@@ -85,7 +86,7 @@ package Box2D.Collision
 		public function Collide(p_manifold:b2Manifold, p_edgeA:b2EdgeShape, p_xfA:b2Mat22,
 					            p_polygonB:b2PolygonShape, p_xfB:b2Mat22):void
 		{
-
+			b2Assert(false, "current method isn't implemented yet and can't be used!");
 		}
 
 		/**
@@ -126,6 +127,7 @@ package Box2D.Collision
 		 */
 		public function ComputePolygonSeparation():b2EPAxis
 		{
+			b2Assert(false, "current method isn't implemented yet and can't be used!");
 			return null;
 		}
 	}

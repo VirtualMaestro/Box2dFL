@@ -133,7 +133,6 @@ package Box2D.Collision.Structures
 		 * Get the supporting vertex index in the given direction.
 		 * @return int
 		 */
-		[Inline]
 		final public function GetSupport(p_dX:Number, p_dY:Number):int
 		{
 		    var bestIndex:int = 0;
@@ -192,7 +191,6 @@ package Box2D.Collision.Structures
 		 * @param p_index
 		 * @return  X component of vertex.
 		 */
-		[Inline]
 		final public function GetVertexX(p_index:int):Number
 		{
 			return b2Math.getX(m_vertices, p_index);
@@ -203,7 +201,6 @@ package Box2D.Collision.Structures
 		 * @param p_index
 		 * @return  Y component of vertex.
 		 */
-		[Inline]
 		final public function GetVertexY(p_index:int):Number
 		{
 			return b2Math.getY(m_vertices, p_index);

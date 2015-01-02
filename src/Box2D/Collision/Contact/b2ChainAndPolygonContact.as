@@ -7,12 +7,10 @@ package Box2D.Collision.Contact
 {
 	import Box2D.Collision.Manifold.b2Manifold;
 	import Box2D.Collision.Shapes.b2ChainShape;
-	import Box2D.Collision.Shapes.b2CircleShape;
 	import Box2D.Collision.Shapes.b2EdgeShape;
 	import Box2D.Collision.Shapes.b2PolygonShape;
 	import Box2D.Collision.Shapes.b2Shape;
-	import Box2D.Collision.b2CollideCircle;
-	import Box2D.Collision.b2CollideEdge;
+	import Box2D.Collision.b2Collision;
 	import Box2D.Common.Math.b2Mat22;
 	import Box2D.Dynamics.b2Fixture;
 	import Box2D.b2Assert;
@@ -71,7 +69,7 @@ package Box2D.Collision.Contact
 			var edge:b2EdgeShape = new b2EdgeShape();
 			chain.GetChildEdge(edge, m_indexA);
 
-			b2CollideEdge.b2CollideEdgeAndPolygon(p_manifold, edge, p_xfA, m_fixtureB.GetShape() as b2PolygonShape, p_xfB)
+			b2Collision.b2CollideEdgeAndPolygon(p_manifold, edge, p_xfA, m_fixtureB.GetShape() as b2PolygonShape, p_xfB)
 		}
 	}
 }

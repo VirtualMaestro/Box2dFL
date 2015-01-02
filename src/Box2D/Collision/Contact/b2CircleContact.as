@@ -8,7 +8,7 @@ package Box2D.Collision.Contact
 	import Box2D.Collision.Manifold.b2Manifold;
 	import Box2D.Collision.Shapes.b2CircleShape;
 	import Box2D.Collision.Shapes.b2Shape;
-	import Box2D.Collision.b2CollideCircle;
+	import Box2D.Collision.b2Collision;
 	import Box2D.Common.Math.b2Mat22;
 	import Box2D.Dynamics.b2Fixture;
 	import Box2D.b2Assert;
@@ -59,8 +59,8 @@ package Box2D.Collision.Contact
 		 */
 		override public function Evaluate(p_manifold:b2Manifold, p_xfA:b2Mat22, p_xfB:b2Mat22):void
 		{
-			b2CollideCircle.b2CollideCircles(p_manifold, m_fixtureA.GetShape() as b2CircleShape, p_xfA,
-			                                             m_fixtureB.GetShape() as b2CircleShape, p_xfB);
+			b2Collision.b2CollideCircles(p_manifold, m_fixtureA.GetShape() as b2CircleShape, p_xfA,
+			                             m_fixtureB.GetShape() as b2CircleShape, p_xfB);
 		}
 	}
 }

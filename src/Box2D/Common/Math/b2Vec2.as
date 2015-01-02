@@ -105,7 +105,6 @@ package Box2D.Common.Math
 		 * Returns new instance of b2Vec2.
 		 * @return b2Vec2
 		 */
-		[Inline]
 		static public function Get(p_x:Number = 0, p_y:Number = 0):b2Vec2
 		{
 			var instance:b2Disposable = b2Disposable.Get(classId);

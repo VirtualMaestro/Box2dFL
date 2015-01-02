@@ -230,11 +230,13 @@ package Box2D.Collision
 			var leafAABB:b2AABB = m_nodes[p_leaf].aabb.Clone() as b2AABB;
 			var index:int = m_root;
 			var combinedAABB:b2AABB = b2AABB.Get();
+			var child1:int;
+			var child2:int;
 
 			while (m_nodes[index].IsLeaf == false)
 			{
-				var child1:int = m_nodes[index].child1;
-				var child2:int = m_nodes[index].child2;
+				child1 = m_nodes[index].child1;
+				child2 = m_nodes[index].child2;
 
 				var area:Number = m_nodes[index].aabb.GetPerimeter();
 
@@ -248,6 +250,9 @@ package Box2D.Collision
 				// Minimum cost of pushing the leaf further down the tree
 				var inheritanceCost:Number = 2.0 * (combinedArea - area);
 
+				var oldArea:Number;
+				var newArea:Number;
+
 				// Cost of descending into child1
 				var cost1:Number;
 				if (m_nodes[child1].IsLeaf)
@@ -258,8 +263,8 @@ package Box2D.Collision
 				else
 				{
 					combinedAABB.CombineTwo(leafAABB, m_nodes[child1].aabb);
-					var oldArea:Number = m_nodes[child1].aabb.GetPerimeter();
-					var newArea:Number = combinedAABB.GetPerimeter();
+					oldArea = m_nodes[child1].aabb.GetPerimeter();
+					newArea = combinedAABB.GetPerimeter();
 					cost1 = (newArea - oldArea) + inheritanceCost;
 				}
 
@@ -274,8 +279,8 @@ package Box2D.Collision
 				else
 				{
 					combinedAABB.CombineTwo(leafAABB, m_nodes[child2].aabb);
-					var oldArea:Number = m_nodes[child2].aabb.GetPerimeter();
-					var newArea:Number = combinedAABB.GetPerimeter();
+					oldArea = m_nodes[child2].aabb.GetPerimeter();
+					newArea = combinedAABB.GetPerimeter();
 					cost2 = newArea - oldArea + inheritanceCost;
 				}
 
@@ -341,8 +346,8 @@ package Box2D.Collision
 			{
 				index = Balance(index);
 
-				var child1:int = m_nodes[index].child1;
-				var child2:int = m_nodes[index].child2;
+				child1 = m_nodes[index].child1;
+				child2 = m_nodes[index].child2;
 
 				CONFIG::debug
 				{
