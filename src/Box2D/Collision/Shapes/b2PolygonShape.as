@@ -51,7 +51,11 @@ package Box2D.Collision.Shapes
 		 * Every following two elements is x and y.
 		 */
 		b2internal var m_normals:Vector.<Number>;
-		b2internal var m_vertexCount:int;
+
+		/**
+		 * Vertex count.
+		 */
+		b2internal var m_count:int;
 
 		/**
 		 */
@@ -61,7 +65,7 @@ package Box2D.Collision.Shapes
 			m_radius = b2Settings.polygonRadius;
 			m_centroidX = 0;
 			m_centroidY = 0;
-			m_vertexCount = 0;
+			m_count = 0;
 			m_vertices = new <Number>[];
 			m_normals = new <Number>[];
 		}
@@ -81,12 +85,12 @@ package Box2D.Collision.Shapes
 			m_radius = polygonShape.m_radius;
 			m_centroidX = polygonShape.m_centroidX;
 			m_centroidY = polygonShape.m_centroidY;
-			m_vertexCount = polygonShape.m_vertexCount;
+			m_count = polygonShape.m_count;
 
 			var vertices:Vector.<Number> = polygonShape.m_vertices;
 			var normals:Vector.<Number> = polygonShape.m_normals;
 
-			for (var i:int = 0; i < m_vertexCount; i++)
+			for (var i:int = 0; i < m_count; i++)
 			{
 				m_vertices[i] = vertices[i];
 				m_normals[i] = normals[i];
@@ -221,7 +225,7 @@ package Box2D.Collision.Shapes
 				b2Assert(m>2, "Polygon is degenerate");
 			}
 
-			m_vertexCount = m;
+			m_count = m;
 
 			// Copy vertices
 			for (i = 0; i < m; i++)
@@ -267,7 +271,7 @@ package Box2D.Collision.Shapes
 		[Inline]
 		final public function SetAsBox(p_hx:Number, p_hy:Number):void
 		{
-			m_vertexCount = 4;
+			m_count = 4;
 
 			m_vertices[0] = -p_hx;
 			m_vertices[1] = -p_hy;
@@ -322,7 +326,7 @@ package Box2D.Collision.Shapes
 
 			var vecX:Number;
 			var vecY:Number;
-			var len:int = m_vertexCount*2;
+			var len:int = m_count*2;
 
 			for (var i:int=0, i1:int=1; i < len; i+=2, i1+=2)
 			{
@@ -357,7 +361,7 @@ package Box2D.Collision.Shapes
 			var localX:Number =  cos * rX + sin * rY;
 			var localY:Number = -sin * rX + cos * rY;
 
-			for (var i:int = 0; i < m_vertexCount; i++)
+			for (var i:int = 0; i < m_count; i++)
 			{
 				var tvX:Number = b2Math.getX(m_vertices, i);
 				var tvY:Number = b2Math.getY(m_vertices, i);
@@ -409,7 +413,7 @@ package Box2D.Collision.Shapes
 			var upper:Number = p_rayCastData.maxFraction;
 			var index:int = -1;
 
-			for (var i:int = 0; i < m_vertexCount; i++)
+			for (var i:int = 0; i < m_count; i++)
 			{
 				// p = p1 + a * d
 				// dot(normal, p - v) = 0
@@ -504,7 +508,7 @@ package Box2D.Collision.Shapes
 			var upperX:Number = lowerX;
 			var upperY:Number = lowerY;
 
-			for (var i:int = 1; i < m_vertexCount; i++)
+			for (var i:int = 1; i < m_count; i++)
 			{
 				var viX:Number = b2Math.getX(m_vertices, i);
 				var viY:Number = b2Math.getY(m_vertices, i);
@@ -558,7 +562,7 @@ package Box2D.Collision.Shapes
 
 			 CONFIG::debug
 			 {
-				 b2Assert(m_vertexCount > 2, "degenerate polygon");
+				 b2Assert(m_count > 2, "degenerate polygon");
 			 }
 
 			var centerX:Number = 0;
@@ -572,7 +576,7 @@ package Box2D.Collision.Shapes
 			var sY:Number = 0;
 
 			// This code would put the reference point inside the polygon.
-			var mCount:int = m_vertexCount;
+			var mCount:int = m_count;
 			for (var i:int = 0; i < mCount; i++)
 			{
 				sX += b2Math.getX(m_vertices, i);
@@ -650,7 +654,7 @@ package Box2D.Collision.Shapes
 		[Inline]
 		final public function GetVertexCount():int
 		{
-			return m_vertexCount;
+			return m_count;
 		}
 
 		/**
@@ -664,7 +668,7 @@ package Box2D.Collision.Shapes
 		{
 			CONFIG::debug
 			{
-				b2Assert((0 <= p_index && p_index < m_vertexCount), "index out of range");
+				b2Assert((0 <= p_index && p_index < m_count), "index out of range");
 			}
 
 			return b2Vec2.Get(m_vertices[p_index], m_vertices[p_index+1]);
@@ -707,7 +711,7 @@ package Box2D.Collision.Shapes
 			var vX:Number;
 			var vY:Number;
 			var c:Number;
-			var mCount:int = m_vertexCount;
+			var mCount:int = m_count;
 
 			for (var i:int = 0; i < mCount; i++)
 			{
@@ -755,12 +759,12 @@ package Box2D.Collision.Shapes
 		override public function Clone():IDisposable
 		{
 			var polygon:b2PolygonShape = Get();
-			polygon.m_vertexCount = m_vertexCount;
+			polygon.m_count = m_count;
 			polygon.m_radius = m_radius;
 			polygon.m_centroidX = m_centroidX;
 			polygon.m_centroidY = m_centroidY;
 
-			for (var i:int = 0; i < m_vertexCount; i++)
+			for (var i:int = 0; i < m_count; i++)
 			{
 				b2Math.setXY(b2Math.getX(m_vertices, i), b2Math.getY(m_vertices, i), polygon.m_vertices, i);
 				b2Math.setXY(b2Math.getX(m_normals, i), b2Math.getY(m_normals, i), polygon.m_normals, i);
@@ -780,7 +784,7 @@ package Box2D.Collision.Shapes
 
 			m_normals.length = 0;
 			m_vertices.length = 0;
-			m_vertexCount = 0;
+			m_count = 0;
 
 			b2Disposable.Put(this, classId);
 		}

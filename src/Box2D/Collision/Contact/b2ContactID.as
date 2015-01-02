@@ -54,6 +54,7 @@ package Box2D.Collision.Contact
 
 		/**
 		 * Initialize instance by given one.
+		 * (Copying values from given structure to this one)
 		 */
 		public function Set(p_contactId:b2ContactID):void
 		{
@@ -62,6 +63,25 @@ package Box2D.Collision.Contact
 			indexB = p_contactId.indexB;
 			typeA = p_contactId.typeA;
 			typeB = p_contactId.typeB;
+		}
+
+		/**
+		 * Swap the Contact Feature:
+		 * indexA = indexB;
+		 * indexB = indexA;
+		 * typeA = typeB;
+		 * typeB = typeA;
+		 */
+		[Inline]
+		final public function Swap():void
+		{
+			var temp:uint = indexA;
+			indexA = indexB;
+			indexB = temp;
+
+			temp = typeA;
+			typeA = typeB;
+			typeB = temp;
 		}
 	}
 }

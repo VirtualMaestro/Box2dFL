@@ -76,7 +76,7 @@ package Box2D.Collision.Structures
 				{
 					var polygon:b2PolygonShape = p_shape as b2PolygonShape;
 					m_vertices = polygon.m_vertices;
-					m_count = polygon.m_vertexCount;
+					m_count = polygon.m_count;
 					m_radius = polygon.m_radius;
 
 					break;

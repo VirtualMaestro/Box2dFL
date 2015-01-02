@@ -109,7 +109,7 @@ package Box2D.Collision
 			var normalIndex:int = 0;
 			var separation:Number = Number.MIN_VALUE;
 			var radius:Number = p_polygonA.m_radius + p_circleB.m_radius;
-			var vertexCount:int = p_polygonA.m_vertexCount;
+			var vertexCount:int = p_polygonA.m_count;
 			var vertices:Vector.<Number> = p_polygonA.m_vertices;
 			var normals:Vector.<Number> = p_polygonA.m_normals;
 

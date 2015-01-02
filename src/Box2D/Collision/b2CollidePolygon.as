@@ -6,9 +6,16 @@
 package Box2D.Collision
 {
 	import Box2D.Collision.Manifold.b2Manifold;
+	import Box2D.Collision.Manifold.b2ManifoldPoint;
 	import Box2D.Collision.Shapes.b2PolygonShape;
 	import Box2D.Collision.Structures.b2ClipVertex;
 	import Box2D.Common.Math.b2Mat22;
+	import Box2D.Common.Math.b2Math;
+	import Box2D.Common.b2Disposable;
+	import Box2D.Common.b2Settings;
+	import Box2D.Common.b2internal;
+
+	use namespace b2internal;
 
 	/**
 	 *
@@ -23,13 +30,184 @@ package Box2D.Collision
 		 * Find incident edge
 		 * Clip
 		 * The normal points from 1 to 2
-		 * // TODO:
  		 */
 		static public function b2CollidePolygons(p_manifold:b2Manifold,
 												  p_polyA:b2PolygonShape, p_xfA:b2Mat22,
 												  p_polyB:b2PolygonShape, p_xfB:b2Mat22):void
 		{
+			p_manifold.pointCount = 0;
 
+			var totalRadius:Number = p_polyA.m_radius + p_polyB.m_radius;
+			var edgeA:int = 0;
+			var separationA:Number = b2FindMaxSeparation(edgeA, p_polyA, p_xfA, p_polyB, p_xfB);
+
+			if (separationA > totalRadius)
+			{
+				return;
+			}
+
+			var edgeB:int = 0;
+			var separationB:Number = b2FindMaxSeparation(edgeB, p_polyB, p_xfB, p_polyA, p_xfA);
+
+			if (separationB > totalRadius)
+			{
+				return;
+			}
+
+			var poly1:b2PolygonShape;
+			var poly2:b2PolygonShape;
+			var xf1:b2Mat22;
+			var xf2:b2Mat22;
+			var edge1:int;
+			var flip:uint;
+			var k_tol:Number = 0.1 * b2Settings.linearSlop;
+
+			if (separationB > separationA + k_tol)
+			{
+				poly1 = p_polyB;
+				poly2 = p_polyA;
+				xf1 = p_xfB;
+				xf2 = p_xfA;
+				edge1 = edgeB;
+				p_manifold.type = b2Manifold.FACE_B;
+				flip = 1;
+			}
+			else
+			{
+				poly1 = p_polyA;
+				poly2 = p_polyB;
+				xf1 = p_xfA;
+				xf2 = p_xfB;
+				edge1 = edgeA;
+				p_manifold.type = b2Manifold.FACE_A;
+				flip = 0;
+			}
+
+			var incidentEdge:Vector.<b2ClipVertex> = new <b2ClipVertex>[b2ClipVertex.Get(), b2ClipVertex.Get()];
+
+			b2FindIncidentEdge(incidentEdge, poly1, xf1, edge1, poly2, xf2);
+
+			var count1:int = poly1.m_count;
+			var vertices1:Vector.<Number> = poly1.m_vertices;
+			var iv1:int = edge1;
+			var iv2:int = (edge1 + 1) < count1 ? edge1 + 1 : 0;
+			var v11X:Number = b2Math.getX(vertices1, iv1);
+			var v11Y:Number = b2Math.getY(vertices1, iv1);
+			var v12X:Number = b2Math.getX(vertices1, iv2);
+			var v12Y:Number = b2Math.getY(vertices1, iv2);
+			var localTangentX:Number = v12X - v11X;
+			var localTangentY:Number = v12Y - v11Y;
+
+			var invLength:Number = 1.0 / Math.sqrt(localTangentX*localTangentX + localTangentY*localTangentY);
+			localTangentX *= invLength;
+			localTangentY *= invLength;
+
+			var localNormalX:Number =  localTangentY;
+			var localNormalY:Number = -localTangentX;
+
+			var planePointX:Number = 0.5 * (v11X + v12X);
+			var planePointY:Number = 0.5 * (v11Y + v12Y);
+
+			var cos:Number = xf1.c11;
+			var sin:Number = xf1.c12;
+
+			var tangentX:Number = cos * localTangentX - sin * localTangentY;
+			var tangentY:Number = sin * localTangentX + cos * localTangentY;
+
+			var normalX:Number =  tangentY;
+			var normalY:Number = -tangentX;
+
+			v11X = (cos * v11X - sin * v11Y) + xf1.tx;
+			v11Y = (sin * v11X + cos * v11Y) + xf1.ty;
+
+			v12X = (cos * v12X - sin * v12Y) + xf1.tx;
+			v12Y = (sin * v12X + cos * v12Y) + xf1.ty;
+
+			// Face offset
+			var frontOffset:Number = normalX * v11X + normalY * v11Y;
+
+			//Side offsets, extended by polytope skin thickness
+			var sideOffset1:Number = -(tangentX * v11X + tangentY * v11Y) + totalRadius;
+			var sideOffset2:Number =  (tangentX * v12X + tangentY * v12Y) + totalRadius;
+
+			// Clip incident edge against extruded edge1 side edges
+			var clipPoints1:Vector.<b2ClipVertex> = new <b2ClipVertex>[b2ClipVertex.Get(), b2ClipVertex.Get()];
+			var clipPoints2:Vector.<b2ClipVertex> = incidentEdge;
+			var np:int;
+
+			// Clip to box side 1
+			np = b2CollisionCommon.b2ClipSegmentToLine(clipPoints1, incidentEdge, -tangentX, -tangentY, sideOffset1, iv1);
+
+			if (np < 2)
+			{
+				return;
+			}
+
+			// Clip to negative box side 1
+			np = b2CollisionCommon.b2ClipSegmentToLine(clipPoints2, clipPoints1, tangentX, tangentY, sideOffset2, iv2);
+
+			if (np < 2)
+			{
+				return;
+			}
+
+			// Now clipPoints2 contains the clipped points
+			p_manifold.localNormalX = localNormalX;
+			p_manifold.localNormalY = localNormalY;
+			p_manifold.localPointX = planePointX;
+			p_manifold.localPointY = planePointY;
+
+			var pointCount:int = 0;
+			var separation:Number;
+			var clipVertex:b2ClipVertex;
+			var manifoldPoints:Vector.<b2ManifoldPoint> = p_manifold.points;
+			var cp:b2ManifoldPoint;
+			var px:Number;
+			var py:Number;
+			var vX:Number;
+			var vY:Number;
+
+			cos = xf2.c11;
+			sin = xf2.c12;
+
+			var tx:Number = xf2.tx;
+			var ty:Number = xf2.ty;
+
+			for (var i:int = 0; i < b2Settings.maxManifoldPoints; i++)
+			{
+				clipVertex = clipPoints2[i];
+				vX = clipVertex.vX;
+				vY = clipVertex.vY;
+
+				separation = (normalX * vX + normalY * vY) - frontOffset;
+
+				if (separation <= totalRadius)
+				{
+					cp = manifoldPoints[pointCount];
+
+					px = vX - tx;
+					py = vY - ty;
+					
+					cp.localPointX =  cos * px + sin * py;
+					cp.localPointY = -sin * px + cos * py;
+
+					cp.id.Set(clipVertex.id);
+
+					if (flip)
+					{
+						// Swap features
+						cp.id.Swap();
+					}
+
+					++pointCount;
+				}
+			}
+
+			p_manifold.pointCount = pointCount;
+
+			// dispose temp clip points
+			b2Disposable.clearVectorWithDispose(clipPoints1);
+			b2Disposable.clearVectorWithDispose(clipPoints2);
 		}
 
 		/**
