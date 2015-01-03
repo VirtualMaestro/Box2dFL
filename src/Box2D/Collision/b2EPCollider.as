@@ -11,6 +11,7 @@ package Box2D.Collision
 	import Box2D.Collision.Structures.b2EPAxis;
 	import Box2D.Common.Math.b2Mat22;
 	import Box2D.Common.Math.b2Math;
+	import Box2D.Common.b2Settings;
 	import Box2D.b2Assert;
 
 	/**
@@ -122,13 +123,74 @@ package Box2D.Collision
 		}
 
 		/**
-		 * TODO:
-		 * @return
+		 * TODO: Optimize creation b2EPAxis
 		 */
 		public function ComputePolygonSeparation():b2EPAxis
-		{
-			b2Assert(false, "current method isn't implemented yet and can't be used!");
-			return null;
+		{   var axis:b2EPAxis = new b2EPAxis();
+			axis.type = b2EPAxis.e_unknown;
+			axis.index = -1;
+			axis.separation = -Number.MAX_VALUE;
+
+			var perpX:Number = -m_normalY;
+			var perpY:Number = -m_normalX;
+
+			var count:int = m_polygonB.count;
+			var nX:Number;
+			var nY:Number;
+			var vX:Number;
+			var vY:Number;
+			var normals:Vector.<Number>;
+			var vertices:Vector.<Number>;
+
+			for (var i:int = 0; i < count; i++)
+			{
+				normals = m_polygonB.normals;
+				nX = -b2Math.getX(normals, i);
+				nY = -b2Math.getY(normals, i);
+
+				vertices = m_polygonB.vertices;
+				vX = b2Math.getX(vertices, i);
+				vY = b2Math.getY(vertices, i);
+
+				var s1:Number = nX * (vX-m_v1X) + nY * (vY-m_v1Y);
+				var s2:Number = nX * (vX-m_v2X) + nY * (vY-m_v2Y);
+				var s:Number = b2Math.Min(s1, s2);
+
+				if (s > m_radius)
+				{
+					// No collision
+					axis.type = b2EPAxis.e_edgeB;
+					axis.index = i;
+					axis.separation = s;
+					return axis;
+				}
+
+				// Adjacency
+				if ((nX * perpX + nY * perpY) >= 0.0)
+				{
+					vX = nX - m_upperLimitX;
+					vY = nY - m_upperLimitY;
+				}
+				else
+				{
+					vX = nX - m_lowerLimitX;
+					vY = nY - m_lowerLimitY;
+				}
+
+				if ((vX * m_normalX + vY * m_normalY) < -b2Settings.angularSlop)
+				{
+					continue;
+				}
+
+				if (s > axis.separation)
+				{
+					axis.type = b2EPAxis.e_edgeB;
+					axis.index = i;
+					axis.separation = s;
+				}
+			}
+
+			return axis;
 		}
 	}
 }
