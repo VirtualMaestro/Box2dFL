@@ -168,6 +168,7 @@ package Box2D.Collision.Contact
 		static b2internal function Destroy(p_contact:b2Contact, p_typeA:int, p_typeB:int):void
 		{
 			// TODO:
+			b2Assert(false, "current method isn't implemented yet and can't be used!");
 		}
 
 		/**
@@ -176,6 +177,7 @@ package Box2D.Collision.Contact
 		static b2internal function Destroy2(p_contact:b2Contact):void
 		{
 			// TODO:
+			b2Assert(false, "current method isn't implemented yet and can't be used!");
 		}
 
 		/**
@@ -448,7 +450,7 @@ package Box2D.Collision.Contact
 		 */
 		protected function Update(p_listener/*:b2ContactListener*/):void
 		{
-
+			b2Assert(false, "current method isn't implemented yet and can't be used!");
 		}
 	}
 }
