@@ -8,6 +8,7 @@ package Box2D.Dynamics.Filters
 	import Box2D.Common.b2Disposable;
 	import Box2D.Common.IDisposable;
 	import Box2D.Common.b2internal;
+	import Box2D.Dynamics.b2Fixture;
 
 	use namespace b2internal;
 
@@ -206,6 +207,24 @@ package Box2D.Dynamics.Filters
 		static public function ExcludeCategory(p_filterMask:int, p_excludingGroup:int):int
 		{
 			return p_filterMask & (~p_excludingGroup);
+		}
+
+		/**
+		 * Return true if contact calculations should be performed between these two shapes.
+		 * @warning for performance reasons this is only called when the AABBs begin to overlap.
+		 */
+		[Inline]
+		static public function ShouldCollide(p_fixtureA:b2Fixture, p_fixtureB:b2Fixture):Boolean
+		{
+			var filterA:b2Filter = p_fixtureA.GetFilter();
+			var filterB:b2Filter = p_fixtureB.GetFilter();
+
+			if (filterA.groupIndex == filterB.groupIndex && filterA.groupIndex != 0)
+			{
+				return filterA.groupIndex > 0;
+			}
+
+			return ((filterA.mask & filterB.category) != 0 && (filterA.category & filterB.mask) != 0);
 		}
 
 		/**
