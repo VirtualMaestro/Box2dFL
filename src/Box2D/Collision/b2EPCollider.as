@@ -75,7 +75,6 @@ package Box2D.Collision
 		* 8. Clip
 		*
 		*
-		 *
 		 * @param p_manifold
 		 * @param p_edgeA
 		 * @param p_xfA
@@ -98,26 +97,32 @@ package Box2D.Collision
 			var axis:b2EPAxis = new b2EPAxis();
 			axis.type = b2EPAxis.e_edgeA;
 			axis.index = m_front ? 0 : 1;
-			axis.separation = Number.MAX_VALUE;
 
-			var vertices:Vector.<Number>;
+			var bestSeparation:Number = Number.MAX_VALUE;
+			var vertices:Vector.<Number> = m_polygonB.vertices;
+			var v1X:Number = m_v1X;
+			var v1Y:Number = m_v1Y;
+			var normalX:Number = m_normalX;
+			var normalY:Number = m_normalY;
 			var vX:Number;
 			var vY:Number;
 			var s:Number;
 			var count:int = m_polygonB.count;
+
 			for (var i:int = 0; i < count; i++)
 			{
-				vertices = m_polygonB.vertices;
-				vX = b2Math.getX(vertices, i) - m_v1X;
-				vY = b2Math.getY(vertices, i) - m_v1Y;
+				vX = b2Math.getX(vertices, i) - v1X;
+				vY = b2Math.getY(vertices, i) - v1Y;
 
-				s = m_normalX * vX + m_normalY * vY;
+				s = normalX * vX + normalY * vY;
 
-				if (s < axis.separation)
+				if (s < bestSeparation)
 				{
-					axis.separation = s;
+					bestSeparation = s;
 				}
 			}
+
+			axis.separation = bestSeparation;
 
 			return axis;
 		}
