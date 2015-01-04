@@ -163,24 +163,35 @@ package Box2D.Collision.Contact
 		}
 
 		/**
-		 *
 		 * @param p_contact
-		 * @param p_typeA
-		 * @param p_typeB
 		 */
-		static b2internal function Destroy(p_contact:b2Contact, p_typeA:int, p_typeB:int):void
+		static b2internal function Destroy(p_contact:b2Contact):void
 		{
-			// TODO:
-			b2Assert(false, "current method isn't implemented yet and can't be used!");
-		}
+			CONFIG::debug
+			{
+				b2Assert(s_initialized == true, "s_initialized is false");
+			}
 
-		/**
-		 * @param p_contact
-		 */
-		static b2internal function Destroy2(p_contact:b2Contact):void
-		{
-			// TODO:
-			b2Assert(false, "current method isn't implemented yet and can't be used!");
+			var fixtureA:b2Fixture = p_contact.m_fixtureA;
+			var fixtureB:b2Fixture = p_contact.m_fixtureB;
+
+			if (p_contact.m_manifold.pointCount > 0 && !fixtureA.IsSensor() && !fixtureB.IsSensor())
+			{
+				fixtureA.GetBody().SetAwake(true);
+				fixtureB.GetBody().SetAwake(true);
+			}
+
+			var typeA:int = fixtureA.GetType();
+			var typeB:int = fixtureB.GetType();
+
+			CONFIG::debug
+			{
+				b2Assert(0 <= typeA && typeB < b2Shape.TYPE_COUNT, "wrong type value");
+				b2Assert(0 <= typeA && typeB < b2Shape.TYPE_COUNT, "wrong type value");
+			}
+
+			var destroyFn:Function = s_registers[typeA][typeB].destroyFcn;
+			destroyFn(p_contact);
 		}
 
 		/**
