@@ -5,6 +5,7 @@ package Box2D.Dynamics
 {
 	import Box2D.Collision.Contact.b2Contact;
 	import Box2D.Collision.b2BroadPhase;
+	import Box2D.Dynamics.Callbacks.b2ContactListener;
 	import Box2D.Dynamics.Filters.b2Filter;
 	import Box2D.b2Assert;
 
@@ -18,7 +19,7 @@ package Box2D.Dynamics
 		public var m_contactList:b2Contact;
 		public var m_contactCount:int;
 		public var m_contactFilter:b2Filter;
-		public var m_contactListener/*:b2ContactListener TODO:*/;
+		public var m_contactListener:b2ContactListener;
 
 		public function b2ContactManager()
 		{

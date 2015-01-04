@@ -30,6 +30,7 @@ package Box2D.Dynamics.Callbacks
 		/**
 		 * Called when two fixtures begin to touch.
 		 * @param p_contact
+		 * TODO
 		 */
 		public function BeginContact(p_contact:b2Contact):void
 		{
@@ -38,6 +39,7 @@ package Box2D.Dynamics.Callbacks
 
 		/**
 		 * Called when two fixtures cease to touch.
+		 * TODO
 		 */
 		public function EndContact(p_contact:b2Contact):void
 		{
@@ -55,6 +57,7 @@ package Box2D.Dynamics.Callbacks
 		* Note: if you set the number of contact points to zero, you will not
 		* get an EndContact callback. However, you may get a BeginContact callback
 		* the next step.
+		 * TODO
 		*/
 		public function PreSolve(p_contact:b2Contact, p_oldManifold:b2Manifold):void
 		{
@@ -68,6 +71,7 @@ package Box2D.Dynamics.Callbacks
 		* arbitrarily large if the sub-step is small. Hence the impulse is provided explicitly
 		* in a separate data structure.
 		* Note: this is only called for contacts that are touching, solid, and awake.
+		 * TODO
 		*/
 		public function PostSolve(p_contact:b2Contact, p_impulse:b2ContactImpulse):void
 		{
