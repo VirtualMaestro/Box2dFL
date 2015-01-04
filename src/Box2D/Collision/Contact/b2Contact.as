@@ -4,10 +4,13 @@
 package Box2D.Collision.Contact
 {
 	import Box2D.Collision.Manifold.b2Manifold;
+	import Box2D.Collision.Manifold.b2ManifoldPoint;
 	import Box2D.Collision.Manifold.b2WorldManifold;
 	import Box2D.Collision.Shapes.b2Shape;
+	import Box2D.Collision.b2Collision;
 	import Box2D.Common.Math.b2Mat22;
 	import Box2D.Common.b2internal;
+	import Box2D.Dynamics.Callbacks.b2ContactListener;
 	import Box2D.Dynamics.b2Body;
 	import Box2D.Dynamics.b2Fixture;
 	import Box2D.b2Assert;
@@ -221,6 +224,7 @@ package Box2D.Collision.Contact
 		protected var m_indexB:int;
 
 		protected var m_manifold:b2Manifold;
+		protected var m_oldManifold:b2Manifold;
 
 		protected var m_toiCount:int;
 		protected var m_toi:Number;
@@ -245,6 +249,7 @@ package Box2D.Collision.Contact
 			m_indexA = p_indexA;
 			m_indexB = p_indexB;
 			m_manifold = new b2Manifold();
+			m_oldManifold = new b2Manifold();
 			m_nodeA = new b2ContactEdge();
 			m_nodeB = new b2ContactEdge();
 			m_toiCount = 0;
@@ -446,11 +451,116 @@ package Box2D.Collision.Contact
 		}
 
 		/**
-		 * TODO:
-		 */
-		protected function Update(p_listener/*:b2ContactListener*/):void
+		* Update the contact manifold and touching status.
+		* Note: do not assume the fixture AABBs are overlapping or are valid.
+		*/
+		protected function Update(p_listener:b2ContactListener):void
 		{
-			b2Assert(false, "current method isn't implemented yet and can't be used!");
+			// Swaps places between old and current manifold state
+			var tMp:b2Manifold = m_oldManifold;
+			m_oldManifold = m_manifold;
+			m_manifold = tMp;
+
+			// Re-enable this contact.
+			m_flags = m_flags | e_enabledFlag;
+
+			var touching:Boolean = false;
+			var wasTouching:Boolean = (m_flags & e_touchingFlag) == e_touchingFlag;
+
+			var sensorA:Boolean = m_fixtureA.IsSensor();
+			var sensorB:Boolean = m_fixtureB.IsSensor();
+			var sensor:Boolean = sensorA || sensorB;
+
+			var bodyA:b2Body = m_fixtureA.GetBody();
+			var bodyB:b2Body = m_fixtureB.GetBody();
+
+			var xfA:b2Mat22 = bodyA.GetTransform();
+			var xfB:b2Mat22 = bodyB.GetTransform();
+
+			// Is this contact a sensor?
+			if (sensor)
+			{
+				var shapeA:b2Shape = m_fixtureA.GetShape();
+				var shapeB:b2Shape = m_fixtureB.GetShape();
+
+				touching = b2Collision.b2TestOverlap(shapeA, m_indexA, shapeB, m_indexB, xfA, xfB);
+
+				// Sensors don't generate manifolds.
+				m_manifold.pointCount = 0;
+			}
+			else
+			{
+				Evaluate(m_manifold, xfA, xfB);
+
+				touching = m_manifold.pointCount > 0;
+
+				var pointCount:int = m_manifold.pointCount;
+				var mp2:Vector.<b2ManifoldPoint> = m_manifold.points;
+				var mp1:Vector.<b2ManifoldPoint> = m_oldManifold.points;
+				var id2:b2ContactID;
+				var manifoldPoint:b2ManifoldPoint;
+				var oldManifoldPoint:b2ManifoldPoint;
+				var oldCount:int = m_oldManifold.pointCount;
+
+				// Match old contact ids to new contact ids and copy the
+				// stored impulses to warm start the solver.
+				for (var i:int = 0; i < pointCount; i++)
+				{
+					manifoldPoint = mp2[i];
+					manifoldPoint.normalImpulse = 0.0;
+					manifoldPoint.tangentImpulse = 0.0;
+					id2 = manifoldPoint.id;
+
+					for (var j:int = 0; j < oldCount; j++)
+					{
+						oldManifoldPoint = mp1[j];
+
+						if (oldManifoldPoint.id.key == id2.key)
+						{
+							manifoldPoint.normalImpulse = oldManifoldPoint.normalImpulse;
+							manifoldPoint.tangentImpulse = oldManifoldPoint.tangentImpulse;
+							break;
+						}
+					}
+				}
+
+				if (touching != wasTouching)
+				{
+					bodyA.SetAwake(true);
+					bodyB.SetAwake(true);
+				}
+			}
+
+			//
+			if (touching)
+			{
+				m_flags = m_flags | e_touchingFlag;
+			}
+			else
+			{
+				m_flags = m_flags & ~e_touchingFlag;
+			}
+
+			//
+			if (p_listener)
+			{
+				if (touching)
+				{
+					if (!wasTouching)
+					{
+						p_listener.BeginContact(this);
+					}
+
+					if (!sensor)
+					{
+						p_listener.PreSolve(this, m_oldManifold);
+					}
+				}
+				else if (wasTouching)
+				{
+					p_listener.EndContact(this);
+				}
+			}
 		}
 	}
 }
