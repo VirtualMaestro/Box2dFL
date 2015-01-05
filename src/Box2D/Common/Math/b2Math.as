@@ -318,11 +318,11 @@ package Box2D.Common.Math
 			p_outResult.c21 = -s;
 			p_outResult.c22 = c;
 
-			var bX:Number = p_matB.x;
-			var bY:Number = p_matB.y;
+			var bX:Number = p_matB.x - p_matA.x;   // TODO: look at the method MulTrTr, maybe bug in one of them
+			var bY:Number = p_matB.y - p_matA.y;
 
-			p_outResult.x = ( qCos * bX + qSin * bY) - p_matA.x;
-			p_outResult.y = (-qSin * bX + qCos * bY) - p_matA.y;
+			p_outResult.x = ( qCos * bX + qSin * bY);
+			p_outResult.y = (-qSin * bX + qCos * bY);
 		}
 
 		/**
