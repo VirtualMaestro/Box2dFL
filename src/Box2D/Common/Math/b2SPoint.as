@@ -31,6 +31,16 @@ package Box2D.Common.Math
 		}
 
 		/**
+		 * Copy x/y values from give object to current instance.
+		 * It is possible to set any object which has x and y properties.
+		 */
+		public function SetObject(p_xy:*):void
+		{
+			x = p_xy.x;
+			y = p_xy.y;
+		}
+
+		/**
 		 * Dispose instance. After disposing there is no possible of using instance.
 		 */
 		override public function Dispose():void

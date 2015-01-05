@@ -100,16 +100,16 @@ package Box2D.Collision.Shapes
 		override public function RayCast(p_rayCastData:b2RayCastData, p_xf:b2Mat22, p_childIndex:int):Boolean
 		{
 			// Put the ray into the edge's frame of reference.
-			var rX:Number = p_rayCastData.startX - p_xf.tx;
-			var rY:Number = p_rayCastData.startY - p_xf.ty;
+			var rX:Number = p_rayCastData.startX - p_xf.x;
+			var rY:Number = p_rayCastData.startY - p_xf.y;
 			var cos:Number = p_xf.c11;
 			var sin:Number = p_xf.c12;
 			
 			var p1X:Number =  cos * rX + sin * rY;
 			var p1Y:Number = -sin * rX + cos * rY;
 
-			rX = p_rayCastData.endX - p_xf.tx;
-			rY = p_rayCastData.endY - p_xf.ty;
+			rX = p_rayCastData.endX - p_xf.x;
+			rY = p_rayCastData.endY - p_xf.y;
 
 			var p2X:Number =  cos * rX + sin * rY;
 			var p2Y:Number = -sin * rX + cos * rY;
@@ -202,8 +202,8 @@ package Box2D.Collision.Shapes
 			var cos:Number = p_xf.c11;
 			var sin:Number = p_xf.c12;
 
-			var tX:Number = p_xf.tx;
-			var tY:Number = p_xf.ty;
+			var tX:Number = p_xf.x;
+			var tY:Number = p_xf.y;
 			var v1X:Number = (cos * m_vertex1X - sin * m_vertex1Y) + tX;
 			var v1Y:Number = (sin * m_vertex1X + cos * m_vertex1Y) + tY;
 			var v2X:Number = (cos * m_vertex2X - sin * m_vertex2Y) + tX;

@@ -67,8 +67,8 @@ package Box2D.Collision.Shapes
 			var cos:Number = p_transform.c11;
 			var sin:Number = p_transform.c12;
 
-			var centerX:Number = p_transform.tx + (cos * m_pX - sin * m_pY);
-			var centerY:Number = p_transform.ty + (sin * m_pX + cos * m_pY);
+			var centerX:Number = p_transform.x + (cos * m_pX - sin * m_pY);
+			var centerY:Number = p_transform.y + (sin * m_pX + cos * m_pY);
 
 			var dX:Number = p_pointX - centerX;
 			var dY:Number = p_pointY - centerY;
@@ -86,8 +86,8 @@ package Box2D.Collision.Shapes
 			var cos:Number = p_transform.c11;
 			var sin:Number = p_transform.c12;
 			
-			var pX:Number = (cos * m_pX - sin * m_pY) + p_transform.tx;
-			var pY:Number = (sin * m_pX + cos * m_pY) + p_transform.ty;
+			var pX:Number = (cos * m_pX - sin * m_pY) + p_transform.x;
+			var pY:Number = (sin * m_pX + cos * m_pY) + p_transform.y;
 
 			p_aabb.lowerBoundX = pX - m_radius;
 			p_aabb.lowerBoundY = pY - m_radius;
@@ -125,8 +125,8 @@ package Box2D.Collision.Shapes
 			var cos:Number = p_transform.c11;
 			var sin:Number = p_transform.c12;
 
-			var positionX:Number = (cos * m_pX - sin * m_pY) + p_transform.tx;
-			var positionY:Number = (sin * m_pX + cos * m_pY) + p_transform.ty;
+			var positionX:Number = (cos * m_pX - sin * m_pY) + p_transform.x;
+			var positionY:Number = (sin * m_pX + cos * m_pY) + p_transform.y;
 
 			var sX:Number = p_rayCastData.startX - positionX;
 			var sY:Number = p_rayCastData.startY - positionY;

@@ -137,17 +137,17 @@ package Box2D.Dynamics
 			m_world = p_world;
 
 			m_xf = b2Mat22.Get();
-			m_xf.tx = p_bd.positionX;
-			m_xf.ty = p_bd.positionY;
+			m_xf.x = p_bd.positionX;
+			m_xf.y = p_bd.positionY;
 			m_xf.SetAngle(p_bd.angle);
 
 			m_sweep = b2Sweep.Get();
 			m_sweep.localCenterX = 0.0;
 			m_sweep.localCenterY = 0.0;
-			m_sweep.worldCenterX0 = m_xf.tx;
-			m_sweep.worldCenterY0 = m_xf.ty;
-			m_sweep.worldCenterX  = m_xf.tx;
-			m_sweep.worldCenterY  = m_xf.ty;
+			m_sweep.worldCenterX0 = m_xf.x;
+			m_sweep.worldCenterY0 = m_xf.y;
+			m_sweep.worldCenterX  = m_xf.x;
+			m_sweep.worldCenterY  = m_xf.y;
 			m_sweep.worldAngle0 = p_bd.angle;
 			m_sweep.worldAngle = p_bd.angle;
 			m_sweep.t0 = 0.0;
@@ -364,14 +364,14 @@ package Box2D.Dynamics
 			}
 
 			m_xf.SetAngle(p_angle);
-			m_xf.tx = p_posX;
-			m_xf.ty = p_posY;
+			m_xf.x = p_posX;
+			m_xf.y = p_posY;
 
 			var cos:Number = m_xf.c11;
 			var sin:Number = m_xf.c12;
 
-			m_sweep.worldCenterX = (cos * m_sweep.localCenterX - sin * m_sweep.localCenterY) + m_xf.tx;
-			m_sweep.worldCenterY = (sin * m_sweep.localCenterX + cos * m_sweep.localCenterY) + m_xf.ty;
+			m_sweep.worldCenterX = (cos * m_sweep.localCenterX - sin * m_sweep.localCenterY) + m_xf.x;
+			m_sweep.worldCenterY = (sin * m_sweep.localCenterX + cos * m_sweep.localCenterY) + m_xf.y;
 
 			m_sweep.worldAngle = p_angle;
 			m_sweep.worldCenterX0 = m_sweep.worldCenterX;
@@ -406,12 +406,12 @@ package Box2D.Dynamics
 		{
 			if (p_positionOut)
 			{
-				p_positionOut.x = m_xf.tx;
-				p_positionOut.y = m_xf.ty;
+				p_positionOut.x = m_xf.x;
+				p_positionOut.y = m_xf.y;
 			}
 			else
 			{
-				p_positionOut = b2Vec2.Get(m_xf.tx, m_xf.ty);
+				p_positionOut = b2Vec2.Get(m_xf.x, m_xf.y);
 			}
 
 			return p_positionOut;
@@ -780,11 +780,11 @@ package Box2D.Dynamics
 			// Static and kinematic bodies have zero mass.
 			if (m_type == STATIC || m_type == KINEMATIC)
 			{
-				m_sweep.worldCenterX0 = m_xf.tx;
-				m_sweep.worldCenterY0 = m_xf.ty;
+				m_sweep.worldCenterX0 = m_xf.x;
+				m_sweep.worldCenterY0 = m_xf.y;
 
-				m_sweep.worldCenterX = m_xf.tx;
-				m_sweep.worldCenterY = m_xf.ty;
+				m_sweep.worldCenterX = m_xf.x;
+				m_sweep.worldCenterY = m_xf.y;
 
 				m_sweep.worldAngle0 = m_sweep.worldAngle;
 			}
@@ -861,8 +861,8 @@ package Box2D.Dynamics
 			var cos:Number = m_xf.c11;
 			var sin:Number = m_xf.c12;
 
-			var rX:Number = (cos * p_centerX - sin * p_centerY) + m_xf.tx;
-			var rY:Number = (sin * p_centerX + cos * p_centerY) + m_xf.ty;
+			var rX:Number = (cos * p_centerX - sin * p_centerY) + m_xf.x;
+			var rY:Number = (sin * p_centerX + cos * p_centerY) + m_xf.y;
 
 			m_sweep.worldCenterX = rX;
 			m_sweep.worldCenterY = rY;
@@ -886,8 +886,8 @@ package Box2D.Dynamics
 			var cos:Number = m_xf.c11;
 			var sin:Number = m_xf.c12;
 			
-			var rX:Number = (cos * p_localPointX - sin * p_localPointY) + m_xf.tx;
-			var rY:Number = (sin * p_localPointX + cos * p_localPointY) + m_xf.ty;
+			var rX:Number = (cos * p_localPointX - sin * p_localPointY) + m_xf.x;
+			var rY:Number = (sin * p_localPointX + cos * p_localPointY) + m_xf.y;
 
 			return b2Vec2.Get(rX, rY);
 		}
@@ -921,8 +921,8 @@ package Box2D.Dynamics
 			var cos:Number = m_xf.c11;
 			var sin:Number = m_xf.c12;
 
-			var px:Number = p_worldPointX - m_xf.tx;
-			var py:Number = p_worldPointY - m_xf.ty;
+			var px:Number = p_worldPointX - m_xf.x;
+			var py:Number = p_worldPointY - m_xf.y;
 
 			var rX:Number =  cos * px + sin * py;
 			var rY:Number = -sin * px + cos * py;
@@ -1316,8 +1316,8 @@ package Box2D.Dynamics
 			var rX:Number = cos * lcX - sin * lcY;
 			var rY:Number = sin * lcX + cos * lcY;
 
-			xf1.tx = m_sweep.worldCenterX0 - rX;
-			xf1.ty = m_sweep.worldCenterY0 - rY;
+			xf1.x = m_sweep.worldCenterX0 - rX;
+			xf1.y = m_sweep.worldCenterY0 - rY;
 
 			var broadPhase:b2BroadPhase = m_world.m_contactManager.m_broadPhase;
 
@@ -1342,8 +1342,8 @@ package Box2D.Dynamics
 			var lcX:Number = m_sweep.localCenterX;
 			var lcY:Number = m_sweep.localCenterY;
 
-			m_xf.tx = m_sweep.worldCenterX - (cos * lcX - sin * lcY);
-			m_xf.ty = m_sweep.worldCenterY - (sin * lcX + cos * lcY);
+			m_xf.x = m_sweep.worldCenterX - (cos * lcX - sin * lcY);
+			m_xf.y = m_sweep.worldCenterY - (sin * lcX + cos * lcY);
 		}
 
 		/**

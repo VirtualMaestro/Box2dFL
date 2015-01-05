@@ -169,8 +169,8 @@ package Box2D.Dynamics
 
 					prAABB.CombineTwo(aabb1, aabb2);
 
-					var displacementX:Number = p_xf2.tx - p_xf1.tx;
-					var displacementY:Number = p_xf2.ty - p_xf1.ty;
+					var displacementX:Number = p_xf2.x - p_xf1.x;
+					var displacementY:Number = p_xf2.y - p_xf1.y;
 
 					p_broadPhase.MoveProxy(proxy.proxyId, prAABB, displacementX, displacementY);
 				}

@@ -61,11 +61,11 @@ package Box2D.Common.Math
 		{
 			var oneSubAlpha:Number = 1.0 - p_alpha;
 
-			p_mat.tx = oneSubAlpha * worldCenterX0 + p_alpha * worldCenterX;
-			p_mat.ty = oneSubAlpha * worldCenterY0 + p_alpha * worldCenterY;
+			p_mat.x = oneSubAlpha * worldCenterX0 + p_alpha * worldCenterX;
+			p_mat.y = oneSubAlpha * worldCenterY0 + p_alpha * worldCenterY;
 			p_mat.SetAngle(oneSubAlpha * worldAngle0 + p_alpha *  worldAngle);
-			p_mat.tx -= (p_mat.c11 * localCenterX + p_mat.c21 * localCenterY);
-			p_mat.ty -= (p_mat.c12 * localCenterX + p_mat.c22 * localCenterY);
+			p_mat.x -= (p_mat.c11 * localCenterX + p_mat.c21 * localCenterY);
+			p_mat.y -= (p_mat.c12 * localCenterX + p_mat.c22 * localCenterY);
 		}
 
 		/**

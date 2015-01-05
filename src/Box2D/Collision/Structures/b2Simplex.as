@@ -78,14 +78,14 @@ package Box2D.Collision.Structures
 				cos = p_transformA.c11;
 				sin = p_transformA.c12;
 
-				v.wAX = (cos * wALocalX - sin * wALocalY) + p_transformA.tx;
-				v.wAY = (sin * wALocalX + cos * wALocalY) + p_transformA.ty;
+				v.wAX = (cos * wALocalX - sin * wALocalY) + p_transformA.x;
+				v.wAY = (sin * wALocalX + cos * wALocalY) + p_transformA.y;
 
 				cos = p_transformB.c11;
 				sin = p_transformB.c12;
 
-				v.wBX = (cos * wBLocalX - sin * wBLocalY) + p_transformB.tx;
-				v.wBY = (sin * wBLocalX + cos * wBLocalY) + p_transformB.ty;
+				v.wBX = (cos * wBLocalX - sin * wBLocalY) + p_transformB.x;
+				v.wBY = (sin * wBLocalX + cos * wBLocalY) + p_transformB.y;
 
 				v.wX = v.wBX - v.wAX;
 				v.wY = v.wBY - v.wAY;
@@ -121,14 +121,14 @@ package Box2D.Collision.Structures
 				cos = p_transformA.c11;
 				sin = p_transformA.c12;
 
-				v.wAX = (cos * wALocalX - sin * wALocalY) + p_transformA.tx;
-				v.wAY = (sin * wALocalX + cos * wALocalY) + p_transformA.ty;
+				v.wAX = (cos * wALocalX - sin * wALocalY) + p_transformA.x;
+				v.wAY = (sin * wALocalX + cos * wALocalY) + p_transformA.y;
 
 				cos = p_transformB.c11;
 				sin = p_transformB.c12;
 
-				v.wBX = (cos * wBLocalX - sin * wBLocalY) + p_transformB.tx;
-				v.wBY = (sin * wBLocalX + cos * wBLocalY) + p_transformB.ty;
+				v.wBX = (cos * wBLocalX - sin * wBLocalY) + p_transformB.x;
+				v.wBY = (sin * wBLocalX + cos * wBLocalY) + p_transformB.y;
 
 				v.wX = v.wBX - v.wAX;
 				v.wY = v.wBY - v.wAY;

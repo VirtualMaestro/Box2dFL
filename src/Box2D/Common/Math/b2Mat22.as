@@ -5,9 +5,8 @@
  */
 package Box2D.Common.Math
 {
-	import Box2D.Common.b2Disposable;
-	import Box2D.Common.b2Disposable;
 	import Box2D.Common.IDisposable;
+	import Box2D.Common.b2Disposable;
 	import Box2D.Common.b2internal;
 
 	use namespace b2internal;
@@ -18,7 +17,7 @@ package Box2D.Common.Math
 	 * |c11 c21|   |cos -sin|
 	 * |c12 c22|   |sin  cos|
 	 */
-	final public class b2Mat22 extends b2Disposable
+	final public class b2Mat22 extends b2SPoint
 	{
 		static b2internal var classId:uint = b2Disposable.getClassId();
 
@@ -27,16 +26,6 @@ package Box2D.Common.Math
 		public var c12:Number;   // col1.y
 		public var c21:Number;   // col2.x
 		public var c22:Number;   // col2.y
-
-		/**
-		 * Represents x position
-		 */
-		public var tx:Number = 0;
-
-		/**
-		 * Represents y position
-		 */
-		public var ty:Number = 0;
 
 		//
 		b2internal var angle:Number = 0;
@@ -50,8 +39,8 @@ package Box2D.Common.Math
 			c12 = p_c12;
 			c21 = p_c21;
 			c22 = p_c22;
-			tx = p_tx;
-			ty = p_ty;
+			x = p_tx;
+			y = p_ty;
 		}
 
 		/**
@@ -63,10 +52,20 @@ package Box2D.Common.Math
 			var c:Number = Math.cos(p_angle);
 			var s:Number = Math.sin(p_angle);
 			angle = p_angle;
-			c11 = c;
-			c21 = -s;
-			c12 = s;
-			c22 = c;
+
+			SetSinCos(s, c);
+		}
+
+		/**
+		 * Set sin & cos.
+		 */
+		[Inline]
+		final public function SetSinCos(p_sin:Number, p_cos:Number):void
+		{
+			c11 = p_cos;
+			c21 = -p_sin;
+			c12 = p_sin;
+			c22 = p_cos;
 		}
 
 		/**
@@ -90,6 +89,9 @@ package Box2D.Common.Math
 			c12 = 0.0;
 			c21 = 0.0;
 			c22 = 1.0;
+
+			x = 0;
+			y = 0;
 		}
 
 		/**
@@ -129,6 +131,39 @@ package Box2D.Common.Math
 			return p_outMatrix;
 		}
 
+		/**
+		 * Solve A * x = b, where b is a column vector.
+		 * This is more efficient than computing the inverse in one-shot cases.
+		 * Result of calculation writes to p_outResult.
+		 */
+		public function Solve(p_bX:Number, p_bY:Number, p_outResult:b2Vec2):void
+		{
+			var a11:Number = c11;
+			var a12:Number = c21;
+			var a21:Number = c12;
+			var a22:Number = c22;
+
+			var det:Number = a11 * a22 - a12 * a21;
+			if (det != 0.0)
+			{
+				det = 1.0 / det;
+			}
+
+			p_outResult.x = det * (a22 * p_bX - a12 * p_bY);
+			p_outResult.y = det * (a11 * p_bY - a21 * p_bX);
+		}
+
+		[Inline]
+		final public function get cos():Number
+		{
+			return c11;
+		}
+
+		[Inline]
+		final public function get sin():Number
+		{
+			return c12;
+		}
 
 		/**
 		 * Dispose instance. After disposing there is no possible of using instance.
@@ -149,7 +184,7 @@ package Box2D.Common.Math
 		 */
 		override public function Clone():IDisposable
 		{
-			var mat:b2Mat22 = Get(c11, c12, c21, c22, tx, ty);
+			var mat:b2Mat22 = Get(c11, c12, c21, c22, x, y);
 			mat.angle = angle;
 
 			return mat;
@@ -171,8 +206,8 @@ package Box2D.Common.Math
 				mat.c12 = p_c12;
 				mat.c21 = p_c21;
 				mat.c22 = p_c22;
-				mat.tx  = p_tx;
-				mat.ty  = p_ty;
+				mat.x = p_tx;
+				mat.y = p_ty;
 			}
 			else mat = new b2Mat22(p_c11, p_c12, p_c21, p_c22, p_tx, p_ty);
 

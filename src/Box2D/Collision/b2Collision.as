@@ -130,11 +130,11 @@ package Box2D.Collision
 			var normalX:Number =  tangentY;
 			var normalY:Number = -tangentX;
 
-			v11X = (cos * v11X - sin * v11Y) + xf1.tx;
-			v11Y = (sin * v11X + cos * v11Y) + xf1.ty;
+			v11X = (cos * v11X - sin * v11Y) + xf1.x;
+			v11Y = (sin * v11X + cos * v11Y) + xf1.y;
 
-			v12X = (cos * v12X - sin * v12Y) + xf1.tx;
-			v12Y = (sin * v12X + cos * v12Y) + xf1.ty;
+			v12X = (cos * v12X - sin * v12Y) + xf1.x;
+			v12Y = (sin * v12X + cos * v12Y) + xf1.y;
 
 			// Face offset
 			var frontOffset:Number = normalX * v11X + normalY * v11Y;
@@ -183,8 +183,8 @@ package Box2D.Collision
 			cos = xf2.c11;
 			sin = xf2.c12;
 
-			var tx:Number = xf2.tx;
-			var ty:Number = xf2.ty;
+			var tx:Number = xf2.x;
+			var ty:Number = xf2.y;
 
 			for (var i:int = 0; i < b2Settings.maxManifoldPoints; i++)
 			{
@@ -290,8 +290,8 @@ package Box2D.Collision
 			nX = b2Math.getX(vertices2, i1);
 			nY = b2Math.getY(vertices2, i1);
 
-			var tX:Number = p_xf2.tx;
-			var tY:Number = p_xf2.ty;
+			var tX:Number = p_xf2.x;
+			var tY:Number = p_xf2.y;
 
 			var vX:Number = (cos * nX - sin * nY) + tX;
 			var vY:Number = (sin * nX + cos * nY) + tY;
@@ -350,8 +350,8 @@ package Box2D.Collision
 	        var mSin:Number = (cos1 * sin2 - sin1 * cos2);
 	        var mCos:Number = (cos1 * cos2 + sin1 * sin2);
 
-	        var pX:Number = p_xf1.tx - p_xf2.tx;
-	        var pY:Number = p_xf1.ty - p_xf2.ty;
+	        var pX:Number = p_xf1.x - p_xf2.x;
+	        var pY:Number = p_xf1.y - p_xf2.y;
 
 	        var mTX:Number =  cos1 * pX + sin1 * pY;
 	        var mTY:Number = -sin1 * pX + cos1 * pY;
@@ -430,16 +430,16 @@ package Box2D.Collision
 
 			var capX:Number = p_circleA.m_pX;
 			var capY:Number = p_circleA.m_pY;
-			var pAX:Number = (cos * capX - sin * capY) + p_xfA.tx;
-			var pAY:Number = (sin * capX + cos * capY) + p_xfA.ty;
+			var pAX:Number = (cos * capX - sin * capY) + p_xfA.x;
+			var pAY:Number = (sin * capX + cos * capY) + p_xfA.y;
 
 			cos = p_xfB.c11;
 			sin = p_xfB.c12;
 
 			var cbpX:Number = p_circleB.m_pX;
 			var cbpY:Number = p_circleB.m_pY;
-			var pBX:Number = (cos * cbpX - sin * cbpY) + p_xfB.tx;
-			var pBY:Number = (sin * cbpX + cos * cbpY) + p_xfB.ty;
+			var pBX:Number = (cos * cbpX - sin * cbpY) + p_xfB.x;
+			var pBY:Number = (sin * cbpX + cos * cbpY) + p_xfB.y;
 
 			var dX:Number = pBX - pAX;
 			var dY:Number = pBY - pAY;
@@ -485,14 +485,14 @@ package Box2D.Collision
 
 			var cbpX:Number = p_circleB.m_pX;
 			var cbpY:Number = p_circleB.m_pY;
-			var cX:Number = (cos * cbpX - sin * cbpY) + p_xfB.tx;
-			var cY:Number = (sin * cbpX + cos * cbpY) + p_xfB.ty;
+			var cX:Number = (cos * cbpX - sin * cbpY) + p_xfB.x;
+			var cY:Number = (sin * cbpX + cos * cbpY) + p_xfB.y;
 
 			cos = p_xfA.c11;
 			sin = p_xfA.c12;
 
-			var px:Number = cX - p_xfA.tx;
-			var py:Number = cY - p_xfA.ty;
+			var px:Number = cX - p_xfA.x;
+			var py:Number = cY - p_xfA.y;
 
 			var cLocalX:Number =  cos * px + sin * py;
 			var cLocalY:Number = -sin * px + cos * py;
@@ -667,14 +667,14 @@ package Box2D.Collision
 
 			var cpX:Number = p_circleB.m_pX;
 			var cpY:Number = p_circleB.m_pY;
-			var rX:Number = (cos * cpX - sin * cpY) + p_xfB.tx;
-			var rY:Number = (sin * cpX + cos * cpY) + p_xfB.ty;
+			var rX:Number = (cos * cpX - sin * cpY) + p_xfB.x;
+			var rY:Number = (sin * cpX + cos * cpY) + p_xfB.y;
 
 			cos = p_xfA.c11;
 			sin = p_xfA.c12;
 
-			var px:Number = rX - p_xfA.tx;
-			var py:Number = rY - p_xfA.ty;
+			var px:Number = rX - p_xfA.x;
+			var py:Number = rY - p_xfA.y;
 
 			var QX:Number =  cos * px + sin * py;
 			var QY:Number = -sin * px + cos * py;
@@ -1096,8 +1096,8 @@ package Box2D.Collision
 				var pAX:Number = proxyA.GetVertexX(vertex.indexA);
 				var pAY:Number = proxyA.GetVertexY(vertex.indexA);
 
-				vertex.wAX = (cos * pAX - sin * pAY) + transformA.tx;
-				vertex.wAY = (sin * pAX + cos * pAY) + transformA.ty;
+				vertex.wAX = (cos * pAX - sin * pAY) + transformA.x;
+				vertex.wAY = (sin * pAX + cos * pAY) + transformA.y;
 
 				// B
 				cos = transformB.c11;
@@ -1111,8 +1111,8 @@ package Box2D.Collision
 				var pBX:Number = proxyB.GetVertexX(vertex.indexB);
 				var pBY:Number = proxyB.GetVertexY(vertex.indexB);
 
-				vertex.wBX = (cos * pBX - sin * pBY) + transformB.tx;
-				vertex.wBY = (sin * pBX + cos * pBY) + transformB.ty;
+				vertex.wBX = (cos * pBX - sin * pBY) + transformB.x;
+				vertex.wBY = (sin * pBX + cos * pBY) + transformB.y;
 
 				vertex.wX = vertex.wBX - vertex.wAX;
 				vertex.wY = vertex.wBY - vertex.wAY;

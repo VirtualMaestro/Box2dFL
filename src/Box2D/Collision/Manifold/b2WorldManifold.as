@@ -57,13 +57,13 @@ package Box2D.Collision.Manifold
 			{
 				var cosA:Number = p_xfA.c11;
 				var sinA:Number = p_xfA.c12;
-				var xA:Number = p_xfA.tx;
-				var yA:Number = p_xfA.ty;
+				var xA:Number = p_xfA.x;
+				var yA:Number = p_xfA.y;
 
 				var cosB:Number = p_xfB.c11;
 				var sinB:Number = p_xfB.c12;
-				var xB:Number = p_xfB.tx;
-				var yB:Number = p_xfB.ty;
+				var xB:Number = p_xfB.x;
+				var yB:Number = p_xfB.y;
 
 				var cAX:Number;
 				var cAY:Number;

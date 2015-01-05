@@ -19,6 +19,12 @@ package Box2D.Common
 		b2internal var disposed:Boolean = false;
 
 		/**
+		 */
+		public function b2Disposable()
+		{
+		}
+
+		/**
 		 * Disposed current instance and return to pool (if current implementation able to do this).
 		 */
 		public function Dispose():void
@@ -47,7 +53,6 @@ package Box2D.Common
 			b2Assert(false, "for current class 'Clone' method wasn't overridden, so you can't use this method");
 			return null;
 		}
-
 
 		//**************//
 		// UTIL METHODS //

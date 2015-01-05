@@ -5,8 +5,8 @@
  */
 package Box2D.Common.Math
 {
-	import Box2D.Common.b2Disposable;
 	import Box2D.Common.IDisposable;
+	import Box2D.Common.b2Disposable;
 	import Box2D.Common.b2internal;
 
 	use namespace b2internal;
@@ -17,6 +17,9 @@ package Box2D.Common.Math
 	public class b2Vec2 extends b2SPoint
 	{
 		static b2internal var classId:uint = b2Disposable.getClassId();
+
+		//
+		private var _prevLenSquare:Number = 0;
 
 		//
 		public function b2Vec2(p_x:Number = 0, p_y:Number = 0)
@@ -34,22 +37,13 @@ package Box2D.Common.Math
 		}
 
 		/**
-		 * Copy x/y values from give object to current instance.
-		 * It is possible to set any object which has x and y properties.
-		 */
-		public function SetObject(p_xy:*):void
-		{
-			x = p_xy.x;
-			y = p_xy.y;
-		}
-
-		/**
 		 * Returns the length of vector.
 		 */
 		[Inline]
 		final public function get Length():Number
 		{
-			return Math.sqrt(x*x + y*y);
+			var lenSquare:Number = x * x + y * y;
+			return (_prevLenSquare == lenSquare) ? _prevLenSquare : Math.sqrt(lenSquare);
 		}
 
 		/**
@@ -58,7 +52,9 @@ package Box2D.Common.Math
 		[Inline]
 		final public function get LengthSquared():Number
 		{
-			return x*x + y*y;
+			var lenSquare:Number = x * x + y * y;
+			_prevLenSquare = lenSquare;
+			return lenSquare;
 		}
 
 		/**
@@ -68,7 +64,7 @@ package Box2D.Common.Math
 		 */
 		final public function Normalize():Number
 		{
-			var length:Number = Length;
+			var length:Number = this.Length;
 			if (length < b2Math.EPSILON)
 			{
 				return 0.0;
