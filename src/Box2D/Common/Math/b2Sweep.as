@@ -6,7 +6,6 @@
 package Box2D.Common.Math
 {
 	import Box2D.Common.b2Disposable;
-	import Box2D.Common.b2Disposable;
 	import Box2D.Common.IDisposable;
 	import Box2D.Common.b2internal;
 
@@ -55,38 +54,38 @@ package Box2D.Common.Math
 
 		/**
 		* Get the interpolated transform at a specific time.
-		* @param mat
-		* @param alpha is a factor in [0,1], where 0 indicates t0.
+		* @param p_mat
+		* @param p_alpha is a factor in [0,1], where 0 indicates t0.
 		*/
-		public function GetTransform(mat:b2Mat22, alpha:Number):void
+		public function GetTransform(p_mat:b2Mat22, p_alpha:Number):void
 		{
-			var oneSubAlpha:Number = 1.0 - alpha;
+			var oneSubAlpha:Number = 1.0 - p_alpha;
 
-			mat.tx = oneSubAlpha * worldCenterX0 + alpha * worldCenterX;
-			mat.ty = oneSubAlpha * worldCenterY0 + alpha * worldCenterY;
-			mat.SetAngle(oneSubAlpha * worldAngle0 + alpha *  worldAngle);
-			mat.tx -= (mat.c11 * localCenterX + mat.c21 * localCenterY);
-			mat.ty -= (mat.c12 * localCenterX + mat.c22 * localCenterY);
+			p_mat.tx = oneSubAlpha * worldCenterX0 + p_alpha * worldCenterX;
+			p_mat.ty = oneSubAlpha * worldCenterY0 + p_alpha * worldCenterY;
+			p_mat.SetAngle(oneSubAlpha * worldAngle0 + p_alpha *  worldAngle);
+			p_mat.tx -= (p_mat.c11 * localCenterX + p_mat.c21 * localCenterY);
+			p_mat.ty -= (p_mat.c12 * localCenterX + p_mat.c22 * localCenterY);
 		}
 
 		/**
 		* Advance the sweep forward, yielding a new initial state.
-		* @param t the new initial time.
+		* @param p_t the new initial time.
 		*/
-		public function Advance(t:Number) : void
+		public function Advance(p_t:Number) : void
 		{
 			CONFIG::debug
 			{
 				b2Assert(t0 < 1.0, "t0 has to be < 1.0");
 			}
 
-			var beta:Number = (t - t0) / (1.0 - t0);
+			var beta:Number = (p_t - t0) / (1.0 - t0);
 			worldCenterX0 += beta * (worldCenterX - worldCenterX0);
 			worldCenterY0 += beta * (worldCenterY - worldCenterY0);
 
 			worldAngle0 += beta * (worldAngle - worldAngle0);
 
-			t0 = t;
+			t0 = p_t;
 		}
 
 		/**
