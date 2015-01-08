@@ -4,8 +4,8 @@
 package Box2D.Collision
 {
 	import Box2D.Collision.Structures.b2RayCastData;
+	import Box2D.Common.Math.b2Math;
 	import Box2D.Common.b2internal;
-	import Box2D.b2Assert;
 
 	use namespace b2internal;
 
@@ -13,7 +13,6 @@ package Box2D.Collision
 	 * The broad-phase is used for computing pairs and performing volume queries and ray casts.
 	 * This broad-phase does not persist pairs. Instead, this reports potentially new pairs.
 	 * It is up to the client to consume the new pairs and to track subsequent overlap.
-	 * TODO: Impl
 	 */
 	public class b2BroadPhase
 	{
@@ -24,26 +23,24 @@ package Box2D.Collision
 		b2internal var m_proxyCount:int;
 
 		b2internal var m_moveBuffer:Vector.<int>;
-		b2internal var m_moveCapacity:int;
 		b2internal var m_moveCount:int;
 
 		b2internal var m_pairBuffer:Vector.<b2Pair>;
-		b2internal var m_pairCapacity:int;
 		b2internal var m_pairCount:int;
 
 		b2internal var m_queryProxyId:int;
 
+		/**
+		 */
 		public function b2BroadPhase()
 		{
 			m_proxyCount = 0;
 
-			m_pairCapacity = 16;
 			m_pairCount = 0;
-			m_pairBuffer = new Vector.<b2Pair>(m_pairCapacity);
+			m_pairBuffer = new <b2Pair>[];
 
-			m_moveCapacity = 16;
 			m_moveCount = 0;
-			m_moveBuffer = new Vector.<int>(m_moveCapacity);
+			m_moveBuffer = new <int>[];
 		}
 
 		/**
@@ -52,7 +49,11 @@ package Box2D.Collision
 		 */
 		public function CreateProxy(p_aabb:b2AABB, p_userData:*):int
 		{
-			return 0; // TODO:
+			var proxyId:int = m_tree.CreateProxy(p_aabb, p_userData);
+			++m_proxyCount;
+			BufferMove(proxyId);
+
+			return proxyId;
 		}
 
 		/**
@@ -62,31 +63,37 @@ package Box2D.Collision
 		 * @param p_aabb
 		 * @param p_displacementX
 		 * @param p_displacementY
-		 * TODO
 		 */
-		public function MoveProxy(p_proxyId:int, p_aabb:b2AABB, p_displacementX:Number, p_displacementY:Number):void
+		[Inline]
+		final public function MoveProxy(p_proxyId:int, p_aabb:b2AABB, p_displacementX:Number, p_displacementY:Number):void
 		{
-			b2Assert(false, "current method isn't implemented yet and can't be used!");
+			var buffer:Boolean = m_tree.MoveProxy(p_proxyId, p_aabb, p_displacementX, p_displacementY);
+			if (buffer)
+			{
+				BufferMove(p_proxyId);
+			}
 		}
 
 		/**
 		 * Destroy a proxy. It is up to the client to remove any pairs.
 		 * @param p_proxyId
-		 * TODO
 		 */
-		public function DestroyProxy(p_proxyId:int):void
+		[Inline]
+		final public function DestroyProxy(p_proxyId:int):void
 		{
-			b2Assert(false, "current method isn't implemented yet and can't be used!");
+			UnBufferMove(p_proxyId);
+			--m_proxyCount;
+			m_tree.DestroyProxy(p_proxyId);
 		}
 
 		/**
 		 * Call to trigger a re-processing of it's pairs on the next call to UpdatePairs.
 		 * @param p_proxyId
-		 * TODO
 		 */
-		public function TouchProxy(p_proxyId:int):void
+		[Inline]
+		final public function TouchProxy(p_proxyId:int):void
 		{
-			b2Assert(false, "current method isn't implemented yet and can't be used!");
+			BufferMove(p_proxyId);
 		}
 
 		/**
@@ -166,7 +173,8 @@ package Box2D.Collision
 		 * @param p_proxyIdB
 		 * @return
 		 */
-		public function TestOverlap(p_proxyIdA:int, p_proxyIdB:int):Boolean
+		[Inline]
+		final public function TestOverlap(p_proxyIdA:int, p_proxyIdB:int):Boolean
 		{
 			var aabbA:b2AABB = m_tree.GetFatAABB(p_proxyIdA);
 			var aabbB:b2AABB = m_tree.GetFatAABB(p_proxyIdB);
@@ -197,6 +205,48 @@ package Box2D.Collision
 			}
 
 			return false;
+		}
+
+		/**
+		 */
+		[Inline]
+		final private function BufferMove(p_proxyId:int):void
+		{
+			m_moveBuffer[m_moveCount] = p_proxyId;
+			++m_moveCount;
+		}
+
+		/**
+		 */
+		[Inline]
+		final private function UnBufferMove(p_proxyId:int):void
+		{
+			for (var i:int = 0; i < m_moveCount; ++i)
+			{
+				if (m_moveBuffer[i] == p_proxyId)
+				{
+					m_moveBuffer[i] = e_nullProxy;
+				}
+			}
+		}
+
+		/**
+		 * This is called from b2DynamicTree::Query when we are gathering pairs.
+		 * @param p_proxyId
+		 * @return
+		 */
+		[Inline]
+		final public function QueryCallback(p_proxyId:int):Boolean
+		{
+			// A proxy form a pair
+			if (p_proxyId != m_queryProxyId)
+			{
+				m_pairBuffer[m_pairCount].proxyIdA = b2Math.Min(p_proxyId, m_queryProxyId);
+				m_pairBuffer[m_pairCount].proxyIdB = b2Math.Min(p_proxyId, m_queryProxyId);
+				++m_pairCount;
+			}
+
+			return true;
 		}
 
 		/**
