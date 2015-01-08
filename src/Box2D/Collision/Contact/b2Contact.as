@@ -216,15 +216,15 @@ package Box2D.Collision.Contact
 
 		////
 
-		protected var m_flags:uint;
+		b2internal var m_flags:uint;
 
 		// World pool and list pointers.
-		protected var m_prev:b2Contact;
-		protected var m_next:b2Contact;
+		b2internal var m_prev:b2Contact;
+		b2internal var m_next:b2Contact;
 
 		// Nodes for connecting bodies.
-		protected var m_nodeA:b2ContactEdge;
-		protected var m_nodeB:b2ContactEdge;
+		b2internal var m_nodeA:b2ContactEdge;
+		b2internal var m_nodeB:b2ContactEdge;
 
 		protected var m_fixtureA:b2Fixture;
 		protected var m_fixtureB:b2Fixture;
@@ -272,7 +272,8 @@ package Box2D.Collision.Contact
 		/**
 		 * Get the contact manifold. Do not modify the manifold unless you understand the internals of Box2D.
 		 */
-		public function GetManifold():b2Manifold
+		[Inline]
+		final public function GetManifold():b2Manifold
 		{
 			return m_manifold;
 		}
@@ -330,7 +331,8 @@ package Box2D.Collision.Contact
 		/**
 		 * Get the next contact in the world's contact list.
 		 */
-		public function GetNext():b2Contact
+		[Inline]
+		final public function GetNext():b2Contact
 		{
 			return m_next;
 		}
@@ -339,7 +341,8 @@ package Box2D.Collision.Contact
 		 * Get the child primitive index for fixture A.
 		 * @return
 		 */
-		public function GetChildIndexA():int
+		[Inline]
+		final public function GetChildIndexA():int
 		{
 			return m_indexA;
 		}
@@ -347,7 +350,8 @@ package Box2D.Collision.Contact
 		/**
 		 * Get the child primitive index for fixture B.
 		 */
-		public function GetChildIndexB():int
+		[Inline]
+		final public function GetChildIndexB():int
 		{
 			return m_indexB;
 		}
@@ -364,7 +368,8 @@ package Box2D.Collision.Contact
 		/**
 		 * Get the friction.
 		 */
-		public function GetFriction():Number
+		[Inline]
+		final public function GetFriction():Number
 		{
 			return m_friction;
 		}
@@ -372,7 +377,8 @@ package Box2D.Collision.Contact
 		/**
 		 * Reset the friction mixture to the default value.
 		 */
-		public function ResetFriction():void
+		[Inline]
+		final public function ResetFriction():void
 		{
 			m_friction = b2MixFriction(m_fixtureA.m_friction, m_fixtureB.m_friction);
 		}
@@ -391,7 +397,8 @@ package Box2D.Collision.Contact
 		/**
 		 * Get the restitution.
 		 */
-		public function GetRestitution():Number
+		[Inline]
+		final public function GetRestitution():Number
 		{
 			return m_restitution;
 		}
@@ -407,7 +414,8 @@ package Box2D.Collision.Contact
 		/**
 		 * Set the desired tangent speed for a conveyor belt behavior. In meters per second.
 		 */
-		public function SetTangentSpeed(p_speed:Number):void
+		[Inline]
+		final public function SetTangentSpeed(p_speed:Number):void
 		{
 			m_tangentSpeed = p_speed;
 		}
@@ -415,7 +423,8 @@ package Box2D.Collision.Contact
 		/**
 		 * Get the desired tangent speed. In meters per second.
 		 */
-		public function GetTangentSpeed():Number
+		[Inline]
+		final public function GetTangentSpeed():Number
 		{
 			return m_tangentSpeed;
 		}
@@ -454,7 +463,8 @@ package Box2D.Collision.Contact
 		/**
 		 * Flag this contact for filtering. Filtering will occur the next time step.
 		 */
-		public function FlagForFiltering():void
+		[Inline]
+		final public function FlagForFiltering():void
 		{
 			m_flags |= e_filterFlag;
 		}
@@ -463,7 +473,7 @@ package Box2D.Collision.Contact
 		* Update the contact manifold and touching status.
 		* Note: do not assume the fixture AABBs are overlapping or are valid.
 		*/
-		protected function Update(p_listener:b2ContactListener):void
+		b2internal function Update(p_listener:b2ContactListener):void
 		{
 			// Swaps places between old and current manifold state
 			var tMp:b2Manifold = m_oldManifold;

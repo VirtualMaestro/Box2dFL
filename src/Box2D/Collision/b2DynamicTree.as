@@ -769,6 +769,22 @@ package Box2D.Collision
 		}
 
 		/**
+		 * Get the fat AABB for a proxy.
+		 * @param p_proxyId
+		 * @return
+		 */
+		[Inline]
+		final public function GetFatAABB(p_proxyId:int):b2AABB
+		{
+			CONFIG::debug
+			{
+				b2Assert(0 <= p_proxyId && p_proxyId < m_nodeCapacity, "invalid proxyId");
+			}
+
+			return m_nodes[p_proxyId].aabb;
+		}
+
+		/**
 		 * TODO: Not necessary
 		 * @param p_index
 		 */

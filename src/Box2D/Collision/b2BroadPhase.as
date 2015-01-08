@@ -3,7 +3,9 @@
  */
 package Box2D.Collision
 {
+	import Box2D.Collision.b2Collision;
 	import Box2D.Common.b2internal;
+	import Box2D.b2Assert;
 
 	use namespace b2internal;
 
@@ -61,28 +63,55 @@ package Box2D.Collision
 		 * @param p_aabb
 		 * @param p_displacementX
 		 * @param p_displacementY
+		 * TODO
 		 */
 		public function MoveProxy(p_proxyId:int, p_aabb:b2AABB, p_displacementX:Number, p_displacementY:Number):void
 		{
-			// TODO:
+			b2Assert(false, "current method isn't implemented yet and can't be used!");
 		}
 
 		/**
 		 * Destroy a proxy. It is up to the client to remove any pairs.
 		 * @param p_proxyId
+		 * TODO
 		 */
 		public function DestroyProxy(p_proxyId:int):void
 		{
-			// TODO:
+			b2Assert(false, "current method isn't implemented yet and can't be used!");
 		}
 
 		/**
 		 * Call to trigger a re-processing of it's pairs on the next call to UpdatePairs.
 		 * @param p_proxyId
+		 * TODO
 		 */
 		public function TouchProxy(p_proxyId:int):void
 		{
-			// TODO:
+			b2Assert(false, "current method isn't implemented yet and can't be used!");
+		}
+
+		/**
+		 * Update the pairs. This results in pair callbacks. This can only add pairs.
+		 * @param p_callback
+		 * TODO
+		 */
+		public function UpdatePairs(p_callback:*):void
+		{
+			b2Assert(false, "current method isn't implemented yet and can't be used!");
+		}
+
+		/**
+		 * Test overlap of fat AABBs.
+		 * @param p_proxyIdA
+		 * @param p_proxyIdB
+		 * @return
+		 */
+		public function TestOverlap(p_proxyIdA:int, p_proxyIdB:int):Boolean
+		{
+			var aabbA:b2AABB = m_tree.GetFatAABB(p_proxyIdA);
+			var aabbB:b2AABB = m_tree.GetFatAABB(p_proxyIdB);
+
+			return b2Collision.b2TestOverlapAABB(aabbA, aabbB);
 		}
 	}
 }
