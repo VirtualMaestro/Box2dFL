@@ -899,6 +899,7 @@ package Box2D.Collision
 		 * @param p_vertexIndexA
 		 * @return
 		 */
+		[Inline]
 		static public function b2ClipSegmentToLine(p_vOut:Vector.<b2ClipVertex>/*2 elem*/, p_vIn:Vector.<b2ClipVertex> /*2 elem*/,
 		                                           p_normalX:Number, p_normalY:Number, p_offset:Number, p_vertexIndexA:int):int
 		{

@@ -74,6 +74,12 @@ package Box2D.Common.Math
 			return Math.sqrt(p_x * p_x + p_y * p_y);
 		}
 
+		[Inline]
+		static public function invLength(p_x:Number, p_y:Number):Number
+		{
+			return 1/Math.sqrt(p_x * p_x + p_y * p_y);
+		}
+
 		/**
 		 * Normalize vector and result save into p_outResult.
 		 * Return length of vector.
