@@ -5,6 +5,7 @@ package Box2D.Collision
 {
 	import Box2D.Collision.Structures.b2RayCastData;
 	import Box2D.Common.Math.b2Math;
+	import Box2D.Common.Math.b2SPoint;
 	import Box2D.Common.b2Settings;
 	import Box2D.b2Assert;
 
@@ -35,6 +36,10 @@ package Box2D.Collision
 
 		private var m_insertionCount:int;
 
+		// helper stack for reuse in Query method
+		private var _stack:Stack;
+		private var _helperPoint:b2SPoint;
+
 		/**
 		 */
 		public function b2DynamicTree()
@@ -46,6 +51,8 @@ package Box2D.Collision
 //			m_path = 0;
 			m_insertionCount = 0;
 			m_nodes = new <b2TreeNode>[];
+			_stack = new Stack();
+			_helperPoint = b2SPoint.Get();
 		}
 
 		/**
@@ -118,11 +125,11 @@ package Box2D.Collision
 			var rX:Number = b2Settings.aabbExtension;
 			var rY:Number = b2Settings.aabbExtension;
 			var node:b2TreeNode = m_nodes[proxyId];
-			var	aabb:b2AABB = node.aabb;
-			aabb.lowerBoundX = aabb.lowerBoundX - rX;
-			aabb.lowerBoundY = aabb.lowerBoundY - rY;
-			aabb.upperBoundX = aabb.upperBoundX + rX;
-			aabb.upperBoundY = aabb.upperBoundY + rY;
+			var aabb:b2AABB = node.aabb;
+			aabb.lowerBoundX = p_aabb.lowerBoundX - rX;
+			aabb.lowerBoundY = p_aabb.lowerBoundY - rY;
+			aabb.upperBoundX = p_aabb.upperBoundX + rX;
+			aabb.upperBoundY = p_aabb.upperBoundY + rY;
 			node.userData = p_userData;
 			node.height = 0;
 
@@ -239,7 +246,6 @@ package Box2D.Collision
 				child2 = m_nodes[index].child2;
 
 				var area:Number = m_nodes[index].aabb.GetPerimeter();
-
 
 				combinedAABB.CombineTwo(m_nodes[index].aabb, leafAABB);
 				var combinedArea:Number = combinedAABB.GetPerimeter();
@@ -407,7 +413,7 @@ package Box2D.Collision
 				var child1:int;
 				var child2:int;
 
-				while(index != b2TreeNode.b2_nullNode)
+				while (index != b2TreeNode.b2_nullNode)
 				{
 					index = Balance(index);
 
@@ -488,10 +494,10 @@ package Box2D.Collision
 					}
 					else
 					{
-						 CONFIG::debug
-						 {
-							 b2Assert(m_nodes[C.parent].child2 == p_iA, "m_nodes[C.parent].child2 == p_iA");
-						 }
+						CONFIG::debug
+						{
+							b2Assert(m_nodes[C.parent].child2 == p_iA, "m_nodes[C.parent].child2 == p_iA");
+						}
 
 						m_nodes[C.parent].child2 = iC;
 					}
@@ -606,7 +612,7 @@ package Box2D.Collision
 
 		/**
 		 * Compute the height of the binary tree in O(N) time. Should not be called often.
- 		 * @return
+		 * @return
 		 */
 		public function GetHeight():int
 		{
@@ -622,7 +628,8 @@ package Box2D.Collision
 		 * Get the ratio of the sum of the node areas to the root area.
 		 * @return  Number
 		 */
-		public function GetAreaRatio():Number
+		[Inline]
+		final public function GetAreaRatio():Number
 		{
 			if (m_root == b2TreeNode.b2_nullNode)
 			{
@@ -690,7 +697,7 @@ package Box2D.Collision
 		 * The shift formula is: position -= newOrigin
 		 * @param p_newOriginX the new origin with respect to the old origin
 		 * @param p_newOriginY the new origin with respect to the old origin
- 		 */
+		 */
 		[Inline]
 		final public function ShiftOrigin(p_newOriginX:Number, p_newOriginY:Number):void
 		{
@@ -746,26 +753,166 @@ package Box2D.Collision
 		 * is called for each proxy that overlaps the supplied AABB.
 		 * @param p_callback
 		 * @param p_aabb
-		 * TODO:
 		 */
 		public function Query(p_callback:*, p_aabb:b2AABB):void
 		{
-			b2Assert(false, "current method isn't implemented yet and can't be used!");
+			_stack.Push(m_root);
+
+			var nodeId:int;
+			var nodeList:Vector.<b2TreeNode> = m_nodes;
+			var node:b2TreeNode;
+
+			while (_stack.GetCount() > 0)
+			{
+				nodeId = _stack.Pop();
+
+				if (nodeId == b2TreeNode.b2_nullNode)
+				{
+					continue;
+				}
+
+				node = nodeList[nodeId];
+
+				if (b2Collision.b2TestOverlapAABB(node.aabb, p_aabb))
+				{
+					if (node.IsLeaf)
+					{
+						var proceed:Boolean = p_callback.QueryCallback(nodeId);
+						if (proceed == false)
+						{
+							return;
+						}
+					}
+					else
+					{
+						_stack.Push(node.child1);
+						_stack.Push(node.child2);
+					}
+				}
+			}
 		}
 
 		/**
-		* Ray-cast against the proxies in the tree. This relies on the callback
-		* to perform a exact ray-cast in the case were the proxy contains a shape.
-		* The callback also performs the any collision filtering. This has performance
-		* roughly equal to k * log(n), where k is the number of collisions and n is the
-		* number of proxies in the tree.
-		* @param p_input the ray-cast input data. The ray extends from p1 to p1 + maxFraction * (p2 - p1).
-		* @param p_callback a callback class that is called for each proxy that is hit by the ray.
-		* TODO:
-		*/
-		public function RayCast(p_callback:Function, p_input:b2RayCastData):void
+		 * Ray-cast against the proxies in the tree. This relies on the callback
+		 * to perform a exact ray-cast in the case were the proxy contains a shape.
+		 * The callback also performs the any collision filtering. This has performance
+		 * roughly equal to k * log(n), where k is the number of collisions and n is the
+		 * number of proxies in the tree.
+		 * @param p_input the ray-cast input data. The ray extends from p1 to p1 + maxFraction * (p2 - p1).
+		 * @param p_callback a callback class that is called for each proxy that is hit by the ray.
+		 */
+		public function RayCast(p_callback:*, p_input:b2RayCastData):void
 		{
-			b2Assert(false, "current method isn't implemented yet and can't be used!");
+			var p1X:Number = p_input.p1X;
+			var p1Y:Number = p_input.p1Y;
+			var p2X:Number = p_input.p2X;
+			var p2Y:Number = p_input.p2Y;
+
+			var rX:Number = p2X - p1X;
+			var rY:Number = p2Y - p1Y;
+
+			CONFIG::debug
+			{
+				b2Assert(b2Math.LengthSquared(rX, rY) > 0.0, "invalid vector r");
+			}
+
+			var invLength:Number = b2Math.invLength(rX, rY);
+			rX *= invLength;
+			rY *= invLength;
+
+			// v is perpendicular to the segment.
+			b2Math.CrossScalarVector(1.0, rX, rY, _helperPoint);
+
+			var vX:Number = _helperPoint.x;
+			var vY:Number = _helperPoint.y;
+
+			var abs_vX:Number = b2Math.Abs(vX);
+			var abs_vY:Number = b2Math.Abs(vY);
+
+			// Separating axis for segment (Gino, p80).
+			// |dot(v, p1 - c)| > dot(|v|, h)
+
+			var maxFraction:Number = p_input.maxFraction;
+
+			// Build a bounding box for the segment.
+			var tX:Number = p1X + maxFraction * (p2X - p1X);
+			var tY:Number = p1Y + maxFraction * (p2Y - p1Y);
+			var segmentAABB:b2AABB = b2AABB.Get(b2Math.Max(p1X, tX), b2Math.Max(p1Y, tY),
+			                                    b2Math.Min(p1X, tX), b2Math.Min(p1Y, tY));
+
+			_stack.Push(m_root);
+
+			var nodeId:int;
+			var nodeList:Vector.<b2TreeNode> = m_nodes;
+			var node:b2TreeNode;
+			var aabb:b2AABB;
+
+			while (_stack.GetCount() > 0)
+			{
+				nodeId = _stack.Pop();
+
+				if (nodeId == b2TreeNode.b2_nullNode)
+				{
+					continue;
+				}
+
+				node = nodeList[nodeId];
+				aabb = node.aabb;
+
+				if (b2Collision.b2TestOverlapAABB(aabb, segmentAABB) == false)
+				{
+					continue;
+				}
+
+				// Separating axis for segment (Gino, p80).
+				// |dot(v, p1 - c)| > dot(|v|, h)
+				var cX:Number = aabb.centerX;
+				var cY:Number = aabb.centerY;
+
+				aabb.GetExtents(_helperPoint);
+
+				var hX:Number = _helperPoint.x;
+				var hY:Number = _helperPoint.y;
+
+				var separation:Number = b2Math.Abs(b2Math.Dot(vX, vY, (p1X - cX), (p1Y - cY)) - b2Math.Dot(abs_vX, abs_vY, hX, hY));
+
+				if (separation > 0.0)
+				{
+					continue;
+				}
+
+				if (node.IsLeaf)
+				{
+					var subInput:b2RayCastData = b2RayCastData.Get(p_input.p1X, p_input.p1Y, p_input.p2X, p_input.p2Y, p_input.maxFraction);
+					var value:Number = p_callback.RayCastCallback(subInput, nodeId);
+
+					if (value > 0.0)
+					{
+						// Update segment bounding box.
+						maxFraction = value;
+						tX = p1X + maxFraction * (p2X - p1X);
+						tY = p1Y + maxFraction * (p2Y - p1Y);
+
+						segmentAABB.lowerBoundX = b2Math.Min(p1X, tX);
+						segmentAABB.lowerBoundY = b2Math.Min(p1Y, tY);
+
+						segmentAABB.upperBoundX = b2Math.Max(p1X, tX);
+						segmentAABB.upperBoundY = b2Math.Max(p1Y, tY);
+					}
+					else if (value == 0.0)
+					{
+						// The client has terminated the ray cast.
+						return;
+					}
+				}
+				else
+				{
+					_stack.Push(node.child1);
+					_stack.Push(node.child2);
+				}
+			}
+
+			segmentAABB.Dispose();
 		}
 
 		/**
@@ -819,13 +966,15 @@ package Box2D.Collision
 		 * Build an optimal tree. Very expensive.
 		 * For testing.
 		 * TODO: Not necessary
- 		 */
+		 */
 		private function RebuildBottomUp():void
 		{
 
 		}
 	}
 }
+
+import Box2D.Collision.b2AABB;
 
 /**
  *
@@ -875,8 +1024,6 @@ internal class Stack
 		_count = 0;
 	}
 }
-
-import Box2D.Collision.b2AABB;
 
 /**
  * A node in the dynamic tree. The client does not interact with this directly.

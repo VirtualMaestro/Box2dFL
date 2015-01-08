@@ -128,14 +128,14 @@ package Box2D.Collision.Shapes
 			var positionX:Number = (cos * m_pX - sin * m_pY) + p_transform.x;
 			var positionY:Number = (sin * m_pX + cos * m_pY) + p_transform.y;
 
-			var sX:Number = p_rayCastData.startX - positionX;
-			var sY:Number = p_rayCastData.startY - positionY;
+			var sX:Number = p_rayCastData.p1X - positionX;
+			var sY:Number = p_rayCastData.p1Y - positionY;
 
 			var b:Number = sX * sX + sY * sY - m_radius*m_radius;
 
 			// Solve quadratic equation.
-			var rX:Number = p_rayCastData.endX - p_rayCastData.startX;
-			var rY:Number = p_rayCastData.endY - p_rayCastData.startY;
+			var rX:Number = p_rayCastData.p2X - p_rayCastData.p1X;
+			var rY:Number = p_rayCastData.p2Y - p_rayCastData.p1Y;
 
 			var c:Number = sX * rX + sY * rY;
 			var rr:Number = rX * rX + rY * rY;

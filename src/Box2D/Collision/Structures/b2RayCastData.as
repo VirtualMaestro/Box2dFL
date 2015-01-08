@@ -20,28 +20,20 @@ package Box2D.Collision.Structures
 		static b2internal var classId:uint = b2Disposable.getClassId();
 
 		/**
-		 * Start position of ray. X
-		 * Ray-cast input data.
 		 */
-		public var startX:Number;
+		public var p1X:Number;
 
 		/**
-		 * Start position of ray. Y
-		 * Ray-cast input data.
 		 */
-		public var startY:Number;
+		public var p1Y:Number;
 
 		/**
-		 * End position of ray. X
-		 * Ray-cast input data.
 		 */
-		public var endX:Number;
+		public var p2X:Number;
 
 		/**
-		 * End position of ray. Y
-		 * Ray-cast input data.
 		 */
-		public var endY:Number;
+		public var p2Y:Number;
 
 		/**
 		 * Ray-cast input data.
@@ -82,7 +74,7 @@ package Box2D.Collision.Structures
 		 */
 		override public function Clone():IDisposable
 		{
-			var rayCastData:b2RayCastData = Get(startX, startY, endX, endY, maxFraction);
+			var rayCastData:b2RayCastData = Get(p1X, p1Y, p2X, p2Y, maxFraction);
 			rayCastData.normalX = normalX;
 			rayCastData.normalY = normalY;
 			rayCastData.fraction = fraction;
@@ -94,10 +86,10 @@ package Box2D.Collision.Structures
 		 */
 		public function b2RayCastData(p_startX:Number, p_startY:Number, p_endX:Number, p_endY:Number, p_maxFraction:Number = 1.0)
 		{
-			startX = p_startX;
-			startY = p_startY;
-			endX = p_endX;
-			endY = p_endY;
+			p1X = p_startX;
+			p1Y = p_startY;
+			p2X = p_endX;
+			p2Y = p_endY;
 			maxFraction = p_maxFraction;
 		}
 
@@ -114,10 +106,10 @@ package Box2D.Collision.Structures
 			if (instance)
 			{
 				rayCastData = instance as b2RayCastData;
-				rayCastData.startX = p_startX;
-				rayCastData.startY = p_startY;
-				rayCastData.endX = p_endX;
-				rayCastData.endY = p_endY;
+				rayCastData.p1X = p_startX;
+				rayCastData.p1Y = p_startY;
+				rayCastData.p2X = p_endX;
+				rayCastData.p2Y = p_endY;
 				rayCastData.maxFraction = p_maxFraction;
 			}
 			else rayCastData = new b2RayCastData(p_startX, p_startY, p_endX, p_endY, p_maxFraction);

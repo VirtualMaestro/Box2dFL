@@ -232,7 +232,8 @@ package Box2D.Collision
 		 * @param p_poly2
 		 * @param p_xf2
 		 */
-		static public function b2FindIncidentEdge(p_c:Vector.<b2ClipVertex> /*2 elements*/,
+		[Inline]
+		static private function b2FindIncidentEdge(p_c:Vector.<b2ClipVertex> /*2 elements*/,
 													 p_poly1:b2PolygonShape, p_xf1:b2Mat22, p_edge1:int,
 													 p_poly2:b2PolygonShape, p_xf2:b2Mat22):void
 		{
@@ -332,7 +333,8 @@ package Box2D.Collision
 		 * @return Object where two properties - 'maxSeparation' and 'bestIndex'.
 		 * Impossible to use returning object in own needs, should to copy values from it.
 		 */
-        static public function b2FindMaxSeparation(p_poly1:b2PolygonShape, p_xf1:b2Mat22,
+		[Inline]
+        static private function b2FindMaxSeparation(p_poly1:b2PolygonShape, p_xf1:b2Mat22,
                                                    p_poly2:b2PolygonShape, p_xf2:b2Mat22):Object
         {
 	        var count1:int = p_poly1.m_count;
@@ -872,6 +874,9 @@ package Box2D.Collision
 			mp.localPointY = p_circleB.m_pY;
 		}
 
+		//
+		static private var collider:b2EPCollider = new b2EPCollider();
+
 		/**
 		 *
 		 * @param p_manifold
@@ -880,11 +885,12 @@ package Box2D.Collision
 		 * @param p_polygonB
 		 * @param p_xfB
 		 */
+		[Inline]
 		static public function b2CollideEdgeAndPolygon(p_manifold:b2Manifold,
 														 p_edgeA:b2EdgeShape, p_xfA:b2Mat22,
 														 p_polygonB:b2PolygonShape, p_xfB:b2Mat22):void
 		{
-			var collider:b2EPCollider = new b2EPCollider();
+
 			collider.Collide(p_manifold, p_edgeA, p_xfA, p_polygonB, p_xfB);
 		}
 
@@ -951,6 +957,7 @@ package Box2D.Collision
 		 * @return
 		 * TODO: Optimize allocation memory
 		 */
+		[Inline]
 		static public function b2TestOverlap(p_shapeA:b2Shape, p_indexA:int,
 		                                     p_shapeB:b2Shape, p_indexB:int,
 											 p_xfA:b2Mat22, p_xfB:b2Mat22):Boolean
@@ -974,6 +981,7 @@ package Box2D.Collision
 		 * @param p_b
 		 * @return
 		 */
+		[Inline]
 		static public function b2TestOverlapAABB(p_a:b2AABB, p_b:b2AABB):Boolean
 		{
 			var d1X:Number;

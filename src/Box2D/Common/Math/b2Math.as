@@ -63,7 +63,7 @@ package Box2D.Common.Math
 		}
 
 		[Inline]
-		static public function LengthSquare(p_x:Number, p_y:Number):Number
+		static public function LengthSquared(p_x:Number, p_y:Number):Number
 		{
 			return p_x * p_x + p_y * p_y;
 		}
@@ -166,7 +166,7 @@ package Box2D.Common.Math
 		}
 
 		[Inline]
-		static public function CrossScalarVector(p_x:Number, p_y:Number, p_scalar:Number, p_outResult:b2SPoint):void
+		static public function CrossScalarVector(p_scalar:Number, p_x:Number, p_y:Number, p_outResult:b2SPoint):void
 		{
 			p_outResult.x = -p_scalar * p_y;
 			p_outResult.y = p_scalar * p_x;

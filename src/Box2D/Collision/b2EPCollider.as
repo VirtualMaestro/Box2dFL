@@ -702,7 +702,7 @@ package Box2D.Collision
 		 * If p_axis is not given creates and returns new instance of b2EPAxis.
 		 */
 		[Inline]
-		final public function ComputeEdgeSeparation(p_axis:b2EPAxis = null):b2EPAxis
+		final private function ComputeEdgeSeparation(p_axis:b2EPAxis = null):b2EPAxis
 		{
 			var axis:b2EPAxis = p_axis ? p_axis : new b2EPAxis();
 			axis.type = b2EPAxis.e_edgeA;
@@ -742,7 +742,7 @@ package Box2D.Collision
 		 * If p_axis is not given creates and returns new instance of b2EPAxis.
 		 */
 		[Inline]
-		final public function ComputePolygonSeparation(p_axis:b2EPAxis = null):b2EPAxis
+		final private function ComputePolygonSeparation(p_axis:b2EPAxis = null):b2EPAxis
 		{
 			var axis:b2EPAxis = p_axis ? p_axis : new b2EPAxis();
 			axis.type = b2EPAxis.e_unknown;

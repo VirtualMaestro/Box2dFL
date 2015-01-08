@@ -393,10 +393,10 @@ package Box2D.Collision.Shapes
 		override public function RayCast(p_rayCastData:b2RayCastData, p_transform:b2Mat22, p_childIndex:int):Boolean
 		{
 			// Put the ray into the polygon's frame of reference.
-			var sX:Number = p_rayCastData.startX - p_transform.x;
-			var sY:Number = p_rayCastData.startY - p_transform.y;
-			var eX:Number = p_rayCastData.endX   - p_transform.x;
-			var eY:Number = p_rayCastData.endY   - p_transform.y;
+			var sX:Number = p_rayCastData.p1X - p_transform.x;
+			var sY:Number = p_rayCastData.p1Y - p_transform.y;
+			var eX:Number = p_rayCastData.p2X   - p_transform.x;
+			var eY:Number = p_rayCastData.p2Y   - p_transform.y;
 			var cos:Number = p_transform.c11;
 			var sin:Number = p_transform.c12;
 

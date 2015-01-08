@@ -58,9 +58,22 @@ package Box2D.Collision
 		 * Get the center of the AABB.
 		 * IMPORTANT! Method returns new instance of b2SPoint.
 		 */
-		final public function GetCenter():b2SPoint // const
+		[Inline]
+		final public function GetCenter(p_outResult:b2SPoint = null):b2SPoint // const
 		{
-			return b2SPoint.Get((upperBoundX + lowerBoundX) * 0.5, (upperBoundY + lowerBoundY) * 0.5);
+			var center:b2SPoint = p_outResult;
+
+			if (center)
+			{
+				center.x = (upperBoundX + lowerBoundX) * 0.5;
+				center.y = (upperBoundY + lowerBoundY) * 0.5;
+			}
+			else
+			{
+				center = b2SPoint.Get((upperBoundX + lowerBoundX) * 0.5, (upperBoundY + lowerBoundY) * 0.5);
+			}
+
+			return center;
 		}
 
 		/**
@@ -83,11 +96,24 @@ package Box2D.Collision
 
 		/**
 		 * Get the extents of the AABB (half-widths).
-		 * IMPORTANT! Method returns new instance of b2SPoint.
+		 * IMPORTANT! Method returns new instance of b2SPoint if parameter wasn't set.
 		 */
-		final public function GetExtents():b2SPoint
+		[Inline]
+		final public function GetExtents(p_outResult:b2SPoint = null):b2SPoint
 		{
-			return b2SPoint.Get((upperBoundX - lowerBoundX) * 0.5, (upperBoundY - lowerBoundY) * 0.5);
+			var extents:b2SPoint = p_outResult;
+
+			if (extents)
+			{
+				extents.x = (upperBoundX - lowerBoundX) * 0.5;
+				extents.y = (upperBoundY - lowerBoundY) * 0.5;
+			}
+			else
+			{
+				extents = b2SPoint.Get((upperBoundX - lowerBoundX) * 0.5, (upperBoundY - lowerBoundY) * 0.5);
+			}
+
+			return extents;
 		}
 
 		/**
@@ -181,11 +207,11 @@ package Box2D.Collision
 			var tMin:Number = -Number.MAX_VALUE;
 			var tMax:Number = Number.MAX_VALUE;
 
-			var pX:Number = p_rayCastData.startX;
-			var pY:Number = p_rayCastData.startY;
+			var pX:Number = p_rayCastData.p1X;
+			var pY:Number = p_rayCastData.p1Y;
 
-			var dX:Number = p_rayCastData.endX - pX;
-			var dY:Number = p_rayCastData.endY - pY;
+			var dX:Number = p_rayCastData.p2X - pX;
+			var dY:Number = p_rayCastData.p2Y - pY;
 
 			var absDX:Number = b2Math.Abs(dX);
 			var absDY:Number = b2Math.Abs(dY);
