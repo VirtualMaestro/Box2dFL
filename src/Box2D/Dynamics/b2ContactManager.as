@@ -9,14 +9,11 @@ package Box2D.Dynamics
 	import Box2D.Common.b2internal;
 	import Box2D.Dynamics.Callbacks.b2ContactListener;
 	import Box2D.Dynamics.Filters.b2Filter;
-	import Box2D.Dynamics.b2Body;
-	import Box2D.b2Assert;
 
 	use namespace b2internal;
 
 	/**
 	 * Delegate of b2World.
-	 * TODO:
 	 */
 	public class b2ContactManager
 	{
@@ -26,14 +23,18 @@ package Box2D.Dynamics
 		public var m_contactFilter:b2Filter;
 		public var m_contactListener:b2ContactListener;
 
+		/**
+		 */
 		public function b2ContactManager()
 		{
-			b2Assert(false, "current method isn't implemented yet and can't be used!");
+			m_contactCount = 0;
+			m_contactFilter = new b2Filter();
+			m_contactListener = new b2ContactListener();
 		}
 
 		/**
 		 * Broad-phase callback.
- 		 */
+		 */
 		public function AddPair(p_proxyUserDataA:*, p_proxyUserDataB:*):void
 		{
 			var proxyA:b2FixtureProxy = p_proxyUserDataA;
@@ -58,7 +59,7 @@ package Box2D.Dynamics
 			// Does a contact already exist?
 			var edge:b2ContactEdge = bodyB.GetContactList();
 
-			while(edge)
+			while (edge)
 			{
 				if (edge.other == bodyA)
 				{
@@ -166,10 +167,10 @@ package Box2D.Dynamics
 		}
 
 		/**
-		* This is the top level collision call for the time step. Here
-		* all the narrow phase collision is processed for the world
-		* contact list.
-		*/
+		 * This is the top level collision call for the time step. Here
+		 * all the narrow phase collision is processed for the world
+		 * contact list.
+		 */
 		public function Collide():void
 		{
 			// Update awake contacts.
@@ -246,12 +247,80 @@ package Box2D.Dynamics
 		}
 
 		/**
-		 *
-		 * @param p_contact
 		 */
-		public function Destroy(p_contact:b2Contact):void
+		public function Destroy(c:b2Contact):void
 		{
-			// TODO:
+			var fixtureA:b2Fixture = c.GetFixtureA();
+			var fixtureB:b2Fixture = c.GetFixtureB();
+			var bodyA:b2Body = fixtureA.GetBody();
+			var bodyB:b2Body = fixtureB.GetBody();
+
+			if (m_contactListener && c.IsTouching())
+			{
+				m_contactListener.EndContact(c);
+			}
+
+			var prev:b2Contact = c.m_prev;
+			var next:b2Contact = c.m_next;
+
+			// Remove from the world.
+			if (prev)
+			{
+				prev.m_next = next;
+			}
+
+			if (next)
+			{
+				next.m_prev = prev;
+			}
+
+			if (c == m_contactList)
+			{
+				m_contactList = next;
+			}
+
+			var nodeAPrev:b2ContactEdge = c.m_nodeA.prev;
+			var nodeANext:b2ContactEdge = c.m_nodeA.next;
+
+			// Remove from body 1
+			if (nodeAPrev)
+			{
+				nodeAPrev.next = nodeANext;
+			}
+
+			if (nodeANext)
+			{
+				nodeANext.prev = nodeAPrev;
+			}
+
+			if (c.m_nodeA == bodyA.m_contactList)
+			{
+				bodyA.m_contactList = nodeANext;
+			}
+
+			var nodeBPrev:b2ContactEdge = c.m_nodeB.prev;
+			var nodeBNext:b2ContactEdge = c.m_nodeB.next;
+
+			// Remove from body 2
+			if (nodeBPrev)
+			{
+				nodeBPrev.next = nodeBNext;
+			}
+
+			if (nodeBNext)
+			{
+				nodeBNext.prev = nodeBPrev;
+			}
+
+			if (c.m_nodeB == bodyB.m_contactList)
+			{
+				bodyB.m_contactList = nodeBNext;
+			}
+
+			// Call the factory.
+			b2Contact.Destroy(c);
+
+			--m_contactCount;
 		}
 	}
 }
