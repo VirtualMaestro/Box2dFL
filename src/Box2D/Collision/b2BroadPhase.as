@@ -3,6 +3,7 @@
  */
 package Box2D.Collision
 {
+	import Box2D.Collision.Structures.b2RayCastData;
 	import Box2D.Common.b2internal;
 	import Box2D.b2Assert;
 
@@ -196,6 +197,78 @@ package Box2D.Collision
 			}
 
 			return false;
+		}
+
+		/**
+		 */
+		[Inline]
+		final public function Query(p_callback:*, p_aabb:b2AABB):void
+		{
+			m_tree.Query(p_callback, p_aabb);
+		}
+
+		/**
+		 */
+		[Inline]
+		final public function RayCast(p_callback:*, p_input:b2RayCastData):void
+		{
+			m_tree.RayCast(p_callback, p_input);
+		}
+
+		/**
+		 */
+		[Inline]
+		final public function ShiftOrigin(p_newOriginX:Number, p_newOriginY:Number):void
+		{
+			m_tree.ShiftOrigin(p_newOriginX, p_newOriginY);
+		}
+
+		/**
+		 */
+		[Inline]
+		final public function GetUserData(p_proxyId:int):*
+		{
+			return m_tree.GetUserData(p_proxyId);
+		}
+
+		/**
+		 */
+		[Inline]
+		final public function GetFatAABB(p_proxyId:int):b2AABB
+		{
+			return m_tree.GetFatAABB(p_proxyId);
+		}
+
+		/**
+		 */
+		[Inline]
+		final public function GetProxyCount():int
+		{
+			return m_proxyCount;
+		}
+
+		/**
+		 */
+		[Inline]
+		final public function GetTreeHeight():int
+		{
+			return m_tree.GetHeight();
+		}
+
+		/**
+		 */
+		[Inline]
+		final public function GetTreeBalance():int
+		{
+			return m_tree.GetMaxBalance();
+		}
+
+		/**
+		 */
+		[Inline]
+		final public function GetTreeQuality():Number
+		{
+			return m_tree.GetAreaRatio();
 		}
 	}
 }
