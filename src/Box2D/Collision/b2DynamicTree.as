@@ -748,7 +748,7 @@ package Box2D.Collision
 		 * @param p_aabb
 		 * TODO:
 		 */
-		public function Query(p_callback:Function, p_aabb:b2AABB):void
+		public function Query(p_callback:*, p_aabb:b2AABB):void
 		{
 			b2Assert(false, "current method isn't implemented yet and can't be used!");
 		}
@@ -782,6 +782,19 @@ package Box2D.Collision
 			}
 
 			return m_nodes[p_proxyId].aabb;
+		}
+
+		/**
+		 */
+		[Inline]
+		final public function GetUserData(proxyId:int):*
+		{
+			CONFIG::debug
+			{
+				b2Assert(0 <= proxyId && proxyId < m_nodeCapacity, "invalid proxyId");
+			}
+
+			return m_nodes[proxyId].userData;
 		}
 
 		/**
