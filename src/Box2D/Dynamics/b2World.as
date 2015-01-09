@@ -245,22 +245,195 @@ package Box2D.Dynamics
 		* Create a joint to constrain bodies together. No reference to the definition
 		* is retained. This may cause the connected bodies to cease colliding.
 		* @warning This function is locked during callbacks.
-		 * TODO
 		*/
 		final public function CreateJoint(p_def:b2JointDef):b2Joint
 		{
-			b2Assert(false, "current method isn't implemented yet and can't be used!");
-			return null;
+			CONFIG::debug
+			{
+				b2Assert(IsLocked == false, "world is locked");
+			}
+
+			if (IsLocked)
+			{
+				return null;
+			}
+
+			var joint:b2Joint = b2Joint.Create(p_def);
+
+			// Connect to the world list.
+			joint.m_prev = null;
+			joint.m_next = m_jointList;
+
+			if (m_jointList)
+			{
+				m_jointList.m_prev = joint;
+			}
+
+			m_jointList = joint;
+			++m_jointCount;
+
+			// Connect to the bodies' doubly linked lists.
+			var edgeA:b2JointEdge = joint.m_edgeA;
+			var edgeB:b2JointEdge = joint.m_edgeB;
+
+			var bodyA:b2Body = joint.m_bodyA;
+			var bodyB:b2Body = joint.m_bodyB;
+
+			var jointListA:b2JointEdge = bodyA.m_jointList;
+			var jointListB:b2JointEdge = bodyB.m_jointList;
+
+			edgeA.joint = joint;
+			edgeA.other = bodyB;
+			edgeA.prev = null;
+			edgeA.next = jointListA;
+			if (jointListA) jointListA.prev = edgeA;
+			bodyA.m_jointList = edgeA;
+
+			edgeB.joint = joint;
+			edgeB.other = bodyA;
+			edgeB.prev = null;
+			edgeB.next = jointListB;
+			if (jointListB) jointListB.prev = edgeB;
+			bodyB.m_jointList = edgeB;
+
+			bodyA = p_def.bodyA;
+			bodyB = p_def.bodyB;
+
+			// If the joint prevents collisions, then flag any contacts for filtering.
+			if (p_def.collideConnected == false)
+			{
+				var edge:b2ContactEdge = bodyB.GetContactList();
+				while (edge)
+				{
+					if (edge.other == bodyA)
+					{
+						// Flag the contact for filtering at the next time step (where either
+						// body is awake).
+						edge.contact.FlagForFiltering();
+					}
+
+					edge = edge.next;
+				}
+			}
+
+			// Note: creating a joint doesn't wake the bodies.
+
+			return joint;
 		}
 
 		/**
 		 * Destroy a joint. This may cause the connected bodies to begin colliding.
 		 * @warning This function is locked during callbacks.
-		 * TODO
 		 */
 		final public function DestroyJoint(p_joint:b2Joint):void
 		{
-			b2Assert(false, "current method isn't implemented yet and can't be used!");
+			CONFIG::debug
+			{
+				b2Assert(IsLocked == false, "world is locked");
+			}
+
+			if (IsLocked)
+			{
+				return;
+			}
+
+			var collideConnected:Boolean = p_joint.m_collideConnected;
+
+			// Remove from the doubly linked list.
+			if (p_joint.m_prev)
+			{
+				p_joint.m_prev.m_next = p_joint.m_next;
+			}
+
+			if (p_joint.m_next)
+			{
+				p_joint.m_next.m_prev = p_joint.m_prev;
+			}
+
+			if (p_joint == m_jointList)
+			{
+				m_jointList = p_joint.m_next;
+			}
+
+			// Disconnect from island graph.
+			var bodyA:b2Body = p_joint.m_bodyA;
+			var bodyB:b2Body = p_joint.m_bodyB;
+
+			// Wake up connected bodies.
+			bodyA.SetAwake(true);
+			bodyB.SetAwake(true);
+
+			// Remove from body 1.
+			var edgeA:b2JointEdge = p_joint.m_edgeA;
+			var prevA:b2JointEdge = edgeA.prev;
+			var nextA:b2JointEdge = edgeA.next;
+
+			if (prevA)
+			{
+				prevA.next = nextA;
+			}
+
+			if (nextA)
+			{
+				nextA.prev = prevA;
+			}
+
+			if (edgeA == bodyA.m_jointList)
+			{
+				bodyA.m_jointList = nextA;
+			}
+
+			edgeA.prev = null;
+			edgeA.next = null;
+
+			// Remove from body 2
+			var edgeB:b2JointEdge = p_joint.m_edgeB;
+			var prevB:b2JointEdge = edgeB.prev;
+			var nextB:b2JointEdge = edgeB.next;
+
+			if (prevB)
+			{
+				prevB.next = nextB;
+			}
+
+			if (nextB)
+			{
+				nextB.prev = prevB;
+			}
+
+			if (edgeB == bodyB.m_jointList)
+			{
+				bodyB.m_jointList = nextB;
+			}
+
+			edgeB.prev = null;
+			edgeB.next = null;
+
+			b2Joint.Destroy(p_joint);
+
+			CONFIG::debug
+			{
+				b2Assert(m_jointCount > 0, "jointCount equal 0");
+			}
+
+			--m_jointCount;
+
+			// If the joint prevents collisions, then flag any contacts for filtering.
+			if (collideConnected == false)
+			{
+				var edge:b2ContactEdge = bodyB.GetContactList();
+				while (edge)
+				{
+					if (edge.other == bodyA)
+					{
+						// Flag the contact for filtering at the next time step (where either
+						// body is awake).
+						edge.contact.FlagForFiltering();
+					}
+
+					edge = edge.next;
+				}
+			}
 		}
 
 		/**
