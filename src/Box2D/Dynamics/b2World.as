@@ -59,6 +59,7 @@ package Box2D.Dynamics
 
 		b2internal var m_destructionListener:b2DestructionListener;  // TODO: Think about remove that functionality
 
+		private var _worldQueryWrapper:b2WorldQueryWrapper;
 		// TODO: add some debugging props from original
 
 		/**
@@ -78,6 +79,8 @@ package Box2D.Dynamics
 			m_flags = e_clearForces;
 
 			m_inv_dt0 = 0.0;
+
+			_worldQueryWrapper = new b2WorldQueryWrapper();
 		}
 
 		/**
@@ -458,11 +461,16 @@ package Box2D.Dynamics
 		* When you perform sub-stepping you will disable auto clearing of forces and instead call
 		* ClearForces after all sub-steps are complete in one pass of your game loop.
 		* @see SetAutoClearForces
-		 * TODO
 		*/
+		[Inline]
 		final public function ClearForces():void
 		{
-			b2Assert(false, "current method isn't implemented yet and can't be used!");
+			for (var body:b2Body = m_bodyList; body; body = body.GetNext())
+			{
+				body.m_forceX = 0;
+				body.m_forceY = 0;
+				body.m_torque = 0.0;
+			}
 		}
 
 		/**
@@ -470,11 +478,13 @@ package Box2D.Dynamics
 		* provided AABB.
 		* @param p_callback a user implemented callback class.
 		* @param p_aabb the query box.
-		 * TODO
 		*/
+		[Inline]
 		final public function QueryAABB(p_callback:b2QueryCallback, p_aabb:b2AABB):void
 		{
-			b2Assert(false, "current method isn't implemented yet and can't be used!");
+			_worldQueryWrapper.broadPhase = m_contactManager.m_broadPhase;
+			_worldQueryWrapper.callback = p_callback;
+			m_contactManager.m_broadPhase.Query(_worldQueryWrapper, p_aabb);
 		}
 
 		/**
@@ -735,4 +745,22 @@ package Box2D.Dynamics
 			}
 		}
 	}
+}
+
+import Box2D.Collision.b2BroadPhase;
+import Box2D.Dynamics.Callbacks.b2QueryCallback;
+import Box2D.Dynamics.b2FixtureProxy;
+
+// internal classes
+
+internal class b2WorldQueryWrapper
+{
+	public function QueryCallback(proxyId:int):Boolean
+	{
+		var proxy:b2FixtureProxy = broadPhase.GetUserData(proxyId);
+		return callback.ReportFixture(proxy.fixture);
+	}
+
+	public var broadPhase:b2BroadPhase;
+	public var callback:b2QueryCallback;
 }

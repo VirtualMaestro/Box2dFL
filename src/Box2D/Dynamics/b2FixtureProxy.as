@@ -13,7 +13,7 @@ package Box2D.Dynamics
 	/**
 	 * This proxy is used internally to connect fixtures to the broad-phase
 	 */
-	internal class b2FixtureProxy extends b2Disposable
+	public class b2FixtureProxy extends b2Disposable
 	{
 		static b2internal var classId:uint = b2Disposable.getClassId();
 
