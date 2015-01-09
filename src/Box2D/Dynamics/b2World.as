@@ -5,6 +5,7 @@ package Box2D.Dynamics
 {
 	import Box2D.Collision.Contact.b2Contact;
 	import Box2D.Collision.Contact.b2ContactEdge;
+	import Box2D.Collision.Structures.b2TimeStep;
 	import Box2D.Collision.b2AABB;
 	import Box2D.Collision.b2BroadPhase;
 	import Box2D.Common.Math.b2Vec2;
@@ -488,6 +489,22 @@ package Box2D.Dynamics
 		 * TODO
 		*/
 		final public function RayCast(p_callback:b2RayCastCallback, p_point1X:Number, p_point1Y:Number, p_point2X:Number, p_point2Y:Number):void
+		{
+			b2Assert(false, "current method isn't implemented yet or abstract and can't be used!");
+		}
+
+		/**
+		 * TODO:
+		 */
+		final private function Solve(p_step:b2TimeStep):void
+		{
+			b2Assert(false, "current method isn't implemented yet or abstract and can't be used!");
+		}
+
+		/**
+		 * TODO:
+		 */
+		final private function SolveTOI(p_step:b2TimeStep):void
 		{
 			b2Assert(false, "current method isn't implemented yet or abstract and can't be used!");
 		}
