@@ -22,9 +22,10 @@ package Box2D.Dynamics.Callbacks
 		 * return fraction: clip the ray to this point
 		 * return 1: don't clip the ray and continue
 		 * @param p_fixture the fixture hit by the ray
-		 * @param p_pointX/p_pointY the point of initial intersection
-		 * @param p_pointY
-		 * @param p_normalX/p_normalY the normal vector at the point of intersection
+		 * @param p_pointX the point of initial intersection
+		 * @param p_pointY the point of initial intersection
+		 * @param p_normalX the normal vector at the point of intersection
+		 * @param p_normalY the normal vector at the point of intersection
 		 * @param p_fraction
 		 * @return -1 to filter, 0 to terminate, fraction to clip the ray for
 		 * closest hit, 1 to continue

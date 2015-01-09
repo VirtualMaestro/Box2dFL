@@ -429,11 +429,15 @@ package Box2D.Dynamics
 
 			m_filter.Dispose();
 			m_shape.Dispose();
+
+			m_filter = null;
+			m_shape = null;
 			userData = null;
 			m_next = null;
 			m_body = null;
 
 			b2Disposable.clearVectorWithDispose(m_proxies);
+
 			b2Disposable.Put(this, classId);
 		}
 

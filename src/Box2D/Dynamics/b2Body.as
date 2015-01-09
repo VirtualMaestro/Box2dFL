@@ -360,7 +360,7 @@ package Box2D.Dynamics
 		{
 			CONFIG::debug
 			{
-				b2Assert(m_world.IsLocked() == false, "can't set transform while world is locked");
+				b2Assert(m_world.IsLocked == false, "can't set transform while world is locked");
 			}
 
 			m_xf.SetAngle(p_angle);
@@ -1397,7 +1397,7 @@ package Box2D.Dynamics
 		 */
 		override public function Clone():IDisposable
 		{
-			return super .Clone();
+			return super.Clone();
 		}
 
 		/**

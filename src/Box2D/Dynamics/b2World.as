@@ -4,16 +4,20 @@
 package Box2D.Dynamics
 {
 	import Box2D.Collision.Contact.b2Contact;
+	import Box2D.Collision.Contact.b2ContactEdge;
 	import Box2D.Collision.b2AABB;
+	import Box2D.Collision.b2BroadPhase;
 	import Box2D.Common.Math.b2Vec2;
 	import Box2D.Common.b2internal;
 	import Box2D.Dynamics.Callbacks.b2ContactListener;
+	import Box2D.Dynamics.Callbacks.b2DestructionListener;
 	import Box2D.Dynamics.Callbacks.b2QueryCallback;
 	import Box2D.Dynamics.Callbacks.b2RayCastCallback;
 	import Box2D.Dynamics.Def.b2BodyDef;
 	import Box2D.Dynamics.Def.b2JointDef;
 	import Box2D.Dynamics.Filters.b2Filter;
 	import Box2D.Dynamics.Joints.b2Joint;
+	import Box2D.Dynamics.Joints.b2JointEdge;
 	import Box2D.b2Assert;
 
 	use namespace b2internal;
@@ -52,6 +56,8 @@ package Box2D.Dynamics
 		b2internal var m_subStepping:Boolean;
 		b2internal var m_stepComplete:Boolean;
 
+		b2internal var m_destructionListener:b2DestructionListener;  // TODO: Think about remove that functionality
+
 		// TODO: add some debugging props from original
 
 		/**
@@ -75,42 +81,63 @@ package Box2D.Dynamics
 
 		/**
 		 * Register a destruction listener. The listener is owned by you and must remain in scope.
-		 * TODO: I'm not sure if this is need, seems like only for testing.
 		 */
-//		final public function SetDestructionListener(p_listener/*:b2DestructionListener*/):void
-//		{
-//			b2Assert(false, "current method isn't implemented yet and can't be used!");
-//		}
+		final public function SetDestructionListener(p_listener:b2DestructionListener):void
+		{
+			m_destructionListener = p_listener;
+		}
 
 		/**
 		* Register a contact filter to provide specific control over collision.
 		* Otherwise the default filter is used (b2_defaultFilter). The listener is
 		* owned by you and must remain in scope.
-		 * TODO:
 		*/
+		[Inline]
 		final public function SetContactFilter(p_filter:b2Filter):void
 		{
-			b2Assert(false, "current method isn't implemented yet and can't be used!");
+			m_contactManager.m_contactFilter = p_filter;
 		}
 
 		/**
 		 * Register a contact event listener. The listener is owned by you and must remain in scope.
-		 * TODO
 		 */
+		[Inline]
 		final public function SetContactListener(p_listener:b2ContactListener):void
 		{
-			b2Assert(false, "current method isn't implemented yet and can't be used!");
+			m_contactManager.m_contactListener = p_listener;
 		}
 
 		/**
 		 * Create a rigid body given a definition. No reference to the definition is retained.
 		 * @warning This function is locked during callbacks.
-		 * TODO
 		 */
 		final public function CreateBody(p_def:b2BodyDef):b2Body
 		{
-			b2Assert(false, "current method isn't implemented yet and can't be used!");
-			return null;
+			CONFIG::debug
+			{
+				b2Assert(IsLocked == false, "the world is locked")
+			}
+
+			if (IsLocked)
+			{
+				return null;
+			}
+
+			var b:b2Body = b2Body.Get(p_def, this);
+
+			// Add to world doubly linked list.
+			b.m_prev = null;
+			b.m_next = m_bodyList;
+
+			if (m_bodyList)
+			{
+				m_bodyList.m_prev = b;
+			}
+
+			m_bodyList = b;
+			++m_bodyCount;
+
+			return b;
 		}
 
 		/**
@@ -118,11 +145,100 @@ package Box2D.Dynamics
 		* is retained. This function is locked during callbacks.
 		* @warning This automatically deletes all associated shapes and joints.
 		* @warning This function is locked during callbacks.
-		 * TODO
 		*/
-		final public function DestroyBody(p_body:b2Body):void
+		final public function DestroyBody(b:b2Body):void
 		{
-			b2Assert(false, "current method isn't implemented yet and can't be used!");
+			CONFIG::debug
+			{
+				b2Assert(m_bodyCount > 0, "count of bodies is 0");
+				b2Assert(IsLocked == false, "world is locked");
+			}
+
+			if (IsLocked)
+			{
+				return;
+			}
+
+			// Delete the attached joints.
+			var je:b2JointEdge = b.m_jointList;
+			var je0:b2JointEdge;
+			var isDestructionListener:Boolean = m_destructionListener != null;
+
+			while(je)
+			{
+				je0 = je;
+				je = je.next;
+
+				if (isDestructionListener)
+				{
+					m_destructionListener.SayGoodbyeJoint(je0.joint);
+				}
+
+				DestroyJoint(je0.joint);
+
+				b.m_jointList = je;
+			}
+
+			b.m_jointList = null;
+
+			// Delete the attached contacts.
+			var ce:b2ContactEdge = b.m_contactList;
+			var ce0:b2ContactEdge;
+			var contactManager:b2ContactManager = m_contactManager;
+
+			while(ce)
+			{
+				ce0 = ce;
+				ce = ce.next;
+				contactManager.Destroy(ce0.contact);
+			}
+
+			b.m_contactList = null;
+
+			// Delete the attached fixtures. This destroys broad-phase proxies.
+			var f:b2Fixture = b.m_fixtureList;
+			var f0:b2Fixture;
+			var broadPhase:b2BroadPhase = contactManager.m_broadPhase;
+
+			while(f)
+			{
+				f0 = f;
+				f = f.m_next;
+
+				if (isDestructionListener)
+				{
+					m_destructionListener.SayGoodbyeFixture(f0);
+				}
+
+				f0.DestroyProxies(broadPhase);
+				f0.Dispose();
+
+				b.m_fixtureList = f;
+				b.m_fixtureCount -= 1;
+			}
+
+			b.m_fixtureList = null;
+			b.m_fixtureCount = 0;
+
+			// Remove world body list.
+			if (b.m_prev)
+			{
+				b.m_prev.m_next = b.m_next;
+			}
+
+			if (b.m_next)
+			{
+				b.m_next.m_prev = b.m_prev;
+			}
+
+			if (b == m_bodyList)
+			{
+				m_bodyList = b.m_next;
+			}
+
+			--m_bodyCount;
+
+			b.Dispose();
 		}
 
 		/**
@@ -364,7 +480,7 @@ package Box2D.Dynamics
 		 * @return
 		 */
 		[Inline]
-		final public function IsLocked():Boolean
+		final public function get IsLocked():Boolean
 		{
 			return (m_flags & e_locked) == e_locked;
 		}
