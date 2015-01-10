@@ -226,22 +226,22 @@ package Box2D.Collision.Contact
 		b2internal var m_nodeA:b2ContactEdge;
 		b2internal var m_nodeB:b2ContactEdge;
 
-		protected var m_fixtureA:b2Fixture;
-		protected var m_fixtureB:b2Fixture;
+		b2internal var m_fixtureA:b2Fixture;
+		b2internal var m_fixtureB:b2Fixture;
 
-		protected var m_indexA:int;
-		protected var m_indexB:int;
+		b2internal var m_indexA:int;
+		b2internal var m_indexB:int;
 
-		protected var m_manifold:b2Manifold;
-		protected var m_oldManifold:b2Manifold;
+		b2internal var m_manifold:b2Manifold;
+		b2internal var m_oldManifold:b2Manifold;
 
-		protected var m_toiCount:int;
-		protected var m_toi:Number;
+		b2internal var m_toiCount:int;
+		b2internal var m_toi:Number;
 
-		protected var m_friction:Number;
-		protected var m_restitution:Number;
+		b2internal var m_friction:Number;
+		b2internal var m_restitution:Number;
 
-		protected var m_tangentSpeed:Number;
+		b2internal var m_tangentSpeed:Number;
 
 		/**
 		 *

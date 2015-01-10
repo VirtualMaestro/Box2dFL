@@ -54,5 +54,12 @@ package Box2D.Common
 		 * This is a dimensionless multiplier.
  		 */
 		static public const aabbMultiplier:Number = 2.0;
+
+		/**
+		 * A velocity threshold for elastic collisions.
+		 * Any collision with a relative linear velocity below this threshold will be treated as inelastic.
+ 		 */
+		static public const velocityThreshold:Number = 1.0;
+
 	}
 }

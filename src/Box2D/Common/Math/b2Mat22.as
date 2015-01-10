@@ -94,6 +94,22 @@ package Box2D.Common.Math
 			y = 0;
 		}
 
+		[Inline]
+		final public function SetZero():void
+		{
+			c11 = 0.0; c21 = 0.0;
+			c12 = 0.0; c22 = 0.0;
+		}
+
+		[Inline]
+		final public function Set22(p_c11:Number, p_c12:Number, p_c21:Number, p_c22:Number):void
+		{
+			c11 = p_c11;
+			c12 = p_c12;
+			c21 = p_c21;
+			c22 = p_c22;
+		}
+
 		/**
 		 * Compute the inverse of this matrix, such that inv(A) * A = identity.
 		 * If given matrix not null, result will set to it. In another case new matrix created
