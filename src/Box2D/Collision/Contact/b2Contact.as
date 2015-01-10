@@ -226,11 +226,11 @@ package Box2D.Collision.Contact
 		b2internal var m_nodeA:b2ContactEdge;
 		b2internal var m_nodeB:b2ContactEdge;
 
-		b2internal var m_fixtureA:b2Fixture;
-		b2internal var m_fixtureB:b2Fixture;
+		public var m_fixtureA:b2Fixture;
+		public var m_fixtureB:b2Fixture;
 
-		b2internal var m_indexA:int;
-		b2internal var m_indexB:int;
+		public var m_indexA:int;
+		public var m_indexB:int;
 
 		b2internal var m_manifold:b2Manifold;
 		b2internal var m_oldManifold:b2Manifold;

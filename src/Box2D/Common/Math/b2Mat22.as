@@ -114,6 +114,7 @@ package Box2D.Common.Math
 		 * Compute the inverse of this matrix, such that inv(A) * A = identity.
 		 * If given matrix not null, result will set to it. In another case new matrix created
 		 */
+		[Inline]
 		final public function GetInverse(p_outMatrix:b2Mat22 = null):b2Mat22
 		{
 			var a:Number = c11;

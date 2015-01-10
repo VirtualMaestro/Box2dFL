@@ -17,6 +17,7 @@ package Box2D.Collision.Contact
 	import Box2D.Common.Math.b2Math;
 	import Box2D.Common.Math.b2SPoint;
 	import Box2D.Common.Math.b2Sweep;
+	import Box2D.Common.Math.b2Vec2;
 	import Box2D.Common.Math.b2Vec3;
 	import Box2D.Common.b2Settings;
 	import Box2D.Common.b2internal;
@@ -48,11 +49,12 @@ package Box2D.Collision.Contact
 		{
 			m_step = def.step;
 			m_count = def.count;
+			var count:int = m_count;
 
 			m_positionConstraints = new <b2ContactPositionConstraint>[];
 			m_velocityConstraints = new <b2ContactVelocityConstraint>[];
 
-			for (var i:int = 0; i < m_count; i++)
+			for (var i:int = 0; i < count; i++)
 			{
 				m_positionConstraints[i] = new b2ContactPositionConstraint();
 				m_velocityConstraints[i] = new b2ContactVelocityConstraint();
@@ -63,7 +65,7 @@ package Box2D.Collision.Contact
 			m_contacts = def.contacts;
 
 			// Initialize position independent portions of the constraints.
-			for (i = 0; i < m_count; ++i)
+			for (i = 0; i < count; ++i)
 			{
 				var contact:b2Contact = m_contacts[i];
 
@@ -162,8 +164,9 @@ package Box2D.Collision.Contact
 			var xfB:b2Mat22 = b2Mat22.Get();
 			var worldManifold:b2WorldManifold = new b2WorldManifold();
 			var helperPoint:b2SPoint = b2SPoint.Get();
+			var count:int = m_count;
 
-			for (var i:int = 0; i < m_count; ++i)
+			for (var i:int = 0; i < count; ++i)
 			{
 				var vc:b2ContactVelocityConstraint = m_velocityConstraints[i];
 				var pc:b2ContactPositionConstraint = m_positionConstraints[i];
@@ -332,11 +335,75 @@ package Box2D.Collision.Contact
 		}
 
 		/**
-		 * TODO
 		 */
 		public function WarmStart():void
 		{
-			b2Assert(false, "current method isn't implemented yet or abstract and can't be used!");
+			// Warm start.
+			var count:int = m_count;
+			var vc:b2ContactVelocityConstraint;
+			var vecA:b2Vec3;
+			var vecB:b2Vec3;
+			var helperPoint:b2SPoint = b2SPoint.Get();
+
+			for (var i:int = 0; i < count; ++i)
+			{
+				vc = m_velocityConstraints[i];
+
+				var indexA:int = vc.indexA;
+				var indexB:int = vc.indexB;
+				var mA:Number = vc.invMassA;
+				var iA:Number = vc.invIA;
+				var mB:Number = vc.invMassB;
+				var iB:Number = vc.invIB;
+				var pointCount:int = vc.pointCount;
+
+				//
+				vecA = m_velocities[indexA];
+
+				var vAX:Number = vecA.x;
+				var vAY:Number = vecA.y;
+				var wA:Number = vecA.z;
+
+				//
+				vecB = m_velocities[indexB];
+
+				var vBX:Number = vecB.x;
+				var vBY:Number = vecB.y;
+				var wB:Number = vecB.z;
+
+				var normalX:Number = vc.normalX;
+				var normalY:Number = vc.normalY;
+
+				b2Math.CrossVectorScalar(normalX, normalY, 1.0, helperPoint);
+
+				var tangentX:Number = helperPoint.x;
+				var tangentY:Number = helperPoint.y;
+
+				for (var j:int = 0; j < pointCount; ++j)
+				{
+					var vcp:b2VelocityConstraintPoint = vc.points[j];
+					var PX:Number = vcp.normalImpulse * normalX + vcp.tangentImpulse * tangentX;
+					var PY:Number = vcp.normalImpulse * normalY + vcp.tangentImpulse * tangentY;
+
+					wA -= iA * b2Math.CrossVectors(vcp.rAX, vcp.rAY, PX, PX);
+					vAX -= mA * PX;
+					vAY -= mA * PY;
+
+					wB += iB * b2Math.CrossVectors(vcp.rBX, vcp.rBY, PX, PY);
+					vBX += mB * PX;
+					vBY += mB * PY;
+				}
+
+				vecA.x = vAX;
+				vecA.y = vAY;
+				vecA.z = wA;
+
+				vecB.x = vBX;
+				vecB.y = vBY;
+				vecB.z = wB;
+			}
+
+			helperPoint.Dispose();
 		}
 
 		/**
@@ -348,11 +415,30 @@ package Box2D.Collision.Contact
 		}
 
 		/**
-		 * TODO:
 		 */
 		public function StoreImpulses():void
 		{
-			b2Assert(false, "current method isn't implemented yet or abstract and can't be used!");
+			var count:int = m_count;
+
+			for (var i:int = 0; i < count; ++i)
+			{
+				var vc:b2ContactVelocityConstraint = m_velocityConstraints[i];
+				var manifold:b2Manifold = m_contacts[vc.contactIndex].GetManifold();
+				var pointCount:int = vc.pointCount;
+				var mpList:Vector.<b2ManifoldPoint> = manifold.points;
+				var vcList:Vector.<b2VelocityConstraintPoint> = vc.points;
+				var mp:b2ManifoldPoint;
+				var vcp:b2VelocityConstraintPoint;
+		
+				for (var j:int = 0; j < pointCount; ++j)
+				{
+					mp = mpList[j];
+					vcp = vcList[j];
+
+					mp.normalImpulse = vcp.normalImpulse;
+					mp.tangentImpulse = vcp.tangentImpulse;
+				}
+			}
 		}
 
 		/**
