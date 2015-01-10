@@ -5,6 +5,7 @@ package Box2D.Dynamics
 {
 	import Box2D.Collision.Contact.b2Contact;
 	import Box2D.Collision.Contact.b2ContactEdge;
+	import Box2D.Collision.Structures.b2RayCastData;
 	import Box2D.Collision.Structures.b2TimeStep;
 	import Box2D.Collision.b2AABB;
 	import Box2D.Collision.b2BroadPhase;
@@ -60,6 +61,9 @@ package Box2D.Dynamics
 		b2internal var m_destructionListener:b2DestructionListener;  // TODO: Think about remove that functionality
 
 		private var _worldQueryWrapper:b2WorldQueryWrapper;
+		private var _worldRayCastWrapper:b2WorldRayCastWrapper;
+		private var _rayCastHelper:b2RayCastData;
+
 		// TODO: add some debugging props from original
 
 		/**
@@ -81,6 +85,8 @@ package Box2D.Dynamics
 			m_inv_dt0 = 0.0;
 
 			_worldQueryWrapper = new b2WorldQueryWrapper();
+			_worldRayCastWrapper = new b2WorldRayCastWrapper();
+			_rayCastHelper = new b2RayCastData();
 		}
 
 		/**
@@ -496,11 +502,19 @@ package Box2D.Dynamics
 		* @param p_point1Y the ray starting point
 		* @param p_point2X the ray ending point
 		* @param p_point2Y the ray ending point
-		 * TODO
 		*/
 		final public function RayCast(p_callback:b2RayCastCallback, p_point1X:Number, p_point1Y:Number, p_point2X:Number, p_point2Y:Number):void
 		{
-			b2Assert(false, "current method isn't implemented yet or abstract and can't be used!");
+			_worldRayCastWrapper.broadPhase = m_contactManager.m_broadPhase;
+			_worldRayCastWrapper.callback = p_callback;
+
+			_rayCastHelper.p1X = p_point1X;
+			_rayCastHelper.p1Y = p_point1Y;
+			_rayCastHelper.p2X = p_point2X;
+			_rayCastHelper.p2Y = p_point2Y;
+			_rayCastHelper.maxFraction = 1.0;
+
+			m_contactManager.m_broadPhase.RayCast(_worldRayCastWrapper, _rayCastHelper);
 		}
 
 		/**
@@ -747,8 +761,11 @@ package Box2D.Dynamics
 	}
 }
 
+import Box2D.Collision.Structures.b2RayCastData;
 import Box2D.Collision.b2BroadPhase;
 import Box2D.Dynamics.Callbacks.b2QueryCallback;
+import Box2D.Dynamics.Callbacks.b2RayCastCallback;
+import Box2D.Dynamics.b2Fixture;
 import Box2D.Dynamics.b2FixtureProxy;
 
 // internal classes
@@ -763,4 +780,33 @@ internal class b2WorldQueryWrapper
 
 	public var broadPhase:b2BroadPhase;
 	public var callback:b2QueryCallback;
+}
+
+/**
+ */
+internal class b2WorldRayCastWrapper
+{
+	/**
+	 */
+	public function RayCastCallback(p_rayCastData:b2RayCastData, proxyId:int):Number
+	{
+		var proxy:b2FixtureProxy = broadPhase.GetUserData(proxyId);
+		var fixture:b2Fixture = proxy.fixture;
+		var index:int = proxy.childIndex;
+		var hit:Boolean = fixture.RayCast(p_rayCastData, index);
+
+		if (hit)
+		{
+			var fraction:Number = p_rayCastData.fraction;
+			var pointX:Number = (1.0 - fraction) * p_rayCastData.p1X + fraction * p_rayCastData.p2X;
+			var pointY:Number = (1.0 - fraction) * p_rayCastData.p1Y + fraction * p_rayCastData.p2Y;
+
+			return callback.ReportFixture(fixture, pointX, pointY, p_rayCastData.normalX, p_rayCastData.normalY, fraction);
+		}
+
+		return p_rayCastData.maxFraction;
+	}
+
+	public var broadPhase:b2BroadPhase;
+	public var callback:b2RayCastCallback;
 }

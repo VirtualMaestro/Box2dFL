@@ -63,6 +63,7 @@ package Box2D.Dynamics.Joints
 		static public function Create(p_def:b2JointDef):b2Joint
 		{
 			b2Assert(false, "current method isn't implemented yet or abstract and can't be used!");
+			return null;
 		}
 
 		/**

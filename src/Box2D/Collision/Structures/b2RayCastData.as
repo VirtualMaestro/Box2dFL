@@ -84,7 +84,7 @@ package Box2D.Collision.Structures
 
 		/**
 		 */
-		public function b2RayCastData(p_startX:Number, p_startY:Number, p_endX:Number, p_endY:Number, p_maxFraction:Number = 1.0)
+		public function b2RayCastData(p_startX:Number = 0, p_startY:Number = 0, p_endX:Number = 0, p_endY:Number = 0, p_maxFraction:Number = 1.0)
 		{
 			p1X = p_startX;
 			p1Y = p_startY;
@@ -98,7 +98,7 @@ package Box2D.Collision.Structures
 		 * @return Box2D.Collision.Structures.b2RayCastData
 		 */
 		[Inline]
-		static public function Get(p_startX:Number, p_startY:Number, p_endX:Number, p_endY:Number, p_maxFraction:Number = 1.0):b2RayCastData
+		static public function Get(p_startX:Number = 0, p_startY:Number = 0, p_endX:Number = 0, p_endY:Number = 0, p_maxFraction:Number = 1.0):b2RayCastData
 		{
 			var instance:b2Disposable = b2Disposable.Get(classId);
 			var rayCastData:b2RayCastData;
