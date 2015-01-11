@@ -6,8 +6,10 @@
 package Box2D.Dynamics
 {
 	import Box2D.Collision.Contact.b2Contact;
+	import Box2D.Collision.Structures.b2ContactImpulse;
 	import Box2D.Collision.Structures.b2ContactVelocityConstraint;
 	import Box2D.Collision.Structures.b2TimeStep;
+	import Box2D.Collision.Structures.b2VelocityConstraintPoint;
 	import Box2D.Common.Math.b2Vec3;
 	import Box2D.Common.b2internal;
 	import Box2D.Dynamics.Callbacks.b2ContactListener;
@@ -38,6 +40,8 @@ package Box2D.Dynamics
 		b2internal var m_contactCapacity:int;
 		b2internal var m_jointCapacity:int;
 
+		private var _helperImpulse:b2ContactImpulse;
+
 		/**
 		 */
 		public function b2Island()
@@ -45,7 +49,7 @@ package Box2D.Dynamics
 			m_bodies = new <b2Body>[];
 			m_contacts = new <b2Contact>[];
 			m_joints = new <b2Joint>[];
-			m_positions = new <b2Vec3>[];  // TODO: Maybe need fill with instances
+			m_positions = new <b2Vec3>[];
 			m_velocities = new <b2Vec3>[];
 
 			m_bodyCount = 0;
@@ -54,6 +58,8 @@ package Box2D.Dynamics
 			m_bodyCapacity = 0;
 			m_contactCapacity = 0;
 			m_jointCapacity = 0;
+
+			_helperImpulse = new b2ContactImpulse();
 		}
 
 		/**
@@ -63,9 +69,16 @@ package Box2D.Dynamics
 			m_bodyCapacity = p_bodyCapacity;
 			m_contactCapacity = p_contactCapacity;
 			m_jointCapacity = p_jointCapacity;
+
 			m_bodyCount = 0;
 			m_contactCount = 0;
 			m_jointCount = 0;
+
+			for (var i:int = m_positions.length; i < p_bodyCapacity; i++)
+			{
+				m_positions[i] = b2Vec3.Get();
+				m_velocities[i] = b2Vec3.Get();
+			}
 
 			m_listener = p_listener;
 		}
@@ -96,11 +109,41 @@ package Box2D.Dynamics
 		}
 
 		/**
-		 * TODO:
 		 */
 		final public function Report(p_constraints:b2ContactVelocityConstraint):void
 		{
-			b2Assert(false, "current method isn't implemented yet or abstract and can't be used!");
+			if (m_listener)
+			{
+				var count:int = m_contactCount;
+				var pointCount:int;
+				var c:b2Contact;
+				var vc:b2ContactVelocityConstraint;
+
+				var normalImpulses:Vector.<Number> = _helperImpulse.normalImpulses;
+				var tangentImpulses:Vector.<Number> = _helperImpulse.tangentImpulses;
+				var points:Vector.<b2VelocityConstraintPoint>;
+				var cp:b2VelocityConstraintPoint;
+
+				for (var i:int = 0; i < count; ++i)
+				{
+					c = m_contacts[i];
+
+					vc = p_constraints[i];
+
+					points = vc.points;
+					pointCount = vc.pointCount;
+					_helperImpulse.count = pointCount;
+
+					for (var j:int = 0; j < pointCount; ++j)
+					{
+						cp = points[j];
+						normalImpulses[j] = cp.normalImpulse;
+						tangentImpulses[j] = cp.tangentImpulse;
+					}
+
+					m_listener.PostSolve(c, _helperImpulse);
+				}
+			}
 		}
 
 

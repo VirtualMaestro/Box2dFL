@@ -5,6 +5,7 @@
  */
 package Box2D.Collision.Structures
 {
+	import Box2D.Common.Math.b2Math;
 	import Box2D.Common.b2Settings;
 
 	/**
@@ -26,6 +27,17 @@ package Box2D.Collision.Structures
 			normalImpulses = new Vector.<Number>(b2Settings.maxManifoldPoints);
 			tangentImpulses = new Vector.<Number>(b2Settings.maxManifoldPoints);
 			count = 0;
+		}
+
+		/**
+		 */
+		public function Clone():b2ContactImpulse
+		{
+			var cloneImpulse:b2ContactImpulse = new b2ContactImpulse();
+			cloneImpulse.count = count;
+
+			b2Math.copyArray(normalImpulses, cloneImpulse.normalImpulses);
+			b2Math.copyArray(tangentImpulses, cloneImpulse.tangentImpulses);
 		}
 	}
 }

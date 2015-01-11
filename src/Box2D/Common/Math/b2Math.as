@@ -409,5 +409,15 @@ package Box2D.Common.Math
 			p_outResult.x = getX(p_array, p_index);
 			p_outResult.y = getY(p_array, p_index);
 		}
+
+		[Inline]
+		static public function copyArray(p_fromArray:*, p_toArray:*):void
+		{
+			var len:int = p_fromArray.length;
+			for (var i:int = 0; i < len; i++)
+			{
+				p_toArray[i] = p_fromArray[i];
+			}
+		}
 	}
 }

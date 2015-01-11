@@ -63,6 +63,7 @@ package Box2D.Dynamics
 		private var _worldQueryWrapper:b2WorldQueryWrapper;
 		private var _worldRayCastWrapper:b2WorldRayCastWrapper;
 		private var _rayCastHelper:b2RayCastData;
+		private var _step:b2TimeStep;
 
 		// TODO: add some debugging props from original
 
@@ -87,6 +88,7 @@ package Box2D.Dynamics
 			_worldQueryWrapper = new b2WorldQueryWrapper();
 			_worldRayCastWrapper = new b2WorldRayCastWrapper();
 			_rayCastHelper = new b2RayCastData();
+			_step = new b2TimeStep();
 		}
 
 		/**
@@ -449,14 +451,64 @@ package Box2D.Dynamics
 		/**
 		* Take a time step. This performs collision detection, integration,
 		* and constraint solution.
-		* @param p_timeStep the amount of time to simulate, this should not vary.
+		* @param p_dt the amount of time to simulate, this should not vary.
 		* @param p_velocityIterations for the velocity constraint solver.
 		* @param p_positionIterations for the position constraint solver.
-		 * TODO
 		*/
-		final public function Step(	p_timeStep:Number, p_velocityIterations:int, p_positionIterations:int):void
+		final public function Step(p_dt:Number, p_velocityIterations:int, p_positionIterations:int):void
 		{
-			b2Assert(false, "current method isn't implemented yet and can't be used!");
+			// If new fixtures were added, we need to find the new contacts.
+			if ((m_flags & e_newFixture) != 0)
+			{
+				m_contactManager.FindNewContacts();
+				m_flags &= ~e_newFixture;
+			}
+
+			m_flags |= e_locked;
+
+			_step.dt = p_dt;
+			_step.velocityIterations = p_velocityIterations;
+			_step.positionIterations = p_positionIterations;
+
+			if (p_dt > 0.0)
+			{
+				_step.inv_dt = 1.0 / p_dt;
+			}
+			else
+			{
+				_step.inv_dt = 0.0;
+			}
+
+			_step.dtRatio = m_inv_dt0 * p_dt;
+
+			_step.warmStarting = m_warmStarting;
+
+			// Update contacts. This is where some contacts are destroyed.
+			m_contactManager.Collide();
+
+			// Integrate velocities, solve velocity constraints, and integrate positions.
+			if (m_stepComplete && _step.dt > 0.0)
+			{
+				Solve(_step);
+			}
+
+			// Handle TOI events.
+			if (m_continuousPhysics && _step.dt > 0.0)
+			{
+				SolveTOI(_step);
+			}
+
+			if (_step.dt > 0.0)
+			{
+				m_inv_dt0 = _step.inv_dt;
+			}
+
+			if ((m_flags & e_clearForces) != 0)
+			{
+				ClearForces();
+			}
+
+			m_flags &= ~e_locked;
 		}
 
 		/**
@@ -473,8 +525,8 @@ package Box2D.Dynamics
 		{
 			for (var body:b2Body = m_bodyList; body; body = body.GetNext())
 			{
-				body.m_forceX = 0;
-				body.m_forceY = 0;
+				body.m_forceX = 0.0;
+				body.m_forceY = 0.0;
 				body.m_torque = 0.0;
 			}
 		}
