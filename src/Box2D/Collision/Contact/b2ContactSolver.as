@@ -11,13 +11,13 @@ package Box2D.Collision.Contact
 	import Box2D.Collision.Shapes.b2Shape;
 	import Box2D.Collision.Structures.b2ContactPositionConstraint;
 	import Box2D.Collision.Structures.b2ContactVelocityConstraint;
+	import Box2D.Collision.Structures.b2PositionSolverManifold;
 	import Box2D.Collision.Structures.b2TimeStep;
 	import Box2D.Collision.Structures.b2VelocityConstraintPoint;
 	import Box2D.Common.Math.b2Mat22;
 	import Box2D.Common.Math.b2Math;
 	import Box2D.Common.Math.b2SPoint;
 	import Box2D.Common.Math.b2Sweep;
-	import Box2D.Common.Math.b2Vec2;
 	import Box2D.Common.Math.b2Vec3;
 	import Box2D.Common.b2Settings;
 	import Box2D.Common.b2internal;
@@ -41,12 +41,17 @@ package Box2D.Collision.Contact
 		public var m_contacts:Vector.<b2Contact>;
 		public var m_count:int;
 
+		private var _psm:b2PositionSolverManifold;
+
 		b2internal var g_blockSolve:Boolean = true;
 
 		/**
 		 */
 		public function b2ContactSolver(def:b2ContactSolverDef)
 		{
+			_psm = new b2PositionSolverManifold();
+
+			//
 			m_step = def.step;
 			m_count = def.count;
 			var count:int = m_count;
@@ -429,7 +434,7 @@ package Box2D.Collision.Contact
 				var vcList:Vector.<b2VelocityConstraintPoint> = vc.points;
 				var mp:b2ManifoldPoint;
 				var vcp:b2VelocityConstraintPoint;
-		
+
 				for (var j:int = 0; j < pointCount; ++j)
 				{
 					mp = mpList[j];
@@ -442,21 +447,306 @@ package Box2D.Collision.Contact
 		}
 
 		/**
-		 * TODO:
 		 */
 		public function SolvePositionConstraints():Boolean
 		{
-			b2Assert(false, "current method isn't implemented yet or abstract and can't be used!");
-			return false;
+			var minSeparation:Number = 0.0;
+			var count:int = m_count;
+			var pc:b2ContactPositionConstraint;
+			var indexA:int;
+			var indexB:int;
+			var localCenterAX:Number;
+			var localCenterAY:Number;
+			var mA:Number;
+			var iA:Number;
+			var localCenterBX:Number;
+			var localCenterBY:Number;
+			var mB:Number;
+			var iB:Number;
+			var pointCount:int;
+			var cAX:Number;
+			var cAY:Number;
+			var aA:Number;
+			var cBX:Number;
+			var cBY:Number;
+			var aB:Number;
+			var vecA:b2Vec3;
+			var vecB:b2Vec3;
+			var xfA:b2Mat22 = b2Mat22.Get();
+			var xfB:b2Mat22 = b2Mat22.Get();
+			var normalX:Number;
+			var normalY:Number;
+			var pointX:Number;
+			var pointY:Number;
+			var separation:Number;
+			var rAX:Number;
+			var rAY:Number;
+			var rBX:Number;
+			var rBY:Number;
+			var C:Number;
+			var rnA:Number;
+			var rnB:Number;
+			var K:Number;
+			var impulse:Number;
+			var PX:Number;
+			var PY:Number;
+
+			for (var i:int = 0; i < count; i++)
+			{
+				pc = m_positionConstraints[i];
+
+				indexA = pc.indexA;
+				indexB = pc.indexB;
+
+				localCenterAX = pc.localCenterAX;
+				localCenterAY = pc.localCenterAY;
+
+				mA = pc.invMassA;
+				iA = pc.invIA;
+
+				localCenterBX = pc.localCenterBX;
+				localCenterBY = pc.localCenterBY;
+				mB = pc.invMassB;
+				iB = pc.invIB;
+
+				pointCount = pc.pointCount;
+
+				vecA = m_positions[indexA];
+				cAX = vecA.x;
+				cAY = vecA.y;
+				aA = vecA.z;
+
+				vecB = m_positions[indexB];
+				cBX = vecB.x;
+				cBY = vecB.y;
+				aB = vecB.z;
+
+				// Solve normal constraints
+				for (var j:int = 0; j < pointCount; j++)
+				{
+					xfA.SetAngle(aA);
+					xfB.SetAngle(aB);
+
+					b2Math.MulRV(xfA, localCenterAX, localCenterAY, xfA);
+					xfA.x = cAX - xfA.x;
+					xfA.y = cAY - xfA.y;
+
+					b2Math.MulRV(xfB, localCenterBX, localCenterBY, xfB);
+					xfB.x = cBX - xfB.x;
+					xfB.y = cBY - xfB.y;
+
+					_psm.Initialize(pc, xfA, xfB, j);
+
+					normalX = _psm.normalX;
+					normalY = _psm.normalY;
+					pointX = _psm.pointX;
+					pointY = _psm.pointY;
+					separation = _psm.separation;
+
+					rAX = pointX - cAX;
+					rAY = pointY - cAY;
+					rBX = pointX - cBX;
+					rBY = pointY - cBY;
+
+					// Track max constraint error.
+					minSeparation = b2Math.Min(minSeparation, separation);
+
+					// Prevent large corrections and allow slop.
+					C = b2Math.Clamp(b2Settings.baumgarte * (separation + b2Settings.linearSlop), -b2Settings.maxLinearCorrection, 0.0);
+
+					// Compute the effective mass.
+					rnA = b2Math.CrossVectors(rAX, rAY, normalX, normalY);
+					rnB = b2Math.CrossVectors(rBX, rBY, normalX, normalY);
+					K = mA + mB + iA * rnA * rnA + iB * rnB * rnB;
+
+					// Compute normal impulse
+					impulse = K > 0.0 ? -C / K : 0.0;
+
+					PX = impulse * normalX;
+					PY = impulse * normalY;
+
+					cAX -= mA * PX;
+					cAY -= mA * PY;
+					aA -= iA * b2Math.CrossVectors(rAX, rAY, PX, PY);
+
+					cBX += mB * PX;
+					cBY += mB * PY;
+					aB += iB * b2Math.CrossVectors(rBX, rBY, PX, PY);
+				}
+
+				vecA.x = cAX;
+				vecA.y = cAY;
+				vecA.z = aA;
+
+				vecB.x = cBX;
+				vecB.y = cBY;
+				vecB.z = aB;
+			}
+
+			xfA.Dispose();
+			xfB.Dispose();
+
+			// We can't expect minSeparation >= -b2_linearSlop because we don't
+			// push the separation above -b2_linearSlop.
+			return minSeparation >= -3.0 * b2Settings.linearSlop;
 		}
 
 		/**
-		 * TODO:
 		 */
 		public function SolveTOIPositionConstraints(toiIndexA:int, toiIndexB:int):Boolean
 		{
-			b2Assert(false, "current method isn't implemented yet or abstract and can't be used!");
-			return false;
+			var minSeparation:Number = 0.0;
+			var count:int = m_count;
+			var pc:b2ContactPositionConstraint;
+			var indexA:int;
+			var indexB:int;
+			var localCenterAX:Number;
+			var localCenterAY:Number;
+			var localCenterBX:Number;
+			var localCenterBY:Number;
+			var pointCount:int;
+			var mA:Number;
+			var iA:Number;
+			var mB:Number;
+			var iB:Number;
+			var cAX:Number;
+			var cAY:Number;
+			var aA:Number;
+			var cBX:Number;
+			var cBY:Number;
+			var aB:Number;
+			var vecA:b2Vec3;
+			var vecB:b2Vec3;
+			var xfA:b2Mat22 = b2Mat22.Get();
+			var xfB:b2Mat22 = b2Mat22.Get();
+			var normalX:Number;
+			var normalY:Number;
+			var pointX:Number;
+			var pointY:Number;
+			var separation:Number;
+			var rAX:Number;
+			var rAY:Number;
+			var rBX:Number;
+			var rBY:Number;
+			var C:Number;
+			var rnA:Number;
+			var rnB:Number;
+			var K:Number;
+			var impulse:Number;
+			var PX:Number;
+			var PY:Number;
+
+			//
+			for (var i:int = 0; i < count; i++)
+			{
+				pc = m_positionConstraints[i];
+
+				indexA = pc.indexA;
+				indexB = pc.indexB;
+
+				localCenterAX = pc.localCenterAX;
+				localCenterAY = pc.localCenterAY;
+				localCenterBX = pc.localCenterBX;
+				localCenterBY = pc.localCenterBY;
+
+				pointCount = pc.pointCount;
+
+				mA = 0.0;
+				mB = 0.0;
+
+				if (indexA == toiIndexA || indexA == toiIndexB)
+				{
+					mA = pc.invMassA;
+					iA = pc.invIA;
+				}
+
+				mB = 0.0;
+				iB = 0.0;
+
+				if (indexB == toiIndexA || indexB == toiIndexB)
+				{
+					mB = pc.invMassB;
+					iB = pc.invIB;
+				}
+
+				vecA = m_positions[indexA];
+				cAX = vecA.x;
+				cAY = vecA.y;
+				aA = vecA.z;
+
+				vecB = m_positions[indexB];
+				cBX = vecB.x;
+				cBY = vecB.y;
+				aB = vecB.z;
+
+				// Solve normal constraints
+				for (var j:int = 0; j < pointCount; j++)
+				{
+					xfA.SetAngle(aA);
+					xfB.SetAngle(aB);
+
+					b2Math.MulRV(xfA, localCenterAX, localCenterAY, xfA);
+					xfA.x = cAX - xfA.x;
+					xfA.y = cAY - xfA.y;
+
+					b2Math.MulRV(xfB, localCenterBX, localCenterBY, xfB);
+					xfB.x = cBX - xfB.x;
+					xfB.y = cBY - xfB.y;
+
+					_psm.Initialize(pc, xfA, xfB, j);
+
+					normalX = _psm.normalX;
+					normalY = _psm.normalY;
+					pointX = _psm.pointX;
+					pointY = _psm.pointY;
+					separation = _psm.separation;
+
+					rAX = pointX - cAX;
+					rAY = pointY - cAY;
+					rBX = pointX - cBX;
+					rBY = pointY - cBY;
+
+					// Track max constraint error.
+					minSeparation = b2Math.Min(minSeparation, separation);
+
+					// Prevent large corrections and allow slop.
+					C = b2Math.Clamp(b2Settings.toiBaugarte * (separation + b2Settings.linearSlop), -b2Settings.maxLinearCorrection, 0.0);
+
+					// Compute the effective mass.
+					rnA = b2Math.CrossVectors(rAX, rAY, normalX, normalY);
+					rnB = b2Math.CrossVectors(rBX, rBY, normalX, normalY);
+					K = mA + mB + iA * rnA * rnA + iB * rnB * rnB;
+
+					// Compute normal impulse
+					impulse = K > 0.0 ? -C / K : 0.0;
+
+					PX = impulse * normalX;
+					PY = impulse * normalY;
+
+					cAX -= mA * PX;
+					cAY -= mA * PY;
+					aA -= iA * b2Math.CrossVectors(rAX, rAY, PX, PY);
+
+					cBX += mB * PX;
+					cBY += mB * PY;
+					aB += iB * b2Math.CrossVectors(rBX, rBY, PX, PY);
+				}
+
+				vecA.x = cAX;
+				vecA.y = cAY;
+				vecA.z = aA;
+
+				vecB.x = cBX;
+				vecB.y = cBY;
+				vecB.z = aB;
+			}
+
+			xfA.Dispose();
+			xfB.Dispose();
+
+			// We can't expect minSeparation >= -b2_linearSlop because we don't
+			// push the separation above -b2_linearSlop.
+			return minSeparation >= -1.5 * b2Settings.linearSlop;
 		}
 	}
 }

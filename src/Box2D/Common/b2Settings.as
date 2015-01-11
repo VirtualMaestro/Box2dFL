@@ -61,5 +61,19 @@ package Box2D.Common
  		 */
 		static public const velocityThreshold:Number = 1.0;
 
+		/**
+		* This scale factor controls how fast overlap is resolved. Ideally this would be 1 so
+		* that overlap is removed in one time step. However using values close to 1 often lead
+		* to overshoot.
+		*/
+		static public const baumgarte:Number = 0.2;
+		static public const toiBaugarte:Number = 0.75;
+
+		/**
+		 * The maximum linear position correction used when solving constraints.
+		 * This helps to prevent overshoot.
+ 		 */
+		static public const maxLinearCorrection:Number = 0.2;
+
 	}
 }

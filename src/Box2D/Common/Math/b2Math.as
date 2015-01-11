@@ -181,6 +181,12 @@ package Box2D.Common.Math
 			return p_x1 * p_y2 - p_y1 * p_x2;
 		}
 
+		[Inline]
+		static public function Clamp(p_a:Number, p_low:Number, p_high:Number):Number
+		{
+			return Max(p_low, Min(p_a, p_high));
+		}
+
 		/**
 		 * Multiply two rotations.
 		 */
