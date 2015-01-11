@@ -110,7 +110,7 @@ package Box2D.Dynamics
 
 		/**
 		 */
-		final public function Report(p_constraints:b2ContactVelocityConstraint):void
+		final public function Report(p_constraints:Vector.<b2ContactVelocityConstraint>):void
 		{
 			if (m_listener)
 			{
