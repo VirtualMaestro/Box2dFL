@@ -75,5 +75,36 @@ package Box2D.Common
  		 */
 		static public const maxLinearCorrection:Number = 0.2;
 
+		/**
+		 * The maximum linear velocity of a body.
+		 * This limit is very large and is used to prevent numerical problems.
+		 * You shouldn't need to adjust this.
+		 */
+		static public const maxTranslation:Number = 2.0;
+		static public const maxTranslationSquared:Number = (maxTranslation * maxTranslation);
+
+		/**
+		 * The maximum angular velocity of a body.
+		 * This limit is very large and is used to prevent numerical problems.
+		 * You shouldn't need to adjust this.
+		 */
+		static public const maxRotation:Number = (0.5 * Math.PI);
+		static public const maxRotationSquared:Number = (maxRotation * maxRotation);
+
+		/**
+		 * A body cannot sleep if its linear velocity is above this tolerance.
+		 */
+		static public const linearSleepTolerance:Number = 0.01;
+
+		/**
+		 * A body cannot sleep if its angular velocity is above this tolerance.
+		 */
+		static public const angularSleepTolerance:Number = 	(2.0 / 180.0 * Math.PI);
+
+		/**
+		 * The time that a body must be still before it will go to sleep.
+		 */
+		static public const timeToSleep:Number = 0.5;
+
 	}
 }

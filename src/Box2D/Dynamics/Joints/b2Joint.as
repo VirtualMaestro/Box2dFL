@@ -5,6 +5,8 @@
  */
 package Box2D.Dynamics.Joints
 {
+	import Box2D.Collision.Structures.b2SolverData;
+	import Box2D.Common.b2internal;
 	import Box2D.Common.b2internal;
 	import Box2D.Dynamics.Def.b2JointDef;
 	import Box2D.Dynamics.b2Body;
@@ -74,6 +76,25 @@ package Box2D.Dynamics.Joints
 		static public function Destroy(p_joint:b2Joint):void
 		{
 			b2Assert(false, "current method isn't implemented yet or abstract and can't be used!");
+		}
+
+		b2internal virtual function InitVelocityConstraints(data:b2SolverData):void
+		{
+			b2Assert(false, "current method isn't implemented yet or abstract and can't be used!");
+		}
+
+		b2internal virtual function SolveVelocityConstraints(data:b2SolverData):void
+		{
+			b2Assert(false, "current method isn't implemented yet or abstract and can't be used!");
+		}
+
+		/**
+		 * This returns true if the position errors are within tolerance.
+		 */
+		b2internal virtual function SolvePositionConstraints(data:b2SolverData):Boolean
+		{
+			b2Assert(false, "current method isn't implemented yet or abstract and can't be used!");
+			return false;
 		}
 
 	}

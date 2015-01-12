@@ -47,17 +47,21 @@ package Box2D.Collision.Contact
 
 		/**
 		 */
-		public function b2ContactSolver(def:b2ContactSolverDef)
+		public function b2ContactSolver()
 		{
 			_psm = new b2PositionSolverManifold();
-
-			//
-			m_step = def.step;
-			m_count = def.count;
-			var count:int = m_count;
-
 			m_positionConstraints = new <b2ContactPositionConstraint>[];
 			m_velocityConstraints = new <b2ContactVelocityConstraint>[];
+		}
+
+		/**
+		 * Init contact solver.
+		 */
+		public function Initialize(p_def:b2ContactSolverDef):void
+		{
+			m_step = p_def.step;
+			m_count = p_def.count;
+			var count:int = m_count;
 
 			for (var i:int = 0; i < count; i++)
 			{
@@ -65,9 +69,9 @@ package Box2D.Collision.Contact
 				m_velocityConstraints[i] = new b2ContactVelocityConstraint();
 			}
 
-			m_positions = def.positions;
-			m_velocities = def.velocities;
-			m_contacts = def.contacts;
+			m_positions = p_def.positions;
+			m_velocities = p_def.velocities;
+			m_contacts = p_def.contacts;
 
 			// Initialize position independent portions of the constraints.
 			for (i = 0; i < count; ++i)

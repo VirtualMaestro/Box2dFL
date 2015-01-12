@@ -158,6 +158,15 @@ package Box2D.Common.Math
 			return p_x1 * p_x2 + p_y1 * p_y2;
 		}
 
+		/**
+		 * Dot product of one vector (on itself).
+		 */
+		[Inline]
+		static public function DotSingle(p_x:Number, p_y:Number):Number
+		{
+			return p_x * p_x + p_y * p_y;
+		}
+
 		[Inline]
 		static public function CrossVectorScalar(p_x:Number, p_y:Number, p_scalar:Number, p_outResult:b2SPoint):void
 		{

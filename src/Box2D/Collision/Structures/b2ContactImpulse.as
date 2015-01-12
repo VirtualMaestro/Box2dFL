@@ -38,6 +38,8 @@ package Box2D.Collision.Structures
 
 			b2Math.copyArray(normalImpulses, cloneImpulse.normalImpulses);
 			b2Math.copyArray(tangentImpulses, cloneImpulse.tangentImpulses);
+
+			return cloneImpulse;
 		}
 	}
 }

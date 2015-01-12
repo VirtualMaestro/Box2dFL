@@ -35,6 +35,7 @@ package Box2D.Common.Math
 
 		/**
 		 * Center world position.
+		 * (originally c, c0)
 		 */
 		public var worldCenterX0:Number = 0;
 		public var worldCenterY0:Number = 0;
@@ -43,6 +44,7 @@ package Box2D.Common.Math
 
 		/**
 		 * World angle.
+		 * (originally a, a0)
 		 */
 		public var worldAngle:Number = 0;
 		public var worldAngle0:Number = 0;
