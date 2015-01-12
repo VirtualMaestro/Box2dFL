@@ -14,19 +14,12 @@ package Box2D.Dynamics
 	import Box2D.Collision.Structures.b2VelocityConstraintPoint;
 	import Box2D.Common.Math.b2Math;
 	import Box2D.Common.Math.b2Sweep;
-	import Box2D.Common.Math.b2Vec2;
 	import Box2D.Common.Math.b2Vec3;
-	import Box2D.Common.b2Settings;
-	import Box2D.Common.b2Settings;
-	import Box2D.Common.b2Settings;
-	import Box2D.Common.b2Settings;
-	import Box2D.Common.b2Settings;
 	import Box2D.Common.b2Settings;
 	import Box2D.Common.b2internal;
 	import Box2D.Dynamics.Callbacks.b2ContactListener;
 	import Box2D.Dynamics.Def.b2ContactSolverDef;
 	import Box2D.Dynamics.Joints.b2Joint;
-	import Box2D.Dynamics.b2Body;
 	import Box2D.b2Assert;
 
 	use namespace b2internal;
@@ -201,7 +194,7 @@ package Box2D.Dynamics
 				sweep.worldCenterX0 = cX;
 				sweep.worldCenterY0 = cY;
 				sweep.worldAngle0 = a;
-		
+
 				if (b.m_type == b2Body.DYNAMIC)
 				{
 					// Integrate velocities.
@@ -378,10 +371,10 @@ package Box2D.Dynamics
 			if (p_allowSleep)
 			{
 				var minSleepTime:Number = Number.MAX_VALUE;
-		
+
 				var linTolSqr:Number = b2Settings.linearSleepTolerance * b2Settings.linearSleepTolerance;
 				var angTolSqr:Number = b2Settings.angularSleepTolerance * b2Settings.angularSleepTolerance;
-		
+
 				for (i = 0; i < bodyCount; ++i)
 				{
 					b = m_bodies[i];
@@ -390,10 +383,10 @@ package Box2D.Dynamics
 					{
 						continue;
 					}
-		
+
 					if ((b.m_flags & b2Body.e_autoSleepFlag) == 0 ||
-						b.m_angularVelocity * b.m_angularVelocity > angTolSqr ||
-						b2Math.DotSingle(b.m_linearVelocityX, b.m_linearVelocityY) > linTolSqr)
+							b.m_angularVelocity * b.m_angularVelocity > angTolSqr ||
+							b2Math.DotSingle(b.m_linearVelocityX, b.m_linearVelocityY) > linTolSqr)
 					{
 						b.m_sleepTime = 0.0;
 						minSleepTime = 0.0;
@@ -404,7 +397,7 @@ package Box2D.Dynamics
 						minSleepTime = b2Math.Min(minSleepTime, b.m_sleepTime);
 					}
 				}
-		
+
 				if (minSleepTime >= b2Settings.timeToSleep && positionSolved)
 				{
 					for (i = 0; i < bodyCount; ++i)
@@ -417,11 +410,165 @@ package Box2D.Dynamics
 		}
 
 		/**
-		 * TODO:
 		 */
 		public function SolveTOI(p_subStep:b2TimeStep, p_toiIndexA:int, p_toiIndexB:int):void
 		{
-			b2Assert(false, "current method isn't implemented yet or abstract and can't be used!");
+			CONFIG::debug
+			{
+				b2Assert(p_toiIndexA < m_bodyCount, "p_toiIndexA < bodyCount");
+				b2Assert(p_toiIndexB < m_bodyCount, "p_toiIndexB < bodyCount");
+			}
+
+			// Initialize the body state.
+			var bodyCount:int = m_bodyCount;
+			var b:b2Body;
+			var pos:b2Vec3;
+			var vel:b2Vec3;
+			var sweep:b2Sweep;
+
+			for (var i:int = 0; i < bodyCount; ++i)
+			{
+				b = m_bodies[i];
+				sweep = b.m_sweep;
+
+				pos = m_positions[i];
+				pos.x = sweep.worldCenterX;
+				pos.y = sweep.worldCenterY;
+				pos.z = sweep.worldAngle;
+
+				vel = m_velocities[i];
+				vel.x = b.m_linearVelocityX;
+				vel.y = b.m_linearVelocityY;
+				vel.z = b.m_angularVelocity;
+			}
+
+			_contactSolverDefHelper.contacts = m_contacts;
+			_contactSolverDefHelper.count = m_contactCount;
+			_contactSolverDefHelper.step = p_subStep;
+			_contactSolverDefHelper.positions = m_positions;
+			_contactSolverDefHelper.velocities = m_velocities;
+
+			_contactSolver.Initialize(_contactSolverDefHelper);
+
+			// Solve position constraints.
+			var posIterations:int = p_subStep.positionIterations;
+			var contactsOkay:Boolean;
+
+			for (i = 0; i < posIterations; ++i)
+			{
+				contactsOkay = _contactSolver.SolveTOIPositionConstraints(p_toiIndexA, p_toiIndexB);
+
+				if (contactsOkay)
+				{
+					break;
+				}
+			}
+
+			// Leap of faith to new safe state.
+			// A
+			pos = m_positions[p_toiIndexA];
+			b = m_bodies[p_toiIndexA];
+			sweep = b.m_sweep;
+
+			sweep.worldCenterX0 = pos.x;
+			sweep.worldCenterY0 = pos.y;
+			sweep.worldAngle0 = pos.z;
+
+			// B
+			pos = m_positions[p_toiIndexB];
+			b = m_bodies[p_toiIndexB];
+			sweep = b.m_sweep;
+
+			sweep.worldCenterX0 = pos.x;
+			sweep.worldCenterY0 = pos.y;
+			sweep.worldAngle0 = pos.z;
+
+			// No warm starting is needed for TOI events because warm
+			// starting impulses were applied in the discrete solver.
+			_contactSolver.InitializeVelocityConstraints();
+
+			// Solve velocity constraints.
+			var velIterations:int = p_subStep.velocityIterations;
+
+			for (i = 0; i < velIterations; ++i)
+			{
+				_contactSolver.SolveVelocityConstraints();
+			}
+
+			// Don't store the TOI contact forces for warm starting
+			// because they can be quite large.
+
+			var h:Number = p_subStep.dt;
+
+			// Integrate positions
+			var cX:Number;
+			var cY:Number;
+			var a:Number;
+			var vX:Number;
+			var vY:Number;
+			var w:Number;
+
+			for (i = 0; i < bodyCount; ++i)
+			{
+				pos = m_positions[i];
+				vel = m_velocities[i];
+
+				cX = pos.x;
+				cY = pos.y;
+				a = pos.z;
+
+				vX = vel.x;
+				vY = vel.y;
+				w = vel.z;
+
+				// Check for large velocities
+				var translationX:Number = h * vX;
+				var translationY:Number = h * vY;
+				var ratio:Number;
+
+				if (b2Math.DotSingle(translationX, translationY) > b2Settings.maxTranslationSquared)
+				{
+					ratio = b2Settings.maxTranslation / b2Math.Length(translationX, translationY);
+					vX *= ratio;
+					vY *= ratio;
+				}
+
+				var rotation:Number = h * w;
+				if (rotation * rotation > b2Settings.maxRotationSquared)
+				{
+					ratio = b2Settings.maxRotation / b2Math.Abs(rotation);
+					w *= ratio;
+				}
+
+				// Integrate
+				cX += h * vX;
+				cY += h * vY;
+				a += h * w;
+
+				pos.x = cX;
+				pos.y = cY;
+				pos.z = a;
+
+				vel.x = vX;
+				vel.y = vY;
+				vel.z = w;
+
+				// Sync bodies
+				var body:b2Body = m_bodies[i];
+				sweep = body.m_sweep;
+
+				sweep.worldCenterX = cX;
+				sweep.worldCenterY = cY;
+				sweep.worldAngle = a;
+
+				body.m_linearVelocityX = vX;
+				body.m_linearVelocityY = vY;
+				body.m_angularVelocity = w;
+
+				body.SynchronizeTransform();
+			}
+
+			Report(_contactSolver.m_velocityConstraints);
 		}
 
 		[Inline]
