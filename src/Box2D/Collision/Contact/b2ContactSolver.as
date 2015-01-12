@@ -42,6 +42,7 @@ package Box2D.Collision.Contact
 		public var m_count:int;
 
 		private var _psm:b2PositionSolverManifold;
+		private var _pointHelper:b2SPoint;
 
 		b2internal var g_blockSolve:Boolean = true;
 
@@ -52,6 +53,7 @@ package Box2D.Collision.Contact
 			_psm = new b2PositionSolverManifold();
 			m_positionConstraints = new <b2ContactPositionConstraint>[];
 			m_velocityConstraints = new <b2ContactVelocityConstraint>[];
+			_pointHelper = b2SPoint.Get();
 		}
 
 		/**
@@ -416,11 +418,419 @@ package Box2D.Collision.Contact
 		}
 
 		/**
-		 * TODO:
 		 */
 		public function SolveVelocityConstraints():void
 		{
-			b2Assert(false, "current method isn't implemented yet or abstract and can't be used!");
+			var count:int = m_count;
+			var vc:b2ContactVelocityConstraint;
+			var indexA:int;
+			var indexB:int;
+			var mA:Number;
+			var iA:Number;
+			var mB:Number;
+			var iB:Number;
+			var pointCount:int;
+			var vAX:Number;
+			var vAY:Number;
+			var wA:Number;
+			var vBX:Number;
+			var vBY:Number;
+			var wB:Number;
+			var normalX:Number;
+			var normalY:Number;
+			var tangentX:Number;
+			var tangentY:Number;
+			var friction:Number;
+			var velA:b2Vec3;
+			var velB:b2Vec3;
+
+			for (var i:int = 0; i < count; i++)
+			{
+				vc = m_velocityConstraints[i];
+
+				indexA = vc.indexA;
+				indexB = vc.indexB;
+
+				mA = vc.invMassA;
+				iA = vc.invIA;
+
+				mB = vc.invMassB;
+				iB = vc.invIB;
+				pointCount = vc.pointCount;
+
+				velA = m_velocities[indexA];
+				vAX = velA.x;
+				vAY = velA.y;
+				wA = velA.z;
+
+				velB = m_velocities[indexB];
+				vBX = velB.x;
+				vBY = velB.y;
+				wB = velB.z;
+
+				normalX = vc.normalX;
+				normalY = vc.normalY;
+
+				b2Math.CrossVectorScalar(normalX, normalY, 1.0, _pointHelper);
+				tangentX = _pointHelper.x;
+				tangentY = _pointHelper.y;
+
+				friction = vc.friction;
+
+				CONFIG::debug
+				{
+					b2Assert(pointCount == 1 || pointCount == 2, "pointCount should be equal 1 or 2");
+				}
+
+				// Solve tangent constraints first because non-penetration is more important than friction.
+				var vcp:b2VelocityConstraintPoint;
+				var points:Vector.<b2VelocityConstraintPoint> = vc.points;
+
+				for (var j:int = 0; j < pointCount; j++)
+				{
+					vcp = points[j];
+
+					// Relative velocity at contact
+					b2Math.CrossScalarVector(wB, vcp.rBX, vcp.rBY, _pointHelper);
+					var c1x:Number = _pointHelper.x;
+					var c1y:Number = _pointHelper.y;
+
+					b2Math.CrossScalarVector(wA, vcp.rAX, vcp.rAY, _pointHelper);
+					var c2x:Number = _pointHelper.x;
+					var c2y:Number = _pointHelper.y;
+
+					var dvX:Number = vBX + c1x - vAX - c2x;
+					var dvY:Number = vBY + c1y - vAY - c2y;
+
+					// Compute tangent force
+					var vt:Number = b2Math.Dot(dvX, dvY, tangentX, tangentY) - vc.tangentSpeed;
+					var lambda:Number = vcp.tangentMass * (-vt);
+
+					// b2Clamp the accumulated force
+					var maxFriction:Number = friction * vcp.normalImpulse;
+					var newImpulse:Number = b2Math.Clamp(vcp.tangentImpulse + lambda, -maxFriction, maxFriction);
+					lambda = newImpulse - vcp.tangentImpulse;
+					vcp.tangentImpulse = newImpulse;
+
+					// Apply contact impulse
+					var PX:Number = lambda * tangentX;
+					var PY:Number = lambda * tangentY;
+
+					vAX -= mA * PX;
+					vAY -= mA * PY;
+					wA -= iA * b2Math.CrossVectors(vcp.rAX, vcp.rAY, PX, PY);
+
+					vBX += mB * PX;
+					vBY += mB * PY;
+					wB += iB * b2Math.CrossVectors(vcp.rBX, vcp.rBY, PX, PY);
+				}
+
+				// Solve normal constraints
+				points = vc.points;
+
+				if (pointCount == 1 || g_blockSolve == false)
+				{
+					for (i = 0; i < pointCount; ++i)
+					{
+						vcp = vc.points[i];
+
+						// Relative velocity at contact
+						b2Math.CrossScalarVector(wB, vcp.rBX, vcp.rBY, _pointHelper);
+						c1x = _pointHelper.x;
+						c1y = _pointHelper.y;
+
+						b2Math.CrossScalarVector(wA, vcp.rAX, vcp.rAY, _pointHelper);
+						c2x = _pointHelper.x;
+						c2y = _pointHelper.y;
+
+						dvX = vBX + c1x - vAX - c2x;
+						dvY = vBY + c1y - vAY - c2y;
+
+						// Compute normal impulse
+						var vn:Number = b2Math.Dot(dvX, dvY, normalX, normalY);
+						lambda = -vcp.normalMass * (vn - vcp.velocityBias);
+
+						// b2Clamp the accumulated impulse
+						newImpulse = b2Math.Max(vcp.normalImpulse + lambda, 0.0);
+						lambda = newImpulse - vcp.normalImpulse;
+						vcp.normalImpulse = newImpulse;
+
+						// Apply contact impulse
+						PX = lambda * normalX;
+						PY = lambda * normalY;
+						vAX -= mA * PX;
+						vAY -= mA * PY;
+						wA -= iA * b2Math.CrossVectors(vcp.rAX, vcp.rAY, PX, PY);
+
+						vBX += mB * PX;
+						vBY += mB * PY;
+						wB += iB * b2Math.CrossVectors(vcp.rBX, vcp.rBY, PX, PY);
+					}
+				}
+				else
+				{
+					// Block solver developed in collaboration with Dirk Gregorius (back in 01/07 on Box2D_Lite).
+					// Build the mini LCP for this contact patch
+					//
+					// vn = A * x + b, vn >= 0, , vn >= 0, x >= 0 and vn_i * x_i = 0 with i = 1..2
+					//
+					// A = J * W * JT and J = ( -n, -r1 x n, n, r2 x n )
+					// b = vn0 - velocityBias
+					//
+					// The system is solved using the "Total enumeration method" (s. Murty). The complementary constraint vn_i * x_i
+					// implies that we must have in any solution either vn_i = 0 or x_i = 0. So for the 2D contact problem the cases
+					// vn1 = 0 and vn2 = 0, x1 = 0 and x2 = 0, x1 = 0 and vn2 = 0, x2 = 0 and vn1 = 0 need to be tested. The first valid
+					// solution that satisfies the problem is chosen.
+					//
+					// In order to account of the accumulated impulse 'a' (because of the iterative nature of the solver which only requires
+					// that the accumulated impulse is clamped and not the incremental impulse) we change the impulse variable (x_i).
+					//
+					// Substitute:
+					//
+					// x = a + d
+					//
+					// a := old total impulse
+					// x := new total impulse
+					// d := incremental impulse
+					//
+					// For the current iteration we extend the formula for the incremental impulse
+					// to compute the new total impulse:
+					//
+					// vn = A * d + b
+					//    = A * (x - a) + b
+					//    = A * x + b - A * a
+					//    = A * x + b'
+					// b' = b - A * a;
+
+					var cp1:b2VelocityConstraintPoint = points[0];
+					var cp2:b2VelocityConstraintPoint = points[1];
+
+					var aX:Number = cp1.normalImpulse;
+					var aY:Number = cp2.normalImpulse;
+
+					CONFIG::debug
+					{
+						b2Assert(aX >= 0.0 && aY >= 0.0, "!(aX >= 0.0 && aY >= 0.0)");
+					}
+
+					// Relative velocity at contact
+					b2Math.CrossScalarVector(wB, cp1.rBX, cp1.rBY, _pointHelper);
+					c1x = _pointHelper.x;
+					c1y = _pointHelper.y;
+
+					b2Math.CrossScalarVector(wA, cp1.rAX, cp1.rAY, _pointHelper);
+					c2x = _pointHelper.x;
+					c2y = _pointHelper.y;
+
+					var dv1X:Number = vBX + c1x - vAX - c2x;
+					var dv1Y:Number = vBY + c1y - vAY - c2y;
+
+					//
+					b2Math.CrossScalarVector(wB, cp2.rBX, cp2.rBY, _pointHelper);
+					c1x = _pointHelper.x;
+					c1y = _pointHelper.y;
+
+					b2Math.CrossScalarVector(wA, cp2.rAX, cp2.rAY, _pointHelper);
+					c2x = _pointHelper.x;
+					c2y = _pointHelper.y;
+
+					var dv2X:Number = vBX + c1x - vAX - c2x;
+					var dv2Y:Number = vBY + c1y - vAY - c2y;
+
+					// Compute normal velocity
+					var vn1:Number = b2Math.Dot(dv1X, dv1Y, normalX, normalY);
+					var vn2:Number = b2Math.Dot(dv2X, dv2Y, normalX, normalY);
+
+					var bX:Number = vn1 - cp1.velocityBias;
+					var bY:Number = vn2 - cp2.velocityBias;
+
+					// Compute b'
+					b2Math.MulTrV(vc.K, aX, aY, _pointHelper);
+					bX -= _pointHelper.x;
+					bY -= _pointHelper.y;
+
+					var xX:Number;
+					var xY:Number;
+					var dX:Number;
+					var dY:Number;
+					var P1X:Number;
+					var P1Y:Number;
+					var P2X:Number;
+					var P2Y:Number;
+
+					while (true)   // TODO: Need comment loop statement because loop is never happens. Also need simplified conditional statementes
+					{
+						//
+						// Case 1: vn = 0
+						//
+						// 0 = A * x + b'
+						//
+						// Solve for x:
+						//
+						// x = - inv(A) * b'
+						//
+						b2Math.MulTrV(vc.normalMass, bX, bY, _pointHelper);
+						xX = -_pointHelper.x;
+						xY = -_pointHelper.y;
+
+						if (xX >= 0.0 && xY >= 0.0)
+						{
+							// Get the incremental impulse
+							dX = xX - aX;
+							dY = xY - aY;
+
+							// Apply incremental impulse
+							P1X = dX * normalX;
+							P1Y = dX * normalY;
+
+							P2X = dY * normalX;
+							P2Y = dY * normalY;
+
+							vAX -= mA * (P1X + P2X);
+							vAY -= mA * (P1Y + P2Y);
+							wA -= iA * (b2Math.CrossVectors(cp1.rAX, cp1.rAY, P1X, P1Y) + b2Math.CrossVectors(cp2.rAX, cp2.rAY, P2X, P2Y));
+
+							vBX += mB * (P1X + P2X);
+							vBY += mB * (P1Y + P2Y);
+							wB += iB * (b2Math.CrossVectors(cp1.rBX, cp1.rBY, P1X, P1Y) + b2Math.CrossVectors(cp2.rBX, cp2.rBY, P2X, P2Y));
+
+							// Accumulate
+							cp1.normalImpulse = xX;
+							cp2.normalImpulse = xY;
+
+							break;
+						}
+
+						//
+						// Case 2: vn1 = 0 and x2 = 0
+						//
+						//   0 = a11 * x1 + a12 * 0 + b1'
+						// vn2 = a21 * x1 + a22 * 0 + b2'
+						//
+						xX = -cp1.normalMass * bX;
+						xY = 0.0;
+						vn1 = 0.0;
+						vn2 = vc.K.c21 * xX + bY;
+
+						if (xX >= 0.0 && vn2 >= 0.0)
+						{
+							// Get the incremental impulse
+							dX = xX - aX;
+							dY = xY - aY;
+
+							// Apply incremental impulse
+							P1X = dX * normalX;
+							P1Y = dX * normalY;
+
+							P2X = dY * normalX;
+							P2Y = dY * normalY;
+
+							vAX -= mA * (P1X + P2X);
+							vAY -= mA * (P1Y + P2Y);
+							wA -= iA * (b2Math.CrossVectors(cp1.rAX, cp1.rAY, P1X, P1Y) + b2Math.CrossVectors(cp2.rAX, cp2.rAY, P2X, P2Y));
+
+							vBX += mB * (P1X + P2X);
+							vBY += mB * (P1Y + P2Y);
+							wB += iB * (b2Math.CrossVectors(cp1.rBX, cp1.rBY, P1X, P1Y) + b2Math.CrossVectors(cp2.rBX, cp2.rBY, P2X, P2Y));
+
+							// Accumulate
+							cp1.normalImpulse = xX;
+							cp2.normalImpulse = xY;
+
+							break;
+						}
+
+						//
+						// Case 3: vn2 = 0 and x1 = 0
+						//
+						// vn1 = a11 * 0 + a12 * x2 + b1'
+						//   0 = a21 * 0 + a22 * x2 + b2'
+						//
+						xX = 0.0;
+						xY = -cp2.normalMass * bY;
+						vn1 = vc.K.c12 * xY + bX;
+						vn2 = 0.0;
+
+						if (xY >= 0.0 && vn1 >= 0.0)
+						{
+							// Resubstitute for the incremental impulse
+							dX = xX - aX;
+							dY = xY - aY;
+
+							// Apply incremental impulse
+							P1X = dX * normalX;
+							P1Y = dX * normalY;
+
+							P2X = dY * normalX;
+							P2Y = dY * normalY;
+
+							vAX -= mA * (P1X + P2X);
+							vAY -= mA * (P1Y + P2Y);
+							wA -= iA * (b2Math.CrossVectors(cp1.rAX, cp1.rAY, P1X, P1Y) + b2Math.CrossVectors(cp2.rAX, cp2.rAY, P2X, P2Y));
+
+							vBX += mB * (P1X + P2X);
+							vBY += mB * (P1Y + P2Y);
+							wB += iB * (b2Math.CrossVectors(cp1.rBX, cp1.rBY, P1X, P1Y) + b2Math.CrossVectors(cp2.rBX, cp2.rBY, P2X, P2Y));
+
+							// Accumulate
+							cp1.normalImpulse = xX;
+							cp2.normalImpulse = xY;
+
+							break;
+						}
+
+						//
+						// Case 4: x1 = 0 and x2 = 0
+						//
+						// vn1 = b1
+						// vn2 = b2;
+						xX = 0.0;
+						xY = 0.0;
+						vn1 = bX;
+						vn2 = bY;
+
+						if (vn1 >= 0.0 && vn2 >= 0.0)
+						{
+							// Resubstitute for the incremental impulse
+							dX = xX - aX;
+							dY = xY - aY;
+
+							// Apply incremental impulse
+							P1X = dX * normalX;
+							P1Y = dX * normalY;
+
+							P2X = dY * normalX;
+							P2Y = dY * normalY;
+
+							vAX -= mA * (P1X + P2X);
+							vAY -= mA * (P1Y + P2Y);
+							wA -= iA * (b2Math.CrossVectors(cp1.rAX, cp1.rAY, P1X, P1Y) + b2Math.CrossVectors(cp2.rAX, cp2.rAY, P2X, P2Y));
+
+							vBX += mB * (P1X + P2X);
+							vBY += mB * (P1Y + P2Y);
+							wB += iB * (b2Math.CrossVectors(cp1.rBX, cp1.rBY, P1X, P1Y) + b2Math.CrossVectors(cp2.rBX, cp2.rBY, P2X, P2Y));
+
+							// Accumulate
+							cp1.normalImpulse = xX;
+							cp2.normalImpulse = xY;
+
+							break;
+						}
+
+						// No solution, give up. This is hit sometimes, but it doesn't seem to matter.
+						break;
+					}
+				}
+
+				//
+				velA.x = vAX;
+				velA.y = vAY;
+				velA.z = wA;
+
+				velB.x = vBX;
+				velB.y = vBY;
+				velB.z = wB;
+			}
 		}
 
 		/**

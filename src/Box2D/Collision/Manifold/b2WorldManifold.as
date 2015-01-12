@@ -55,13 +55,13 @@ package Box2D.Collision.Manifold
 
 			if (manifoldPointCount > 0)
 			{
-				var cosA:Number = p_xfA.c11;
-				var sinA:Number = p_xfA.c12;
+				var cosA:Number = p_xfA.cos;
+				var sinA:Number = p_xfA.sin;
 				var xA:Number = p_xfA.x;
 				var yA:Number = p_xfA.y;
 
-				var cosB:Number = p_xfB.c11;
-				var sinB:Number = p_xfB.c12;
+				var cosB:Number = p_xfB.cos;
+				var sinB:Number = p_xfB.sin;
 				var xB:Number = p_xfB.x;
 				var yB:Number = p_xfB.y;
 

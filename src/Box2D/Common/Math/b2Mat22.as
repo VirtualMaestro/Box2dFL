@@ -14,8 +14,8 @@ package Box2D.Common.Math
 	/**
 	 * A 2-by-2 matrix. Stored in column-major order:
 	 *
-	 * |c11 c21|   |cos -sin|
-	 * |c12 c22|   |sin  cos|
+	 * |c11 c12|   |cos -sin|
+	 * |c21 c22|   |sin  cos|
 	 */
 	final public class b2Mat22 extends b2SPoint
 	{
@@ -63,8 +63,8 @@ package Box2D.Common.Math
 		final public function SetSinCos(p_sin:Number, p_cos:Number):void
 		{
 			c11 = p_cos;
-			c21 = -p_sin;
-			c12 = p_sin;
+			c12 = -p_sin;
+			c21 = p_sin;
 			c22 = p_cos;
 		}
 
@@ -117,9 +117,12 @@ package Box2D.Common.Math
 		[Inline]
 		final public function GetInverse(p_outMatrix:b2Mat22 = null):b2Mat22
 		{
+//				ex.x = a11; ex.y = a21;
+//		 		ey.x = a12; ey.y = a22;
+
 			var a:Number = c11;
-			var b:Number = c21;
-			var c:Number = c12;
+			var b:Number = c12;
+			var c:Number = c21;
 			var d:Number = c22;
 			var det:Number = a * d - b * c;
 
@@ -129,8 +132,8 @@ package Box2D.Common.Math
 			}
 
 			var r11:Number = det * d;
-			var r21:Number = -det * b;
-			var r12:Number = -det * c;
+			var r12:Number = -det * b;
+			var r21:Number = -det * c;
 			var r22:Number = det * a;
 
 			if (p_outMatrix)
@@ -155,9 +158,12 @@ package Box2D.Common.Math
 		 */
 		public function Solve(p_bX:Number, p_bY:Number, p_outResult:b2Vec2):void
 		{
+//				ex.x = a11; ex.y = a21;
+//		 		ey.x = a12; ey.y = a22;
+
 			var a11:Number = c11;
-			var a12:Number = c21;
-			var a21:Number = c12;
+			var a12:Number = c12;
+			var a21:Number = c21;
 			var a22:Number = c22;
 
 			var det:Number = a11 * a22 - a12 * a21;
@@ -179,7 +185,7 @@ package Box2D.Common.Math
 		[Inline]
 		final public function get sin():Number
 		{
-			return c12;
+			return c21;
 		}
 
 		/**

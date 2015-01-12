@@ -202,10 +202,10 @@ package Box2D.Common.Math
 		[Inline]
 		static public function MulRs(p_q:b2Mat22, p_r:b2Mat22, p_outResult:b2Mat22):void
 		{
-			var qCos:Number = p_q.c11;
-			var qSin:Number = p_q.c12;
-			var rCos:Number = p_r.c11;
-			var rSin:Number = p_r.c12;
+			var qCos:Number = p_q.cos;
+			var qSin:Number = p_q.sin;
+			var rCos:Number = p_r.cos;
+			var rSin:Number = p_r.sin;
 
 			var s:Number = qSin * rCos + qCos * rSin;
 			var c:Number = qCos * rCos - qSin * rSin;
@@ -222,10 +222,10 @@ package Box2D.Common.Math
 		[Inline]
 		static public function MulTRs(p_q:b2Mat22, p_r:b2Mat22, p_outResult:b2Mat22):void
 		{
-			var qCos:Number = p_q.c11;
-			var qSin:Number = p_q.c12;
-			var rCos:Number = p_r.c11;
-			var rSin:Number = p_r.c12;
+			var qCos:Number = p_q.cos;
+			var qSin:Number = p_q.sin;
+			var rCos:Number = p_r.cos;
+			var rSin:Number = p_r.sin;
 
 			var s:Number = qCos * rSin - qSin * rCos;
 			var c:Number = qCos * rCos + qSin * rSin;
@@ -243,8 +243,8 @@ package Box2D.Common.Math
 		[Inline]
 		static public function MulRV(p_mat:b2Mat22, p_x:Number, p_y:Number, p_outResult:b2SPoint):void
 		{
-			var cos:Number = p_mat.c11;
-			var sin:Number = p_mat.c12;
+			var cos:Number = p_mat.cos;
+			var sin:Number = p_mat.sin;
 
 			p_outResult.x = cos * p_x - sin * p_y;
 			p_outResult.y = sin * p_x + cos * p_y;
@@ -258,8 +258,8 @@ package Box2D.Common.Math
 		[Inline]
 		static public function MulTRV(p_mat:b2Mat22, p_x:Number, p_y:Number, p_outResult:b2SPoint):void
 		{
-			var cos:Number = p_mat.c11;
-			var sin:Number = p_mat.c12;
+			var cos:Number = p_mat.cos;
+			var sin:Number = p_mat.sin;
 
 			p_outResult.x = cos * p_x + sin * p_y;
 			p_outResult.y = -sin * p_x + cos * p_y;
@@ -271,8 +271,8 @@ package Box2D.Common.Math
 		[Inline]
 		static public function MulTrV(p_mat:b2Mat22, p_x:Number, p_y:Number, p_outResult:b2SPoint):void
 		{
-			var cos:Number = p_mat.c11;
-			var sin:Number = p_mat.c12;
+			var cos:Number = p_mat.cos;
+			var sin:Number = p_mat.sin;
 
 			p_outResult.x = (cos * p_x - sin * p_y) + p_mat.x;
 			p_outResult.y = (sin * p_x + cos * p_y) + p_mat.y;
@@ -284,8 +284,8 @@ package Box2D.Common.Math
 		[Inline]
 		static public function MulTTrV(p_mat:b2Mat22, p_x:Number, p_y:Number, p_outResult:b2SPoint):void
 		{
-			var cos:Number = p_mat.c11;
-			var sin:Number = p_mat.c12;
+			var cos:Number = p_mat.cos;
+			var sin:Number = p_mat.sin;
 
 			var sx:Number = p_x - p_mat.x;
 			var sy:Number = p_y - p_mat.y;
@@ -300,10 +300,10 @@ package Box2D.Common.Math
 		[Inline]
 		static public function MulTrTr(p_matA:b2Mat22, p_matB:b2Mat22, p_outResult:b2Mat22):void
 		{
-			var qCos:Number = p_matA.c11;
-			var qSin:Number = p_matA.c12;
-			var rCos:Number = p_matB.c11;
-			var rSin:Number = p_matB.c12;
+			var qCos:Number = p_matA.cos;
+			var qSin:Number = p_matA.sin;
+			var rCos:Number = p_matB.cos;
+			var rSin:Number = p_matB.sin;
 
 			var s:Number = qSin * rCos + qCos * rSin;
 			var c:Number = qCos * rCos - qSin * rSin;
@@ -326,10 +326,10 @@ package Box2D.Common.Math
 		[Inline]
 		static public function MulTTrTr(p_matA:b2Mat22, p_matB:b2Mat22, p_outResult:b2Mat22):void
 		{
-			var qCos:Number = p_matA.c11;
-			var qSin:Number = p_matA.c12;
-			var rCos:Number = p_matB.c11;
-			var rSin:Number = p_matB.c12;
+			var qCos:Number = p_matA.cos;
+			var qSin:Number = p_matA.sin;
+			var rCos:Number = p_matB.cos;
+			var rSin:Number = p_matB.sin;
 
 			var s:Number = qCos * rSin - qSin * rCos;
 			var c:Number = qCos * rCos + qSin * rSin;

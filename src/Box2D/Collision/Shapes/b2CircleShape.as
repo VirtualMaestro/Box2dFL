@@ -64,8 +64,8 @@ package Box2D.Collision.Shapes
 		 */
 		override public function TestPoint(p_transform:b2Mat22, p_pointX:Number, p_pointY:Number):Boolean
 		{
-			var cos:Number = p_transform.c11;
-			var sin:Number = p_transform.c12;
+			var cos:Number = p_transform.cos;
+			var sin:Number = p_transform.sin;
 
 			var centerX:Number = p_transform.x + (cos * m_pX - sin * m_pY);
 			var centerY:Number = p_transform.y + (sin * m_pX + cos * m_pY);
@@ -83,8 +83,8 @@ package Box2D.Collision.Shapes
 		 */
 		override public function ComputeAABB(p_aabb:b2AABB, p_transform:b2Mat22, p_childIndex:int):void
 		{
-			var cos:Number = p_transform.c11;
-			var sin:Number = p_transform.c12;
+			var cos:Number = p_transform.cos;
+			var sin:Number = p_transform.sin;
 			
 			var pX:Number = (cos * m_pX - sin * m_pY) + p_transform.x;
 			var pY:Number = (sin * m_pX + cos * m_pY) + p_transform.y;
@@ -122,8 +122,8 @@ package Box2D.Collision.Shapes
 		 */
 		override public function RayCast(p_rayCastData:b2RayCastData, p_transform:b2Mat22, p_childIndex:int):Boolean
 		{
-			var cos:Number = p_transform.c11;
-			var sin:Number = p_transform.c12;
+			var cos:Number = p_transform.cos;
+			var sin:Number = p_transform.sin;
 
 			var positionX:Number = (cos * m_pX - sin * m_pY) + p_transform.x;
 			var positionY:Number = (sin * m_pX + cos * m_pY) + p_transform.y;

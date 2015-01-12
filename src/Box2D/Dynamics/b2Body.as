@@ -11,6 +11,7 @@ package Box2D.Dynamics
 	import Box2D.Collision.b2BroadPhase;
 	import Box2D.Common.IDisposable;
 	import Box2D.Common.Math.b2Mat22;
+	import Box2D.Common.Math.b2SPoint;
 	import Box2D.Common.Math.b2Sweep;
 	import Box2D.Common.Math.b2Vec2;
 	import Box2D.Common.b2Disposable;
@@ -36,14 +37,13 @@ package Box2D.Dynamics
 		static public const DYNAMIC:uint = 2;
 
 		// Flags
-		static b2internal const	e_islandFlag:uint = 0x0001;
+		static b2internal const e_islandFlag:uint = 0x0001;
 		static b2internal const e_awakeFlag:uint = 0x0002;
 		static b2internal const e_autoSleepFlag:uint = 0x0004;
-		static b2internal const	e_bulletFlag:uint = 0x0008;
+		static b2internal const e_bulletFlag:uint = 0x0008;
 		static b2internal const e_fixedRotationFlag:uint = 0x0010;
 		static b2internal const e_activeFlag:uint = 0x0020;
-		static b2internal const	e_toiFlag:uint = 0x0040;
-
+		static b2internal const e_toiFlag:uint = 0x0040;
 
 		//
 		b2internal var m_type:uint;
@@ -103,7 +103,7 @@ package Box2D.Dynamics
 		 */
 		public function b2Body(p_bd:b2BodyDef, p_world:b2World)
 		{
-			 init(p_bd, p_world);
+			init(p_bd, p_world);
 		}
 
 		/**
@@ -146,8 +146,8 @@ package Box2D.Dynamics
 			m_sweep.localCenterY = 0.0;
 			m_sweep.worldCenterX0 = m_xf.x;
 			m_sweep.worldCenterY0 = m_xf.y;
-			m_sweep.worldCenterX  = m_xf.x;
-			m_sweep.worldCenterY  = m_xf.y;
+			m_sweep.worldCenterX = m_xf.x;
+			m_sweep.worldCenterY = m_xf.y;
 			m_sweep.worldAngle0 = p_bd.angle;
 			m_sweep.worldAngle = p_bd.angle;
 			m_sweep.t0 = 0.0;
@@ -313,7 +313,7 @@ package Box2D.Dynamics
 				b2Assert(found, "You tried to remove a shape that is not attached to this body");
 			}
 
-		   // Destroy any contacts associated with the fixture.
+			// Destroy any contacts associated with the fixture.
 			var edge:b2ContactEdge = m_contactList;
 			var contact:b2Contact;
 			var fixtureA:b2Fixture;
@@ -367,8 +367,8 @@ package Box2D.Dynamics
 			m_xf.x = p_posX;
 			m_xf.y = p_posY;
 
-			var cos:Number = m_xf.c11;
-			var sin:Number = m_xf.c12;
+			var cos:Number = m_xf.cos;
+			var sin:Number = m_xf.sin;
 
 			m_sweep.worldCenterX = (cos * m_sweep.localCenterX - sin * m_sweep.localCenterY) + m_xf.x;
 			m_sweep.worldCenterY = (sin * m_sweep.localCenterX + cos * m_sweep.localCenterY) + m_xf.y;
@@ -748,7 +748,7 @@ package Box2D.Dynamics
 				{
 					var cx:Number = p_massData.centerX;
 					var cy:Number = p_massData.centerY;
-					m_I = p_massData.I - m_mass * (cx*cx + cy*cy);
+					m_I = p_massData.I - m_mass * (cx * cx + cy * cy);
 
 					CONFIG::debug
 					{
@@ -858,8 +858,8 @@ package Box2D.Dynamics
 			m_sweep.localCenterX = p_centerX;
 			m_sweep.localCenterY = p_centerY;
 
-			var cos:Number = m_xf.c11;
-			var sin:Number = m_xf.c12;
+			var cos:Number = m_xf.cos;
+			var sin:Number = m_xf.sin;
 
 			var rX:Number = (cos * p_centerX - sin * p_centerY) + m_xf.x;
 			var rY:Number = (sin * p_centerX + cos * p_centerY) + m_xf.y;
@@ -870,43 +870,44 @@ package Box2D.Dynamics
 			m_sweep.worldCenterY0 = rY;
 
 			// Update center of mass velocity.
-			m_linearVelocityX += -m_angularVelocity * (rY - oldCenterY) ;
-			m_linearVelocityY +=  m_angularVelocity * (rX - oldCenterX);
+			m_linearVelocityX += -m_angularVelocity * (rY - oldCenterY);
+			m_linearVelocityY += m_angularVelocity * (rX - oldCenterX);
 		}
 
 		/**
 		 * Get the world coordinates of a point given the local coordinates.
 		 * @param p_localPointX a point on the body measured relative the the body's origin.
 		 * @param p_localPointY a point on the body measured relative the the body's origin.
-		 * @return the same point expressed in world coordinates.
-		 * NOTICE! Produces new instance of b2Vec2.
+		 * @param p_outResult - output result - the same point expressed in world coordinates.
 		 */
-		public function GetWorldPoint(p_localPointX:Number, p_localPointY:Number):b2Vec2
+		public function GetWorldPoint(p_localPointX:Number, p_localPointY:Number, p_outResult:b2SPoint):void
 		{
-			var cos:Number = m_xf.c11;
-			var sin:Number = m_xf.c12;
-			
+			var cos:Number = m_xf.cos;
+			var sin:Number = m_xf.sin;
+
 			var rX:Number = (cos * p_localPointX - sin * p_localPointY) + m_xf.x;
 			var rY:Number = (sin * p_localPointX + cos * p_localPointY) + m_xf.y;
 
-			return b2Vec2.Get(rX, rY);
+			p_outResult.x = rX;
+			p_outResult.y = rY;
 		}
 
 		/**
 		 * Get the world coordinates of a vector given the local coordinates.
 		 * @param p_localVectorX a vector fixed in the body.
 		 * @param p_localVectorY a vector fixed in the body.
-		 * @return the same vector expressed in world coordinates.
+		 * @param p_outResult - output result - the same vector expressed in world coordinates.
 		 */
-		public function GetWorldVector(p_localVectorX:Number, p_localVectorY:Number):b2Vec2
+		public function GetWorldVector(p_localVectorX:Number, p_localVectorY:Number, p_outResult:b2SPoint):void
 		{
-			var cos:Number = m_xf.c11;
-			var sin:Number = m_xf.c12;
+			var cos:Number = m_xf.cos;
+			var sin:Number = m_xf.sin;
 
 			var rX:Number = (cos * p_localVectorX - sin * p_localVectorY);
 			var rY:Number = (sin * p_localVectorX + cos * p_localVectorY);
 
-			return b2Vec2.Get(rX, rY);
+			p_outResult.x = rX;
+			p_outResult.y = rY;
 		}
 
 		/**
@@ -918,13 +919,13 @@ package Box2D.Dynamics
 		 */
 		public function GetLocalPoint(p_worldPointX:Number, p_worldPointY:Number):b2Vec2
 		{
-			var cos:Number = m_xf.c11;
-			var sin:Number = m_xf.c12;
+			var cos:Number = m_xf.cos;
+			var sin:Number = m_xf.sin;
 
 			var px:Number = p_worldPointX - m_xf.x;
 			var py:Number = p_worldPointY - m_xf.y;
 
-			var rX:Number =  cos * px + sin * py;
+			var rX:Number = cos * px + sin * py;
 			var rY:Number = -sin * px + cos * py;
 
 			return b2Vec2.Get(rX, rY);
@@ -935,17 +936,18 @@ package Box2D.Dynamics
 		 * @param p_worldVectorX vector in world coordinates.
 		 * @param p_worldVectorY vector in world coordinates.
 		 * @return the corresponding local vector.
-		 * NOTICE! Produces new instance of b2Vec2.
+		 * @param p_outResult - for output result.
 		 */
-		public function GetLocalVector(p_worldVectorX:Number, p_worldVectorY:Number):b2Vec2
+		public function GetLocalVector(p_worldVectorX:Number, p_worldVectorY:Number, p_outResult:b2SPoint):void
 		{
-			var cos:Number = m_xf.c11;
-			var sin:Number = m_xf.c12;
+			var cos:Number = m_xf.cos;
+			var sin:Number = m_xf.sin;
 
-			var rX:Number =  cos * p_worldVectorX + sin * p_worldVectorY;
+			var rX:Number = cos * p_worldVectorX + sin * p_worldVectorY;
 			var rY:Number = -sin * p_worldVectorX + cos * p_worldVectorY;
 
-			return b2Vec2.Get(rX, rY);
+			p_outResult.x = rX;
+			p_outResult.y = rY;
 		}
 
 		/**
@@ -953,20 +955,21 @@ package Box2D.Dynamics
 		 * @param p_worldPointX point in world coordinates.
 		 * @param p_worldPointY point in world coordinates.
 		 * @return the world velocity of a point.
-		 * NOTICE! Produces new instance of b2Vec2.
+		 * @param p_outResult - output result.
 		 */
-		public function GetLinearVelocityFromWorldPoint(p_worldPointX:Number, p_worldPointY:Number):b2Vec2
+		public function GetLinearVelocityFromWorldPoint(p_worldPointX:Number, p_worldPointY:Number, p_outResult:b2SPoint):void
 		{
 			var rX:Number = p_worldPointX - m_sweep.worldCenterX;
 			var rY:Number = p_worldPointY - m_sweep.worldCenterY;
 
 			var r1X:Number = -m_angularVelocity * rY;
-			var r1Y:Number =  m_angularVelocity * rX;
+			var r1Y:Number = m_angularVelocity * rX;
 
 			var r2X:Number = m_linearVelocityX + r1X;
 			var r2Y:Number = m_linearVelocityY + r1Y;
 
-			return b2Vec2.Get(r2X, r2Y);
+			p_outResult.x = r2X;
+			p_outResult.y = r2Y;
 		}
 
 		/**
@@ -974,15 +977,19 @@ package Box2D.Dynamics
 		 * @param p_localPointX point in local coordinates.
 		 * @param p_localPointY point in local coordinates.
 		 * @return the world velocity of a point.
-		 * NOTICE! Produces new instance of b2Vec2.
+		 * @param p_outResult
 		 */
-		public function GetLinearVelocityFromLocalPoint(p_localPointX:Number, p_localPointY:Number):b2Vec2
+		public function GetLinearVelocityFromLocalPoint(p_localPointX:Number, p_localPointY:Number, p_outResult:b2SPoint):void
 		{
-			var wp:b2Vec2 = GetWorldPoint(p_localPointX, p_localPointY);
-			var lv:b2Vec2 = GetLinearVelocityFromWorldPoint(wp.x, wp.y);
-			wp.Dispose();
+			var wp:b2SPoint = b2SPoint.Get();
 
-			return lv;
+			GetWorldPoint(p_localPointX, p_localPointY, wp);
+			GetLinearVelocityFromWorldPoint(wp.x, wp.y, wp);
+
+			p_outResult.x = wp.x;
+			p_outResult.y = wp.y;
+
+			wp.Dispose();
 		}
 
 		/**
@@ -1025,7 +1032,7 @@ package Box2D.Dynamics
 				var ce0:b2ContactEdge;
 				var contactManager:b2ContactManager = m_world.m_contactManager;
 
-				while(ce)
+				while (ce)
 				{
 					ce0 = ce;
 					ce = ce.next;
@@ -1201,7 +1208,7 @@ package Box2D.Dynamics
 					var ce:b2ContactEdge = m_contactList;
 					var ce0:b2ContactEdge;
 
-					while(ce)
+					while (ce)
 					{
 						ce0 = ce;
 						ce = ce.next;
@@ -1307,8 +1314,8 @@ package Box2D.Dynamics
 			var xf1:b2Mat22 = b2Mat22.Get();
 			xf1.SetAngle(m_sweep.worldAngle0);
 
-			var cos:Number = xf1.c11;
-			var sin:Number = xf1.c12;
+			var cos:Number = xf1.cos;
+			var sin:Number = xf1.sin;
 
 			var lcX:Number = m_sweep.localCenterX;
 			var lcY:Number = m_sweep.localCenterY;
@@ -1336,8 +1343,8 @@ package Box2D.Dynamics
 		{
 			m_xf.SetAngle(m_sweep.worldAngle);
 
-			var cos:Number = m_xf.c11;
-			var sin:Number = m_xf.c12;
+			var cos:Number = m_xf.cos;
+			var sin:Number = m_xf.sin;
 
 			var lcX:Number = m_sweep.localCenterX;
 			var lcY:Number = m_sweep.localCenterY;

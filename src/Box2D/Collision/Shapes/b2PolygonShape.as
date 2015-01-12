@@ -355,8 +355,8 @@ package Box2D.Collision.Shapes
 		{
 			var rX:Number = p_pointX - p_transform.x;
 			var rY:Number = p_pointY - p_transform.y;
-			var cos:Number = p_transform.c11;
-			var sin:Number = p_transform.c12;
+			var cos:Number = p_transform.cos;
+			var sin:Number = p_transform.sin;
 			
 			var localX:Number =  cos * rX + sin * rY;
 			var localY:Number = -sin * rX + cos * rY;
@@ -395,10 +395,10 @@ package Box2D.Collision.Shapes
 			// Put the ray into the polygon's frame of reference.
 			var sX:Number = p_rayCastData.p1X - p_transform.x;
 			var sY:Number = p_rayCastData.p1Y - p_transform.y;
-			var eX:Number = p_rayCastData.p2X   - p_transform.x;
-			var eY:Number = p_rayCastData.p2Y   - p_transform.y;
-			var cos:Number = p_transform.c11;
-			var sin:Number = p_transform.c12;
+			var eX:Number = p_rayCastData.p2X - p_transform.x;
+			var eY:Number = p_rayCastData.p2Y - p_transform.y;
+			var cos:Number = p_transform.cos;
+			var sin:Number = p_transform.sin;
 
 			var p1X:Number =  cos * sX + sin * sY;
 			var p1Y:Number = -sin * sX + cos * sY;
@@ -498,8 +498,8 @@ package Box2D.Collision.Shapes
 		{
 			var v0X:Number = b2Math.getX(m_vertices, 0);
 			var v0Y:Number = b2Math.getY(m_vertices, 0);
-			var cos:Number = p_transform.c11;
-			var sin:Number = p_transform.c12;
+			var cos:Number = p_transform.cos;
+			var sin:Number = p_transform.sin;
 			var tX:Number = p_transform.x;
 			var tY:Number = p_transform.y;
 

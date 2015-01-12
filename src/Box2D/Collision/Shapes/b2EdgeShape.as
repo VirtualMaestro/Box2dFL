@@ -102,8 +102,8 @@ package Box2D.Collision.Shapes
 			// Put the ray into the edge's frame of reference.
 			var rX:Number = p_rayCastData.p1X - p_xf.x;
 			var rY:Number = p_rayCastData.p1Y - p_xf.y;
-			var cos:Number = p_xf.c11;
-			var sin:Number = p_xf.c12;
+			var cos:Number = p_xf.cos;
+			var sin:Number = p_xf.sin;
 			
 			var p1X:Number =  cos * rX + sin * rY;
 			var p1Y:Number = -sin * rX + cos * rY;
@@ -199,8 +199,8 @@ package Box2D.Collision.Shapes
 		 */
 		override public function ComputeAABB(p_aabb:b2AABB, p_xf:b2Mat22, p_childIndex:int):void
 		{
-			var cos:Number = p_xf.c11;
-			var sin:Number = p_xf.c12;
+			var cos:Number = p_xf.cos;
+			var sin:Number = p_xf.sin;
 
 			var tX:Number = p_xf.x;
 			var tY:Number = p_xf.y;

@@ -121,8 +121,8 @@ package Box2D.Collision
 			var planePointX:Number = 0.5 * (v11X + v12X);
 			var planePointY:Number = 0.5 * (v11Y + v12Y);
 
-			var cos:Number = xf1.c11;
-			var sin:Number = xf1.c12;
+			var cos:Number = xf1.cos;
+			var sin:Number = xf1.sin;
 
 			var tangentX:Number = cos * localTangentX - sin * localTangentY;
 			var tangentY:Number = sin * localTangentX + cos * localTangentY;
@@ -251,14 +251,14 @@ package Box2D.Collision
 			var nX:Number = b2Math.getX(normals1, p_edge1);
 			var nY:Number = b2Math.getY(normals1, p_edge1);
 
-			var cos:Number = p_xf1.c11;
-			var sin:Number = p_xf1.c12;
+			var cos:Number = p_xf1.cos;
+			var sin:Number = p_xf1.sin;
 
 			var rX:Number = cos * nX - sin * nY;
 			var rY:Number = sin * nX + cos * nY;
 
-			cos = p_xf2.c11;
-			sin = p_xf2.c12;
+			cos = p_xf2.cos;
+			sin = p_xf2.sin;
 
 			var normal1X:Number =  cos * rX + sin * rY;
 			var normal1Y:Number = -sin * rX + cos * rY;
@@ -344,10 +344,10 @@ package Box2D.Collision
 	        var v2s:Vector.<Number> = p_poly2.m_vertices;
 
 	        // -- b2Transform xf = b2MulT(xf2, xf1); --//
-	        var cos1:Number = p_xf2.c11;
-	        var sin1:Number = p_xf2.c12;
-	        var cos2:Number = p_xf1.c11;
-	        var sin2:Number = p_xf1.c12;
+	        var cos1:Number = p_xf2.cos;
+	        var sin1:Number = p_xf2.sin;
+	        var cos2:Number = p_xf1.cos;
+	        var sin2:Number = p_xf1.sin;
 
 	        var mSin:Number = (cos1 * sin2 - sin1 * cos2);
 	        var mCos:Number = (cos1 * cos2 + sin1 * sin2);
@@ -427,16 +427,16 @@ package Box2D.Collision
 		{
 			p_manifold.pointCount = 0;
 
-			var cos:Number = p_xfA.c11;
-			var sin:Number = p_xfA.c12;
+			var cos:Number = p_xfA.cos;
+			var sin:Number = p_xfA.sin;
 
 			var capX:Number = p_circleA.m_pX;
 			var capY:Number = p_circleA.m_pY;
 			var pAX:Number = (cos * capX - sin * capY) + p_xfA.x;
 			var pAY:Number = (sin * capX + cos * capY) + p_xfA.y;
 
-			cos = p_xfB.c11;
-			sin = p_xfB.c12;
+			cos = p_xfB.cos;
+			sin = p_xfB.sin;
 
 			var cbpX:Number = p_circleB.m_pX;
 			var cbpY:Number = p_circleB.m_pY;
@@ -482,16 +482,16 @@ package Box2D.Collision
 			p_manifold.pointCount = 0;
 
 			// Compute circle position in the frame of the polygon.
-			var cos:Number = p_xfB.c11;
-			var sin:Number = p_xfB.c12;
+			var cos:Number = p_xfB.cos;
+			var sin:Number = p_xfB.sin;
 
 			var cbpX:Number = p_circleB.m_pX;
 			var cbpY:Number = p_circleB.m_pY;
 			var cX:Number = (cos * cbpX - sin * cbpY) + p_xfB.x;
 			var cY:Number = (sin * cbpX + cos * cbpY) + p_xfB.y;
 
-			cos = p_xfA.c11;
-			sin = p_xfA.c12;
+			cos = p_xfA.cos;
+			sin = p_xfA.sin;
 
 			var px:Number = cX - p_xfA.x;
 			var py:Number = cY - p_xfA.y;
@@ -664,16 +664,16 @@ package Box2D.Collision
 			p_manifold.pointCount = 0;
 
 			// Compute circle in frame of edge
-			var cos:Number = p_xfB.c11;
-			var sin:Number = p_xfB.c12;
+			var cos:Number = p_xfB.cos;
+			var sin:Number = p_xfB.sin;
 
 			var cpX:Number = p_circleB.m_pX;
 			var cpY:Number = p_circleB.m_pY;
 			var rX:Number = (cos * cpX - sin * cpY) + p_xfB.x;
 			var rY:Number = (sin * cpX + cos * cpY) + p_xfB.y;
 
-			cos = p_xfA.c11;
-			sin = p_xfA.c12;
+			cos = p_xfA.cos;
+			sin = p_xfA.sin;
 
 			var px:Number = rX - p_xfA.x;
 			var py:Number = rY - p_xfA.y;
@@ -1094,8 +1094,8 @@ package Box2D.Collision
 				var vertex:b2SimplexVertex = vertices[simplex.m_count];
 
 				// A
-				var cos:Number = transformA.c11;
-				var sin:Number = transformA.c12;
+				var cos:Number = transformA.cos;
+				var sin:Number = transformA.sin;
 
 				var rX:Number =  cos * -p.x + sin * -p.y;
 				var rY:Number = -sin * -p.x + cos * -p.y;
