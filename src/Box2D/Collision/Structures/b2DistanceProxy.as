@@ -11,6 +11,7 @@ package Box2D.Collision.Structures
 	import Box2D.Collision.Shapes.b2PolygonShape;
 	import Box2D.Collision.Shapes.b2Shape;
 	import Box2D.Common.Math.b2Math;
+	import Box2D.Common.Math.b2SPoint;
 	import Box2D.Common.Math.b2Vec2;
 	import Box2D.Common.b2internal;
 	import Box2D.b2Assert;
@@ -173,17 +174,20 @@ package Box2D.Collision.Structures
 		/**
 		 * Get a vertex by index. Used by b2Distance.
 		 * @param p_index
-		 * @return return new instance of b2Vec2
+		 * @param p_outResult
 		 */
 		[Inline]
-		final public function GetVertex(p_index:int):b2Vec2
+		final public function GetVertex(p_index:int, p_outResult:b2SPoint = null):b2SPoint
 		{
 			CONFIG::debug
 			{
 				b2Assert(0 <= p_index && p_index < m_count, "incorrect index");
 			}
 
-			return b2Vec2.Get(b2Math.getX(m_vertices, p_index), b2Math.getY(m_vertices, p_index));
+			var result:b2SPoint = p_outResult ? p_outResult : b2SPoint.Get();
+			b2Math.getXY(m_vertices, p_index, result);
+
+			return result;
 		}
 
 		/**
