@@ -20,7 +20,11 @@ package Box2D.Dynamics
 	import Box2D.Dynamics.Filters.b2Filter;
 	import Box2D.Dynamics.Joints.b2Joint;
 	import Box2D.Dynamics.Joints.b2JointEdge;
+	import Box2D.Dynamics.b2Body;
+	import Box2D.Dynamics.b2Body;
 	import Box2D.b2Assert;
+
+	import flash.profiler.profile;
 
 	use namespace b2internal;
 
@@ -64,6 +68,8 @@ package Box2D.Dynamics
 		private var _worldRayCastWrapper:b2WorldRayCastWrapper;
 		private var _rayCastHelper:b2RayCastData;
 		private var _step:b2TimeStep;
+		private var _island:b2Island;
+		private var _stack:Vector.<b2Body>;
 
 		// TODO: add some debugging props from original
 
@@ -89,6 +95,8 @@ package Box2D.Dynamics
 			_worldRayCastWrapper = new b2WorldRayCastWrapper();
 			_rayCastHelper = new b2RayCastData();
 			_step = new b2TimeStep();
+			_island = new b2Island();
+			_stack = new <b2Body>[];
 		}
 
 		/**
@@ -570,11 +578,203 @@ package Box2D.Dynamics
 		}
 
 		/**
-		 * TODO:
 		 */
 		final private function Solve(p_step:b2TimeStep):void
 		{
-			b2Assert(false, "current method isn't implemented yet or abstract and can't be used!");
+			var b:b2Body;
+			var other:b2Body;
+
+			// Size the island for the worst case.
+			_island.Initializer(m_bodyCount, m_contactManager.m_contactCount, m_jointCount, m_contactManager.m_contactListener);
+
+			// Clear all the island flags.
+			for (b = m_bodyList; b; b = b.m_next)
+			{
+				b.m_flags &= ~b2Body.e_islandFlag;
+			}
+			for (var c:b2Contact = m_contactManager.m_contactList; c; c = c.m_next)
+			{
+				c.m_flags &= ~b2Contact.e_islandFlag;
+			}
+			for (var j:b2Joint = m_jointList; j; j = j.m_next)
+			{
+				j.m_islandFlag = false;
+			}
+			
+			// Build and simulate all awake islands.
+			var stackSize:int = m_bodyCount;
+
+			for (var seed:b2Body = m_bodyList; seed; seed = seed.m_next)
+			{
+				if ((seed.m_flags & b2Body.e_islandFlag) != 0)
+				{
+					continue;
+				}
+		
+				if (seed.IsAwake() == false || seed.IsActive() == false)
+				{
+					continue;
+				}
+		
+				// The seed can be dynamic or kinematic.
+				if (seed.GetType() == b2Body.STATIC)
+				{
+					continue;
+				}
+		
+				// Reset island and stack.
+				_island.Clear();
+				var stackCount:int = 0;
+				_stack[stackCount++] = seed;
+				seed.m_flags |= b2Body.e_islandFlag;
+				
+				// Perform a depth first search (DFS) on the constraint graph.
+
+
+				while (stackCount > 0)
+				{
+					// Grab the next body off the stack and add it to the island.
+					b = _stack[--stackCount];
+
+					CONFIG::debug
+					{
+						b2Assert(b.IsActive(), "body isn't active");
+					}
+
+					_island.AddBody(b);
+
+					// Make sure the body is awake.
+					b.SetAwake(true);
+
+					// To keep islands as small as possible, we don't
+					// propagate islands across static bodies.
+					if (b.GetType() == b2Body.STATIC)
+					{
+						continue;
+					}
+
+					// Search all contacts connected to this body.
+					var contact:b2Contact;
+
+					for (var ce:b2ContactEdge = b.m_contactList; ce; ce = ce.next)
+					{
+						contact = ce.contact;
+
+						// Has this contact already been added to an island?
+						if ((contact.m_flags & b2Contact.e_islandFlag) != 0)
+						{
+							continue;
+						}
+
+						// Is this contact solid and touching?
+						if (contact.IsEnabled() == false || contact.IsTouching() == false)
+						{
+							continue;
+						}
+
+						// Skip sensors.
+						var sensorA:Boolean = contact.m_fixtureA.m_isSensor;
+						var sensorB:Boolean = contact.m_fixtureB.m_isSensor;
+
+						if (sensorA || sensorB)
+						{
+							continue;
+						}
+
+						_island.AddContact(contact);
+						contact.m_flags |= b2Contact.e_islandFlag;
+
+						other = ce.other;
+
+						// Was the other body already added to this island?
+						if ((other.m_flags & b2Body.e_islandFlag) != 0)
+						{
+							continue;
+						}
+
+						CONFIG::debug
+						{
+							b2Assert(stackCount < stackSize, "!(stackCount < stackSize)");
+						}
+
+						_stack[stackCount++] = other;
+						other.m_flags |= b2Body.e_islandFlag;
+					}
+
+					// Search all joints connect to this body.
+					for (var je:b2JointEdge = b.m_jointList; je; je = je.next)
+					{
+						if (je.joint.m_islandFlag == true)
+						{
+							continue;
+						}
+
+						other = je.other;
+
+						// Don't simulate joints connected to inactive bodies.
+						if (other.IsActive() == false)
+						{
+							continue;
+						}
+
+						_island.AddJoint(je.joint);
+						je.joint.m_islandFlag = true;
+
+						if ((other.m_flags & b2Body.e_islandFlag) != 0)
+						{
+							continue;
+						}
+
+						CONFIG::debug
+						{
+							b2Assert(stackCount < stackSize, "!(stackCount < stackSize)");
+						}
+
+						_stack[stackCount++] = other;
+						other.m_flags |= b2Body.e_islandFlag;
+					}
+				}
+
+				_island.Solve(p_step, m_gravity.x, m_gravity.y, m_allowSleep);
+
+		        // Post solve cleanup.
+				var bodyCount:int = _island.m_bodyCount;
+				var bodyList:Vector.<b2Body> = _island.m_bodies;
+
+				for (var i:int = 0; i < bodyCount; ++i)
+				{
+					// Allow static bodies to participate in other islands.
+					b = bodyList[i];
+
+					if (b.GetType() == b2Body.STATIC)
+					{
+						b.m_flags &= ~b2Body.e_islandFlag;
+					}
+				}
+			}
+
+			_stack.length = 0;
+
+			// Synchronize fixtures, check for out of range bodies.
+			for (b = m_bodyList; b; b = b.GetNext())
+			{
+				// If a body was not in an island then it did not move.
+				if ((b.m_flags & b2Body.e_islandFlag) == 0)
+				{
+					continue;
+				}
+
+				if (b.GetType() == b2Body.STATIC)
+				{
+					continue;
+				}
+
+				// Update fixtures (for broad-phase).
+				b.SynchronizeFixtures();
+			}
+
+			// Look for new contacts.
+			m_contactManager.FindNewContacts();
 		}
 
 		/**
@@ -817,6 +1017,7 @@ import Box2D.Collision.Structures.b2RayCastData;
 import Box2D.Collision.b2BroadPhase;
 import Box2D.Dynamics.Callbacks.b2QueryCallback;
 import Box2D.Dynamics.Callbacks.b2RayCastCallback;
+import Box2D.Dynamics.b2Body;
 import Box2D.Dynamics.b2Fixture;
 import Box2D.Dynamics.b2FixtureProxy;
 
@@ -861,4 +1062,59 @@ internal class b2WorldRayCastWrapper
 
 	public var broadPhase:b2BroadPhase;
 	public var callback:b2RayCastCallback;
+}
+
+/**
+ *
+ */
+internal class BodyStack
+{
+	private var _stack:Vector.<b2Body>;
+	private var _count:int = 0;
+
+	/**
+	 */
+	public function BodyStack()
+	{
+		_stack = new <b2Body>[];
+	}
+
+	/**
+	 */
+	[Inline]
+	final public function Push(p_element:b2Body):void
+	{
+		_stack[_count++] = p_element;
+	}
+
+	/**
+	 */
+	[Inline]
+	final public function Pop():b2Body
+	{
+		return _stack[--_count];
+	}
+
+	/**
+	 */
+	[Inline]
+	final public function GetCount():int
+	{
+		return _count;
+	}
+
+	/**
+	 * Clear stack.
+	 */
+	public function Free():void
+	{
+		var count:int = _stack.length;
+		for (var i:int = 0; i < count; i++)
+		{
+			_stack[i] = null;
+		}
+
+		_stack.length = 0;
+		_count = 0;
+	}
 }
