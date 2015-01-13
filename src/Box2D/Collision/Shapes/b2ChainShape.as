@@ -8,6 +8,7 @@ package Box2D.Collision.Shapes
 	import Box2D.Common.b2Disposable;
 	import Box2D.Common.b2Settings;
 	import Box2D.Common.b2internal;
+	import Box2D.b2Assert;
 
 	use namespace b2internal;
 
@@ -19,7 +20,7 @@ package Box2D.Collision.Shapes
 	 * Connectivity information is used to create smooth collisions.
 	 * WARNING: The chain will not collide properly if there are self-intersections.
 	 *
-	 * TODO:
+	 * TODO: Fully implement class.
 	 */
 	public class b2ChainShape extends b2Shape
 	{
@@ -63,11 +64,11 @@ package Box2D.Collision.Shapes
 
 		/**
 		 * Get a child edge.
-		 * TODO:
+		 * TODO: GetChildEdge
 		 */
 		public function GetChildEdge(p_edge:b2EdgeShape, p_index:int):void
 		{
-
+			b2Assert(false, "current method isn't implemented yet or abstract and can't be used!");
 		}
 
 		/**\

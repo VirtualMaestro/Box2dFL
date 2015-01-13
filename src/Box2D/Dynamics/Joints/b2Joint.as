@@ -14,7 +14,7 @@ package Box2D.Dynamics.Joints
 	/**
 	 * The base joint class. Joints are used to constraint two bodies together in
 	 * various fashions. Some joints also feature limits and motors.
-	 * TODO:
+	 * TODO: Fully implement class
 	 */
 	public class b2Joint
 	{
@@ -59,7 +59,7 @@ package Box2D.Dynamics.Joints
 		 *
 		 * @param p_def
 		 * @return
-		 * TODO:
+		 * TODO: Create
 		 */
 		static public function Create(p_def:b2JointDef):b2Joint
 		{
@@ -70,24 +70,33 @@ package Box2D.Dynamics.Joints
 		/**
 		 *
 		 * @param p_joint
-		 * TODO:
+		 * TODO: Destroy
 		 */
 		static public function Destroy(p_joint:b2Joint):void
 		{
 			b2Assert(false, "current method isn't implemented yet or abstract and can't be used!");
 		}
 
+		/**
+		 * TODO: InitVelocityConstraints
+		 * @param data
+		 */
 		b2internal virtual function InitVelocityConstraints(data:b2SolverData):void
 		{
 			b2Assert(false, "current method isn't implemented yet or abstract and can't be used!");
 		}
 
+		/**
+		 * TODO: SolveVelocityConstraints
+		 * @param data
+		 */
 		b2internal virtual function SolveVelocityConstraints(data:b2SolverData):void
 		{
 			b2Assert(false, "current method isn't implemented yet or abstract and can't be used!");
 		}
 
 		/**
+		 * TODO: Impl SolvePositionConstraints
 		 * This returns true if the position errors are within tolerance.
 		 */
 		b2internal virtual function SolvePositionConstraints(data:b2SolverData):Boolean
