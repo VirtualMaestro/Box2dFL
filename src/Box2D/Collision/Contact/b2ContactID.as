@@ -24,22 +24,22 @@ package Box2D.Collision.Contact
 
 		/**
 		 * Vertex contact feature type.
- 		 */
+		 */
 		static public const VERTEX_CF_TYPE:int = 0;
 
 		/**
 		 * Face contact feature type.
- 		 */
+		 */
 		static public const FACE_CF_TYPE:int = 1;
 
 		/**
 		 * Feature index on shapeA
- 		 */
+		 */
 		public var indexA:uint;
 
 		/**
 		 * Feature index on shapeB
- 		 */
+		 */
 		public var indexB:uint;
 
 		/**

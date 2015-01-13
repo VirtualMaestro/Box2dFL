@@ -5,8 +5,8 @@
  */
 package Box2D.Dynamics.Filters
 {
-	import Box2D.Common.b2Disposable;
 	import Box2D.Common.IDisposable;
+	import Box2D.Common.b2Disposable;
 	import Box2D.Common.b2internal;
 	import Box2D.Dynamics.b2Fixture;
 
@@ -22,14 +22,14 @@ package Box2D.Dynamics.Filters
 		/**
 		 * The collision category bits. Normally you would just set one bit.
 		 * Value by default 0x00000001
- 		 */
+		 */
 		public var category:uint;
 
 		/**
 		 * The collision mask bits.
 		 * This states the categories that this shape would accept for collision.
 		 * Value by default 0xffffffff
- 		 */
+		 */
 		public var mask:uint;
 
 		/**
@@ -38,7 +38,7 @@ package Box2D.Dynamics.Filters
 		 * Zero means no collision group.
 		 * Non-zero group filtering always wins against the mask bits.
 		 * Value by default 0x00000000
- 		 */
+		 */
 		public var groupIndex:uint;
 
 		/**

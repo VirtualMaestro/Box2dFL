@@ -5,10 +5,10 @@
  */
 package Box2D.Collision.Shapes
 {
-	import Box2D.Collision.b2AABB;
 	import Box2D.Collision.Structures.b2RayCastData;
-	import Box2D.Common.b2Disposable;
+	import Box2D.Collision.b2AABB;
 	import Box2D.Common.Math.b2Mat22;
+	import Box2D.Common.b2Disposable;
 	import Box2D.Common.b2internal;
 	import Box2D.Dynamics.b2MassData;
 	import Box2D.b2Assert;
@@ -90,7 +90,7 @@ package Box2D.Collision.Shapes
 		 */
 		public function RayCast(p_rayCastData:b2RayCastData, p_transform:b2Mat22, p_childIndex:int):Boolean
 		{
-	        // override in children
+			// override in children
 			return false;
 		}
 
@@ -101,7 +101,7 @@ package Box2D.Collision.Shapes
 		 */
 		public function ComputeAABB(p_aabb:b2AABB, p_transform:b2Mat22, p_childIndex:int):void
 		{
-			 // override in children
+			// override in children
 			b2Assert(false, "this method is not supported for current class");
 		}
 

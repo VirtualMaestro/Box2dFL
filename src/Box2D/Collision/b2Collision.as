@@ -41,10 +41,10 @@ package Box2D.Collision
 		 * Find incident edge
 		 * Clip
 		 * The normal points from 1 to 2
- 		 */
+		 */
 		static public function b2CollidePolygons(p_manifold:b2Manifold,
-												  p_polyA:b2PolygonShape, p_xfA:b2Mat22,
-												  p_polyB:b2PolygonShape, p_xfB:b2Mat22):void
+		                                         p_polyA:b2PolygonShape, p_xfA:b2Mat22,
+		                                         p_polyB:b2PolygonShape, p_xfB:b2Mat22):void
 		{
 			p_manifold.pointCount = 0;
 
@@ -111,11 +111,11 @@ package Box2D.Collision
 			var localTangentX:Number = v12X - v11X;
 			var localTangentY:Number = v12Y - v11Y;
 
-			var invLength:Number = 1.0 / Math.sqrt(localTangentX*localTangentX + localTangentY*localTangentY);
+			var invLength:Number = 1.0 / Math.sqrt(localTangentX * localTangentX + localTangentY * localTangentY);
 			localTangentX *= invLength;
 			localTangentY *= invLength;
 
-			var localNormalX:Number =  localTangentY;
+			var localNormalX:Number = localTangentY;
 			var localNormalY:Number = -localTangentX;
 
 			var planePointX:Number = 0.5 * (v11X + v12X);
@@ -127,7 +127,7 @@ package Box2D.Collision
 			var tangentX:Number = cos * localTangentX - sin * localTangentY;
 			var tangentY:Number = sin * localTangentX + cos * localTangentY;
 
-			var normalX:Number =  tangentY;
+			var normalX:Number = tangentY;
 			var normalY:Number = -tangentX;
 
 			v11X = (cos * v11X - sin * v11Y) + xf1.x;
@@ -141,7 +141,7 @@ package Box2D.Collision
 
 			//Side offsets, extended by polytope skin thickness
 			var sideOffset1:Number = -(tangentX * v11X + tangentY * v11Y) + totalRadius;
-			var sideOffset2:Number =  (tangentX * v12X + tangentY * v12Y) + totalRadius;
+			var sideOffset2:Number = (tangentX * v12X + tangentY * v12Y) + totalRadius;
 
 			// Clip incident edge against extruded edge1 side edges
 			var clipPoints1:Vector.<b2ClipVertex> = new <b2ClipVertex>[b2ClipVertex.Get(), b2ClipVertex.Get()];
@@ -201,7 +201,7 @@ package Box2D.Collision
 					px = vX - tx;
 					py = vY - ty;
 
-					cp.localPointX =  cos * px + sin * py;
+					cp.localPointX = cos * px + sin * py;
 					cp.localPointY = -sin * px + cos * py;
 
 					cp.id.Set(clipVertex.id);
@@ -234,8 +234,8 @@ package Box2D.Collision
 		 */
 		[Inline]
 		static private function b2FindIncidentEdge(p_c:Vector.<b2ClipVertex> /*2 elements*/,
-													 p_poly1:b2PolygonShape, p_xf1:b2Mat22, p_edge1:int,
-													 p_poly2:b2PolygonShape, p_xf2:b2Mat22):void
+		                                           p_poly1:b2PolygonShape, p_xf1:b2Mat22, p_edge1:int,
+		                                           p_poly2:b2PolygonShape, p_xf2:b2Mat22):void
 		{
 			var normals1:Vector.<Number> = p_poly1.m_normals;
 			var normals2:Vector.<Number> = p_poly2.m_normals;
@@ -260,7 +260,7 @@ package Box2D.Collision
 			cos = p_xf2.cos;
 			sin = p_xf2.sin;
 
-			var normal1X:Number =  cos * rX + sin * rY;
+			var normal1X:Number = cos * rX + sin * rY;
 			var normal1Y:Number = -sin * rX + cos * rY;
 
 			// Find the incident edge on poly2
@@ -284,7 +284,7 @@ package Box2D.Collision
 
 			// Build the clip vertices for the incident edge.
 			var i1:int = index;
-			var i2:int = (i1 + 1) < count2 ? i1+1 : 0;
+			var i2:int = (i1 + 1) < count2 ? i1 + 1 : 0;
 			var clipVertex:b2ClipVertex = p_c[0];
 			var id:b2ContactID = clipVertex.id;
 
@@ -326,7 +326,7 @@ package Box2D.Collision
 		 * Use as holder for returning results of b2FindMaxSeparation method.
 		 * Prevent creation and destroying new instances.
 		 */
-		static private var _maxSeparationResult:Object = {bestIndex:0, maxSeparation:0};
+		static private var _maxSeparationResult:Object = {bestIndex: 0, maxSeparation: 0};
 
 		/**
 		 * Find the max separation between poly1 and poly2 using edge normals from poly1.
@@ -334,84 +334,84 @@ package Box2D.Collision
 		 * Impossible to use returning object in own needs, should to copy values from it.
 		 */
 		[Inline]
-        static private function b2FindMaxSeparation(p_poly1:b2PolygonShape, p_xf1:b2Mat22,
-                                                   p_poly2:b2PolygonShape, p_xf2:b2Mat22):Object
-        {
-	        var count1:int = p_poly1.m_count;
-	        var count2:int = p_poly2.m_count;
-	        var n1s:Vector.<Number> = p_poly1.m_normals;
-	        var v1s:Vector.<Number> = p_poly1.m_vertices;
-	        var v2s:Vector.<Number> = p_poly2.m_vertices;
+		static private function b2FindMaxSeparation(p_poly1:b2PolygonShape, p_xf1:b2Mat22,
+		                                            p_poly2:b2PolygonShape, p_xf2:b2Mat22):Object
+		{
+			var count1:int = p_poly1.m_count;
+			var count2:int = p_poly2.m_count;
+			var n1s:Vector.<Number> = p_poly1.m_normals;
+			var v1s:Vector.<Number> = p_poly1.m_vertices;
+			var v2s:Vector.<Number> = p_poly2.m_vertices;
 
-	        // -- b2Transform xf = b2MulT(xf2, xf1); --//
-	        var cos1:Number = p_xf2.cos;
-	        var sin1:Number = p_xf2.sin;
-	        var cos2:Number = p_xf1.cos;
-	        var sin2:Number = p_xf1.sin;
+			// -- b2Transform xf = b2MulT(xf2, xf1); --//
+			var cos1:Number = p_xf2.cos;
+			var sin1:Number = p_xf2.sin;
+			var cos2:Number = p_xf1.cos;
+			var sin2:Number = p_xf1.sin;
 
-	        var mSin:Number = (cos1 * sin2 - sin1 * cos2);
-	        var mCos:Number = (cos1 * cos2 + sin1 * sin2);
+			var mSin:Number = (cos1 * sin2 - sin1 * cos2);
+			var mCos:Number = (cos1 * cos2 + sin1 * sin2);
 
-	        var pX:Number = p_xf1.x - p_xf2.x;
-	        var pY:Number = p_xf1.y - p_xf2.y;
+			var pX:Number = p_xf1.x - p_xf2.x;
+			var pY:Number = p_xf1.y - p_xf2.y;
 
-	        var mTX:Number =  cos1 * pX + sin1 * pY;
-	        var mTY:Number = -sin1 * pX + cos1 * pY;
-	        //--------------------------------------//
+			var mTX:Number = cos1 * pX + sin1 * pY;
+			var mTY:Number = -sin1 * pX + cos1 * pY;
+			//--------------------------------------//
 
-	        var bestIndex:int = 0;
-	        var maxSeparation:Number = -Number.MAX_VALUE;
+			var bestIndex:int = 0;
+			var maxSeparation:Number = -Number.MAX_VALUE;
 
-	        var nX:Number;
-	        var nY:Number;
-	        var vX:Number;
-	        var vY:Number;
+			var nX:Number;
+			var nY:Number;
+			var vX:Number;
+			var vY:Number;
 
-	        for (var i:int = 0; i < count1; i++)
-	        {
-		        // Get poly1 normal in frame2.
-		        nX = b2Math.getX(n1s, i);
-		        nY = b2Math.getY(n1s, i);
-		        vX = b2Math.getX(v1s, i);
-		        vY = b2Math.getY(v1s, i);
+			for (var i:int = 0; i < count1; i++)
+			{
+				// Get poly1 normal in frame2.
+				nX = b2Math.getX(n1s, i);
+				nY = b2Math.getY(n1s, i);
+				vX = b2Math.getX(v1s, i);
+				vY = b2Math.getY(v1s, i);
 
-		        var n1X:Number = mCos * nX - mSin * nY;
-		        var n1Y:Number = mSin * nX + mCos * nY;
+				var n1X:Number = mCos * nX - mSin * nY;
+				var n1Y:Number = mSin * nX + mCos * nY;
 
-		        var v1X:Number = (mCos * vX - mSin * vY) + mTX;
-		        var v1Y:Number = (mSin * vX + mCos * vY) + mTY;
+				var v1X:Number = (mCos * vX - mSin * vY) + mTX;
+				var v1Y:Number = (mSin * vX + mCos * vY) + mTY;
 
-		        // Find deepest point for normal i.
-		        var si:Number = Number.MAX_VALUE;
-		        var sij:Number;
-		        var v2X:Number;
-		        var v2Y:Number;
+				// Find deepest point for normal i.
+				var si:Number = Number.MAX_VALUE;
+				var sij:Number;
+				var v2X:Number;
+				var v2Y:Number;
 
-		        for (var j:int = 0; j < count2; j++)
-		        {
-			        v2X = b2Math.getX(v2s, j) - v1X;
-			        v2Y = b2Math.getY(v2s, j) - v1Y;
+				for (var j:int = 0; j < count2; j++)
+				{
+					v2X = b2Math.getX(v2s, j) - v1X;
+					v2Y = b2Math.getY(v2s, j) - v1Y;
 
-			        sij = n1X * v2X + n1Y * v2Y;
+					sij = n1X * v2X + n1Y * v2Y;
 
-			        if (sij < si)
-			        {
-				        si = sij;
-			        }
-		        }
+					if (sij < si)
+					{
+						si = sij;
+					}
+				}
 
-		        if (si > maxSeparation)
-		        {
-			        maxSeparation = si;
-			        bestIndex = i;
-		        }
-	        }
+				if (si > maxSeparation)
+				{
+					maxSeparation = si;
+					bestIndex = i;
+				}
+			}
 
-	        _maxSeparationResult.bestIndex = bestIndex;
-	        _maxSeparationResult.maxSeparation = maxSeparation;
+			_maxSeparationResult.bestIndex = bestIndex;
+			_maxSeparationResult.maxSeparation = maxSeparation;
 
-	        return _maxSeparationResult;
-        }
+			return _maxSeparationResult;
+		}
 
 		/**
 		 *
@@ -423,7 +423,7 @@ package Box2D.Collision
 		 */
 		static public function b2CollideCircles(p_manifold:b2Manifold,
 		                                        p_circleA:b2CircleShape, p_xfA:b2Mat22,
-	  	                                        p_circleB:b2CircleShape, p_xfB:b2Mat22):void
+		                                        p_circleB:b2CircleShape, p_xfB:b2Mat22):void
 		{
 			p_manifold.pointCount = 0;
 
@@ -449,7 +449,7 @@ package Box2D.Collision
 			var distSqr:Number = dX * dX + dY * dY;
 			var radius:Number = p_circleA.m_radius + p_circleB.m_radius;
 
-			if (distSqr > radius*radius)
+			if (distSqr > radius * radius)
 			{
 				return;
 			}
@@ -476,8 +476,8 @@ package Box2D.Collision
 		 * @param p_xfB
 		 */
 		static public function b2CollidePolygonAndCircle(p_manifold:b2Manifold,
-				                                         p_polygonA:b2PolygonShape, p_xfA:b2Mat22,
-			  	                                         p_circleB:b2CircleShape, p_xfB:b2Mat22):void
+		                                                 p_polygonA:b2PolygonShape, p_xfA:b2Mat22,
+		                                                 p_circleB:b2CircleShape, p_xfB:b2Mat22):void
 		{
 			p_manifold.pointCount = 0;
 
@@ -496,7 +496,7 @@ package Box2D.Collision
 			var px:Number = cX - p_xfA.x;
 			var py:Number = cY - p_xfA.y;
 
-			var cLocalX:Number =  cos * px + sin * py;
+			var cLocalX:Number = cos * px + sin * py;
 			var cLocalY:Number = -sin * px + cos * py;
 
 			// Find the min separating edge.
@@ -541,7 +541,7 @@ package Box2D.Collision
 
 			// Vertices that subtend the incident face.
 			var vertIndex1:int = normalIndex;
-			var vertIndex2:int = (vertIndex1 + 1) < vertexCount ? vertIndex1+1 : 0;
+			var vertIndex2:int = (vertIndex1 + 1) < vertexCount ? vertIndex1 + 1 : 0;
 			var v1X:Number = b2Math.getX(vertices, vertIndex1);
 			var v1Y:Number = b2Math.getY(vertices, vertIndex1);
 			var v2X:Number = b2Math.getX(vertices, vertIndex2);
@@ -587,7 +587,7 @@ package Box2D.Collision
 
 			if (u1 <= 0)
 			{
-				if (b2Math.DistanceSquared(cLocalX, cLocalY, v1X, v1Y) > radius*radius)
+				if (b2Math.DistanceSquared(cLocalX, cLocalY, v1X, v1Y) > radius * radius)
 				{
 					return;
 				}
@@ -596,9 +596,9 @@ package Box2D.Collision
 				p_manifold.type = b2Manifold.FACE_A;
 				lnX = cLocalX - v1X;
 				lnY = cLocalY - v1Y;
-				invLength = 1.0 / Math.sqrt(lnX*lnX + lnY*lnY);
-				p_manifold.localNormalX = lnX*invLength;
-				p_manifold.localNormalY = lnY*invLength;
+				invLength = 1.0 / Math.sqrt(lnX * lnX + lnY * lnY);
+				p_manifold.localNormalX = lnX * invLength;
+				p_manifold.localNormalY = lnY * invLength;
 				p_manifold.localPointX = v1X;
 				p_manifold.localPointY = v1Y;
 				mp = p_manifold.points[0];
@@ -608,7 +608,7 @@ package Box2D.Collision
 			}
 			else if (u2 <= 0)
 			{
-				if (b2Math.DistanceSquared(cLocalX, cLocalY, v2X, v2Y) > radius*radius)
+				if (b2Math.DistanceSquared(cLocalX, cLocalY, v2X, v2Y) > radius * radius)
 				{
 					return;
 				}
@@ -617,9 +617,9 @@ package Box2D.Collision
 				p_manifold.type = b2Manifold.FACE_A;
 				lnX = cLocalX - v2X;
 				lnY = cLocalY - v2Y;
-				invLength = 1.0 / Math.sqrt(lnX*lnX + lnY*lnY);
-				p_manifold.localNormalX = lnX*invLength;
-				p_manifold.localNormalY = lnY*invLength;
+				invLength = 1.0 / Math.sqrt(lnX * lnX + lnY * lnY);
+				p_manifold.localNormalX = lnX * invLength;
+				p_manifold.localNormalY = lnY * invLength;
 				p_manifold.localPointX = v2X;
 				p_manifold.localPointY = v2Y;
 				mp = p_manifold.points[0];
@@ -658,8 +658,8 @@ package Box2D.Collision
 		 * This accounts for edge connectivity.
 		 */
 		static public function b2CollideEdgeAndCircle(p_manifold:b2Manifold,
-														p_edgeA:b2EdgeShape, p_xfA:b2Mat22,
-														p_circleB:b2CircleShape, p_xfB:b2Mat22):void
+		                                              p_edgeA:b2EdgeShape, p_xfA:b2Mat22,
+		                                              p_circleB:b2CircleShape, p_xfB:b2Mat22):void
 		{
 			p_manifold.pointCount = 0;
 
@@ -678,7 +678,7 @@ package Box2D.Collision
 			var px:Number = rX - p_xfA.x;
 			var py:Number = rY - p_xfA.y;
 
-			var QX:Number =  cos * px + sin * py;
+			var QX:Number = cos * px + sin * py;
 			var QY:Number = -sin * px + cos * py;
 
 			var AX:Number = p_edgeA.m_vertex1X;
@@ -719,7 +719,7 @@ package Box2D.Collision
 				dY = QY - AY;
 				dd = dX * dX + dY * dY;
 
-				if (dd > radius*radius)
+				if (dd > radius * radius)
 				{
 					return;
 				}
@@ -755,9 +755,9 @@ package Box2D.Collision
 				cID = mp.id;
 				cID.key = 0;
 				cID.indexA = indexA;
-				cID.typeA  = typeA;
+				cID.typeA = typeA;
 				cID.indexB = indexB;
-				cID.typeB  = typeB;
+				cID.typeB = typeB;
 				mp.localPointX = p_circleB.m_pX;
 				mp.localPointY = p_circleB.m_pY;
 
@@ -771,7 +771,7 @@ package Box2D.Collision
 				dY = QY - BY;
 				dd = dX * dX + dY * dY;
 
-				if (dd > radius*radius)
+				if (dd > radius * radius)
 				{
 					return;
 				}
@@ -808,9 +808,9 @@ package Box2D.Collision
 				cID = mp.id;
 				cID.key = 0;
 				cID.indexA = indexA;
-				cID.typeA  = typeA;
+				cID.typeA = typeA;
 				cID.indexB = indexB;
-				cID.typeB  = typeB;
+				cID.typeB = typeB;
 				mp.localPointX = p_circleB.m_pX;
 				mp.localPointY = p_circleB.m_pY;
 
@@ -825,9 +825,9 @@ package Box2D.Collision
 				b2Assert(den > 0, "den > 0")
 			}
 
-			var uavbX:Number = u*AX + v*BX;
-			var uavbY:Number = u*AY + v*BY;
-			var inv_den:Number = 1.0/den;
+			var uavbX:Number = u * AX + v * BX;
+			var uavbY:Number = u * AY + v * BY;
+			var inv_den:Number = 1.0 / den;
 			var PX:Number = uavbX * inv_den;
 			var PY:Number = uavbY * inv_den;
 
@@ -835,7 +835,7 @@ package Box2D.Collision
 			dY = QY - PY;
 			dd = dX * dX + dY * dY;
 
-			if (dd > radius*radius)
+			if (dd > radius * radius)
 			{
 				return;
 			}
@@ -851,7 +851,7 @@ package Box2D.Collision
 				nY = -nY;
 			}
 
-			var invLength:Number = 1.0 / Math.sqrt(nX*nX + nY*nY);
+			var invLength:Number = 1.0 / Math.sqrt(nX * nX + nY * nY);
 			nX *= invLength;
 			nY *= invLength;
 
@@ -867,9 +867,9 @@ package Box2D.Collision
 			cID = mp.id;
 			cID.key = 0;
 			cID.indexA = indexA;
-			cID.typeA  = typeA;
+			cID.typeA = typeA;
 			cID.indexB = indexB;
-			cID.typeB  = typeB;
+			cID.typeB = typeB;
 			mp.localPointX = p_circleB.m_pX;
 			mp.localPointY = p_circleB.m_pY;
 		}
@@ -887,8 +887,8 @@ package Box2D.Collision
 		 */
 		[Inline]
 		static public function b2CollideEdgeAndPolygon(p_manifold:b2Manifold,
-														 p_edgeA:b2EdgeShape, p_xfA:b2Mat22,
-														 p_polygonB:b2PolygonShape, p_xfB:b2Mat22):void
+		                                               p_edgeA:b2EdgeShape, p_xfA:b2Mat22,
+		                                               p_polygonB:b2PolygonShape, p_xfB:b2Mat22):void
 		{
 
 			collider.Collide(p_manifold, p_edgeA, p_xfA, p_polygonB, p_xfB);
@@ -960,7 +960,7 @@ package Box2D.Collision
 		[Inline]
 		static public function b2TestOverlap(p_shapeA:b2Shape, p_indexA:int,
 		                                     p_shapeB:b2Shape, p_indexB:int,
-											 p_xfA:b2Mat22, p_xfB:b2Mat22):Boolean
+		                                     p_xfA:b2Mat22, p_xfB:b2Mat22):Boolean
 		{
 			var distanceData:b2DistanceData = new b2DistanceData();
 			distanceData.proxyA.Set(p_shapeA, p_indexA);
@@ -972,7 +972,7 @@ package Box2D.Collision
 			var cache:b2SimplexCache = new b2SimplexCache();
 			b2Distance(distanceData, cache);
 
-			return distanceData.distance < 10.0*b2Math.EPSILON
+			return distanceData.distance < 10.0 * b2Math.EPSILON
 		}
 
 		/**
@@ -1002,10 +1002,10 @@ package Box2D.Collision
 		}
 
 		/**
-		* Compute the closest points between two shapes. Supports any combination of:
-		* b2CircleShape, b2PolygonShape, b2EdgeShape. The simplex cache is input/output.
-		* On the first call set b2SimplexCache.count to zero.
-		*/
+		 * Compute the closest points between two shapes. Supports any combination of:
+		 * b2CircleShape, b2PolygonShape, b2EdgeShape. The simplex cache is input/output.
+		 * On the first call set b2SimplexCache.count to zero.
+		 */
 		static public function b2Distance(p_data:b2DistanceData, p_cache:b2SimplexCache):void
 		{
 			var proxyA:b2DistanceProxy = p_data.proxyA;
@@ -1036,7 +1036,7 @@ package Box2D.Collision
 			var tSimVert:b2SimplexVertex;
 			var p:b2Vec2 = b2Vec2.Get();
 
-			while(iter < k_maxIters)
+			while (iter < k_maxIters)
 			{
 				// Copy simplex so we can identify duplicates.
 				saveCount = simplex.m_count;
@@ -1070,7 +1070,7 @@ package Box2D.Collision
 					}
 				}
 
-				 // Compute closest point.
+				// Compute closest point.
 				simplex.GetClosestPoint(p);
 				distanceSqr2 = p.LengthSquared;
 				distanceSqr1 = distanceSqr2;
@@ -1097,7 +1097,7 @@ package Box2D.Collision
 				var cos:Number = transformA.cos;
 				var sin:Number = transformA.sin;
 
-				var rX:Number =  cos * -p.x + sin * -p.y;
+				var rX:Number = cos * -p.x + sin * -p.y;
 				var rY:Number = -sin * -p.x + cos * -p.y;
 
 				vertex.indexA = proxyA.GetSupport(rX, rY);
@@ -1112,7 +1112,7 @@ package Box2D.Collision
 				cos = transformB.c11;
 				sin = transformB.c12;
 
-				rX =  cos * p.x + sin * p.y;
+				rX = cos * p.x + sin * p.y;
 				rY = -sin * p.x + cos * p.y;
 
 				vertex.indexB = proxyB.GetSupport(rX, rY);
@@ -1169,7 +1169,7 @@ package Box2D.Collision
 			rX = pointAX - pointBX;
 			rY = pointAY - pointBY;
 
-			var distance:Number = Math.sqrt(rX*rX + rY*rY);
+			var distance:Number = Math.sqrt(rX * rX + rY * rY);
 			p_data.iterations = iter;
 
 			// Cache the simplex.
@@ -1181,24 +1181,24 @@ package Box2D.Collision
 				var rA:Number = proxyA.m_radius;
 				var rB:Number = proxyB.m_radius;
 
-				if (distance > rA+rB && distance > b2Math.EPSILON)
+				if (distance > rA + rB && distance > b2Math.EPSILON)
 				{
 					// Shapes are still no overlapped.
 					// Move the witness points to the outer surface.
-					distance -= rA+rB;
+					distance -= rA + rB;
 
 					var normalX:Number = pointBX - pointAX;
 					var normalY:Number = pointBY - pointAY;
 
-					var invLength:Number = 1.0 / Math.sqrt(normalX*normalX + normalY*normalY);
+					var invLength:Number = 1.0 / Math.sqrt(normalX * normalX + normalY * normalY);
 					normalX *= invLength;
 					normalY *= invLength;
 
-					pointAX += rA*normalX;
-					pointAY += rA*normalY;
+					pointAX += rA * normalX;
+					pointAY += rA * normalY;
 
-					pointBX -= rB*normalX;
-					pointBY -= rB*normalY;
+					pointBX -= rB * normalX;
+					pointBY -= rB * normalY;
 				}
 				else
 				{

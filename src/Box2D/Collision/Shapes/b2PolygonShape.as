@@ -5,8 +5,8 @@
  */
 package Box2D.Collision.Shapes
 {
-	import Box2D.Collision.b2AABB;
 	import Box2D.Collision.Structures.b2RayCastData;
+	import Box2D.Collision.b2AABB;
 	import Box2D.Common.IDisposable;
 	import Box2D.Common.Math.b2Mat22;
 	import Box2D.Common.Math.b2Math;
@@ -17,11 +17,11 @@ package Box2D.Collision.Shapes
 	import Box2D.Common.b2internal;
 	import Box2D.Dynamics.b2MassData;
 
-
 	CONFIG::debug
 	{
-		import flash.utils.getQualifiedClassName;
 		import Box2D.b2Assert;
+
+		import flash.utils.getQualifiedClassName;
 	}
 
 	use namespace b2internal;
@@ -78,7 +78,8 @@ package Box2D.Collision.Shapes
 		{
 			CONFIG::debug
 			{
-				b2Assert((p_shape is b2PolygonShape), "given parameter has to be b2PolygonShape class. Current instance has type: " + getQualifiedClassName(p_shape));
+				b2Assert((p_shape is b2PolygonShape),
+				         "given parameter has to be b2PolygonShape class. Current instance has type: " + getQualifiedClassName(p_shape));
 			}
 
 			var polygonShape:b2PolygonShape = p_shape as b2PolygonShape;
@@ -102,12 +103,13 @@ package Box2D.Collision.Shapes
 		 * @warning the points may be re-ordered, even if they form a convex polygon
 		 * @warning collinear points are handled but not removed.
 		 * Collinear points may lead to poor stacking behavior.
-		*/
+		 */
 		public function Set(p_vertices:Vector.<Number>, p_count:int):void
 		{
 			CONFIG::debug
 			{
-				b2Assert(p_count <= b2Settings.maxPolygonVertices, "too many vertices of polygon ("+p_count+"). Acceptable count is " + b2Settings.maxPolygonVertices);
+				b2Assert(p_count <= b2Settings.maxPolygonVertices,
+				         "too many vertices of polygon (" + p_count + "). Acceptable count is " + b2Settings.maxPolygonVertices);
 				b2Assert(p_count > 2, "Polygon is degenerate");
 			}
 
@@ -131,7 +133,7 @@ package Box2D.Collision.Shapes
 				{
 					if (b2Math.DistanceSquared(vX, vY, b2Math.getX(ps, j), b2Math.getY(ps, j)) < (b2Settings.linearSlop * 0.5))
 					{
-                        unique = false;
+						unique = false;
 						break;
 					}
 				}
@@ -173,7 +175,7 @@ package Box2D.Collision.Shapes
 			var ih:int = i0;
 			var ie:int;
 
-			for(;;)
+			for (; ;)
 			{
 				hull[m] = ih;
 				ie = 0;
@@ -205,7 +207,7 @@ package Box2D.Collision.Shapes
 					var c:Number = rX * vY - rY * vX;
 
 					// Collinearity check
-					if (c < 0.0 || (c == 0.0 && (vX*vX + vY*vY) > (rX*rX + rY*rY)))
+					if (c < 0.0 || (c == 0.0 && (vX * vX + vY * vY) > (rX * rX + rY * rY)))
 					{
 						ie = j;
 					}
@@ -222,7 +224,7 @@ package Box2D.Collision.Shapes
 
 			CONFIG::debug
 			{
-				b2Assert(m>2, "Polygon is degenerate");
+				b2Assert(m > 2, "Polygon is degenerate");
 			}
 
 			m_count = m;
@@ -238,18 +240,18 @@ package Box2D.Collision.Shapes
 			for (i = 0; i < m; i++)
 			{
 				var i1:int = i;
-				var i2:int = (i+1) < m ? i+1 : 0;
+				var i2:int = (i + 1) < m ? i + 1 : 0;
 				var edgeX:Number = b2Math.getX(m_vertices, i2) - b2Math.getX(m_vertices, i1);
 				var edgeY:Number = b2Math.getY(m_vertices, i2) - b2Math.getY(m_vertices, i1);
 
 				CONFIG::debug
 				{
-					b2Assert((edgeX*edgeX + edgeY*edgeY) > b2Math.EPSILON_SQUARED, "edge has zero length");
+					b2Assert((edgeX * edgeX + edgeY * edgeY) > b2Math.EPSILON_SQUARED, "edge has zero length");
 				}
 
 				var nX:Number = edgeY;
 				var nY:Number = -edgeX;
-				var invLength:Number = 1.0 / Math.sqrt(nX*nX + nY*nY);
+				var invLength:Number = 1.0 / Math.sqrt(nX * nX + nY * nY);
 				nX *= invLength;
 				nY *= invLength;
 
@@ -302,7 +304,7 @@ package Box2D.Collision.Shapes
 		 * @param p_centerX the center by X of the box in local coordinates.
 		 * @param p_centerY the center by Y of the box in local coordinates.
 		 * @param p_angle the rotation of the box in local coordinates.
-		*/
+		 */
 		public function SetAsOrientedBox(p_hx:Number, p_hy:Number, p_centerX:Number, p_centerY:Number, p_angle:Number):void
 		{
 			SetAsBox(p_hx, p_hy);
@@ -326,21 +328,21 @@ package Box2D.Collision.Shapes
 
 			var vecX:Number;
 			var vecY:Number;
-			var len:int = m_count*2;
+			var len:int = m_count * 2;
 
-			for (var i:int=0, i1:int=1; i < len; i+=2, i1+=2)
+			for (var i:int = 0, i1:int = 1; i < len; i += 2, i1 += 2)
 			{
 				vecX = m_vertices[i];
 				vecY = m_vertices[i1];
 
-				m_vertices[i]   = (cos * vecX - sin * vecY) + p_centerX;
+				m_vertices[i] = (cos * vecX - sin * vecY) + p_centerX;
 				m_vertices[i1] = (sin * vecX + cos * vecY) + p_centerY;
 
 				vecX = m_normals[i];
 				vecY = m_normals[i1];
 
-				m_normals[i]   = (cos * vecX - sin * vecY);
-				m_normals[i1]  = (sin * vecX + cos * vecY);
+				m_normals[i] = (cos * vecX - sin * vecY);
+				m_normals[i1] = (sin * vecX + cos * vecY);
 			}
 		}
 
@@ -357,8 +359,8 @@ package Box2D.Collision.Shapes
 			var rY:Number = p_pointY - p_transform.y;
 			var cos:Number = p_transform.cos;
 			var sin:Number = p_transform.sin;
-			
-			var localX:Number =  cos * rX + sin * rY;
+
+			var localX:Number = cos * rX + sin * rY;
 			var localY:Number = -sin * rX + cos * rY;
 
 			for (var i:int = 0; i < m_count; i++)
@@ -400,10 +402,10 @@ package Box2D.Collision.Shapes
 			var cos:Number = p_transform.cos;
 			var sin:Number = p_transform.sin;
 
-			var p1X:Number =  cos * sX + sin * sY;
+			var p1X:Number = cos * sX + sin * sY;
 			var p1Y:Number = -sin * sX + cos * sY;
 
-			var p2X:Number =  cos * eX + sin * eY;
+			var p2X:Number = cos * eX + sin * eY;
 			var p2Y:Number = -sin * eX + cos * eY;
 
 			var dX:Number = p2X - p1X;
@@ -457,7 +459,7 @@ package Box2D.Collision.Shapes
 					}
 				}
 
-		        // The use of epsilon here causes the assert on lower to trip
+				// The use of epsilon here causes the assert on lower to trip
 				// in some cases. Apparently the use of epsilon was to make edge
 				// shapes work, but now those are handled separately.
 				//if (upper < lower - b2_epsilon)
@@ -512,7 +514,7 @@ package Box2D.Collision.Shapes
 			{
 				var viX:Number = b2Math.getX(m_vertices, i);
 				var viY:Number = b2Math.getY(m_vertices, i);
-				
+
 				var vX:Number = (cos * viX - sin * viY) + tX;
 				var vY:Number = (sin * viX + cos * viY) + tY;
 
@@ -560,10 +562,10 @@ package Box2D.Collision.Shapes
 			//
 			// The rest of the derivation is handled by computer algebra.
 
-			 CONFIG::debug
-			 {
-				 b2Assert(m_count > 2, "degenerate polygon");
-			 }
+			CONFIG::debug
+			{
+				b2Assert(m_count > 2, "degenerate polygon");
+			}
 
 			var centerX:Number = 0;
 			var centerY:Number = 0;
@@ -583,7 +585,7 @@ package Box2D.Collision.Shapes
 				sY += b2Math.getY(m_vertices, i);
 			}
 
-			var inv:Number = 1.0/mCount;
+			var inv:Number = 1.0 / mCount;
 
 			sX *= inv;
 			sY *= inv;
@@ -596,10 +598,10 @@ package Box2D.Collision.Shapes
 				var e2X:Number;
 				var e2Y:Number;
 
-				if ((i+1) < mCount)
+				if ((i + 1) < mCount)
 				{
-					e2X = b2Math.getX(m_vertices, i+1) - sX;
-					e2Y = b2Math.getY(m_vertices, i+1) - sY;
+					e2X = b2Math.getX(m_vertices, i + 1) - sX;
+					e2Y = b2Math.getY(m_vertices, i + 1) - sY;
 				}
 				else
 				{
@@ -608,16 +610,16 @@ package Box2D.Collision.Shapes
 				}
 
 				var D:Number = e1X * e2Y - e1Y * e2X;
-				var triangleArea:Number = D*0.5;
+				var triangleArea:Number = D * 0.5;
 				area += triangleArea;
 
 				centerX = triangleArea * b2Math.INV_3 * (e1X + e2X);
 				centerY = triangleArea * b2Math.INV_3 * (e1Y + e2Y);
 
-				var intx2:Number = e1X*e1X + e2X*e1X + e2X*e2X;
-				var inty2:Number = e1Y*e1Y + e2Y*e1Y + e2Y*e2Y;
+				var intx2:Number = e1X * e1X + e2X * e1X + e2X * e2X;
+				var inty2:Number = e1Y * e1Y + e2Y * e1Y + e2Y * e2Y;
 
-				I += (0.25 * b2Math.INV_3 * D) * (intx2+inty2);
+				I += (0.25 * b2Math.INV_3 * D) * (intx2 + inty2);
 			}
 
 			// Total mass
@@ -628,7 +630,7 @@ package Box2D.Collision.Shapes
 				b2Assert(area > b2Math.EPSILON, "area too small: " + area);
 			}
 
-			var invArea:Number = 1.0/area;
+			var invArea:Number = 1.0 / area;
 
 			centerX *= invArea;
 			centerY *= invArea;
@@ -671,7 +673,7 @@ package Box2D.Collision.Shapes
 				b2Assert((0 <= p_index && p_index < m_count), "index out of range");
 			}
 
-			return b2Vec2.Get(m_vertices[p_index], m_vertices[p_index+1]);
+			return b2Vec2.Get(m_vertices[p_index], m_vertices[p_index + 1]);
 		}
 
 		/**
@@ -693,13 +695,13 @@ package Box2D.Collision.Shapes
 		[Inline]
 		final public function GetVertexY(p_index:int):Number
 		{
-			return m_vertices[p_index+1];
+			return m_vertices[p_index + 1];
 		}
 
 		/**
 		 * Validate convexity. This is a very time consuming operation.
 		 * @returns 'true' if valid
- 		 */
+		 */
 		final public function Validate():Boolean
 		{
 			var i1:int;
@@ -716,7 +718,7 @@ package Box2D.Collision.Shapes
 			for (var i:int = 0; i < mCount; i++)
 			{
 				i1 = i;
-				i2 = (i < mCount-1) ? i1+1 : 0;
+				i2 = (i < mCount - 1) ? i1 + 1 : 0;
 
 				pX = b2Math.getX(m_vertices, i1);
 				pY = b2Math.getY(m_vertices, i1);
@@ -791,8 +793,8 @@ package Box2D.Collision.Shapes
 
 		/**
 		 * Computes the centroid of the given polygon
-		 * @param	p_vs vector of Number specifying a polygon. Every two following numbers represents x and y.
-		 * @param	p_count	length of vs
+		 * @param    p_vs vector of Number specifying a polygon. Every two following numbers represents x and y.
+		 * @param    p_count    length of vs
 		 * @return the polygon centroid.
 		 * IMPORTANT! Method produces new instance of b2SPoint as return value, so it is need manually to dispose it for free memory.
 		 */
@@ -824,15 +826,15 @@ package Box2D.Collision.Shapes
 
 			for (var i:int = 0; i < p_count; i++)
 			{
-				j = i*2;
+				j = i * 2;
 
 				p2X = p_vs[j];
-				p2Y = p_vs[j+1];
+				p2Y = p_vs[j + 1];
 
-				if ((i+1) < p_count)
+				if ((i + 1) < p_count)
 				{
-					p3X = p_vs[j+2];
-					p3Y = p_vs[j+3];
+					p3X = p_vs[j + 2];
+					p3Y = p_vs[j + 3];
 				}
 				else
 				{
@@ -863,7 +865,7 @@ package Box2D.Collision.Shapes
 				b2Assert(area > b2Math.EPSILON, "area too small. Area: " + area);
 			}
 
-			temp = 1.0/area;
+			temp = 1.0 / area;
 			cX *= temp;
 			cY *= temp;
 

@@ -97,8 +97,10 @@ package Box2D.Common.Math
 		[Inline]
 		final public function SetZero():void
 		{
-			c11 = 0.0; c21 = 0.0;
-			c12 = 0.0; c22 = 0.0;
+			c11 = 0.0;
+			c21 = 0.0;
+			c12 = 0.0;
+			c22 = 0.0;
 		}
 
 		[Inline]

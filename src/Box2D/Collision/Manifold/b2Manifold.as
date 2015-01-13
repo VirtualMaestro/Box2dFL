@@ -8,23 +8,23 @@ package Box2D.Collision.Manifold
 	import Box2D.Common.b2Settings;
 
 	/**
-	* A manifold for two touching convex shapes.
-	* Box2D supports multiple types of contact:
-	* - clip point versus plane with radius
-	* - point versus point with radius (circles)
-	* The local point usage depends on the manifold type:
-	* -CIRCLES: the local center of circleA
-	* -FACE_A: the center of faceA
-	* -FACE_B: the center of faceB
-	* Similarly the local normal usage:
-	* -CIRCLES: not used
-	* -FACE_A: the normal on polygonA
-	* -FACE_B: the normal on polygonB
-	* We store contacts in this way so that position correction can
-	* account for movement, which is critical for continuous physics.
-	* All contact scenarios must be expressed in one of these types.
-	* This structure is stored across time steps, so we keep it small.
-	*/
+	 * A manifold for two touching convex shapes.
+	 * Box2D supports multiple types of contact:
+	 * - clip point versus plane with radius
+	 * - point versus point with radius (circles)
+	 * The local point usage depends on the manifold type:
+	 * -CIRCLES: the local center of circleA
+	 * -FACE_A: the center of faceA
+	 * -FACE_B: the center of faceB
+	 * Similarly the local normal usage:
+	 * -CIRCLES: not used
+	 * -FACE_A: the normal on polygonA
+	 * -FACE_B: the normal on polygonB
+	 * We store contacts in this way so that position correction can
+	 * account for movement, which is critical for continuous physics.
+	 * All contact scenarios must be expressed in one of these types.
+	 * This structure is stored across time steps, so we keep it small.
+	 */
 	public class b2Manifold
 	{
 		// Manifold types

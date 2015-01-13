@@ -77,7 +77,7 @@ package Box2D.Common.Math
 		[Inline]
 		static public function invLength(p_x:Number, p_y:Number):Number
 		{
-			return 1/Math.sqrt(p_x * p_x + p_y * p_y);
+			return 1 / Math.sqrt(p_x * p_x + p_y * p_y);
 		}
 
 		/**
@@ -290,7 +290,7 @@ package Box2D.Common.Math
 			var sx:Number = p_x - p_mat.x;
 			var sy:Number = p_y - p_mat.y;
 
-			p_outResult.x =  cos * sx + sin * sy;
+			p_outResult.x = cos * sx + sin * sy;
 			p_outResult.y = -sin * sx + cos * sy;
 		}
 

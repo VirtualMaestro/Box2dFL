@@ -62,7 +62,6 @@ package Box2D.Collision.Contact
 		 */
 		static b2internal var s_registers:Vector.<Vector.<b2ContactRegister>>;
 
-
 		/**
 		 *
 		 * @param p_createFcn
@@ -195,7 +194,7 @@ package Box2D.Collision.Contact
 		/**
 		 * Friction mixing law. The idea is to allow either fixture to drive the restitution to zero.
 		 * For example, anything slides on ice.
- 		 * @return
+		 * @return
 		 */
 		[Inline]
 		static public function b2MixFriction(p_friction1:Number, p_friction2:Number):Number
@@ -206,13 +205,12 @@ package Box2D.Collision.Contact
 		/**
 		 * Restitution mixing law. The idea is allow for anything to bounce off an inelastic surface.
 		 * For example, a superball bounces on anything.
- 		 */
+		 */
 		[Inline]
 		static public function b2MixRestitution(p_restitution1:Number, p_restitution2:Number):Number
 		{
 			return p_restitution1 > p_restitution2 ? p_restitution1 : p_restitution2;
 		}
-
 
 		////
 
@@ -470,9 +468,9 @@ package Box2D.Collision.Contact
 		}
 
 		/**
-		* Update the contact manifold and touching status.
-		* Note: do not assume the fixture AABBs are overlapping or are valid.
-		*/
+		 * Update the contact manifold and touching status.
+		 * Note: do not assume the fixture AABBs are overlapping or are valid.
+		 */
 		b2internal function Update(p_listener:b2ContactListener):void
 		{
 			// Swaps places between old and current manifold state

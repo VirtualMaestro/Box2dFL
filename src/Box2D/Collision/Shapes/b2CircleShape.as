@@ -5,8 +5,8 @@
  */
 package Box2D.Collision.Shapes
 {
-	import Box2D.Collision.b2AABB;
 	import Box2D.Collision.Structures.b2RayCastData;
+	import Box2D.Collision.b2AABB;
 	import Box2D.Common.IDisposable;
 	import Box2D.Common.Math.b2Mat22;
 	import Box2D.Common.Math.b2Math;
@@ -51,7 +51,8 @@ package Box2D.Collision.Shapes
 		{
 			CONFIG::debug
 			{
-				b2Assert((p_shape is b2CircleShape), "given parameter has to be b2CircleShape class. Current instance has type: " + getQualifiedClassName(p_shape));
+				b2Assert((p_shape is b2CircleShape),
+				         "given parameter has to be b2CircleShape class. Current instance has type: " + getQualifiedClassName(p_shape));
 			}
 
 			var circleShape:b2CircleShape = p_shape as b2CircleShape;
@@ -85,7 +86,7 @@ package Box2D.Collision.Shapes
 		{
 			var cos:Number = p_transform.cos;
 			var sin:Number = p_transform.sin;
-			
+
 			var pX:Number = (cos * m_pX - sin * m_pY) + p_transform.x;
 			var pY:Number = (sin * m_pX + cos * m_pY) + p_transform.y;
 
@@ -99,7 +100,7 @@ package Box2D.Collision.Shapes
 		 */
 		override public function ComputeMass(p_massData:b2MassData, p_density:Number):void
 		{
-			var dRadius:Number = m_radius*m_radius;
+			var dRadius:Number = m_radius * m_radius;
 			var tMass:Number = p_density * b2Math.PI * dRadius;
 
 			p_massData.mass = tMass;
@@ -131,7 +132,7 @@ package Box2D.Collision.Shapes
 			var sX:Number = p_rayCastData.p1X - positionX;
 			var sY:Number = p_rayCastData.p1Y - positionY;
 
-			var b:Number = sX * sX + sY * sY - m_radius*m_radius;
+			var b:Number = sX * sX + sY * sY - m_radius * m_radius;
 
 			// Solve quadratic equation.
 			var rX:Number = p_rayCastData.p2X - p_rayCastData.p1X;
@@ -139,7 +140,7 @@ package Box2D.Collision.Shapes
 
 			var c:Number = sX * rX + sY * rY;
 			var rr:Number = rX * rX + rY * rY;
-			var sigma:Number = c*c - rr*b;
+			var sigma:Number = c * c - rr * b;
 
 			// Check for negative discriminant and short segment.
 			if (sigma < 0.0 || rr < b2Math.EPSILON)
@@ -160,7 +161,7 @@ package Box2D.Collision.Shapes
 				var outX:Number = sX + arX;
 				var outY:Number = sY + arY;
 
-				var invLength:Number = 1.0 / Math.sqrt(outX*outX + outY*outY);
+				var invLength:Number = 1.0 / Math.sqrt(outX * outX + outY * outY);
 				p_rayCastData.normalX = outX * invLength;
 				p_rayCastData.normalY = outY * invLength;
 

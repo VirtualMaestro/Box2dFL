@@ -10,10 +10,10 @@ package Box2D.Dynamics.Callbacks
 	import Box2D.b2Assert;
 
 	/**
-	* Joints and fixtures are destroyed when their associated
-	* body is destroyed. Implement this listener so that you
-	* may nullify references to these joints and shapes.
-	*/
+	 * Joints and fixtures are destroyed when their associated
+	 * body is destroyed. Implement this listener so that you
+	 * may nullify references to these joints and shapes.
+	 */
 	public class b2DestructionListener
 	{
 		/**

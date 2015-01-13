@@ -98,8 +98,8 @@ package Box2D.Collision.Structures
 
 					if (p_index + 1 < chain.m_count)
 					{
-						m_buffer[2] = b2Math.getX(chainVertices, p_index+1);
-						m_buffer[3] = b2Math.getY(chainVertices, p_index+1);
+						m_buffer[2] = b2Math.getX(chainVertices, p_index + 1);
+						m_buffer[3] = b2Math.getY(chainVertices, p_index + 1);
 					}
 					else
 					{
@@ -136,7 +136,7 @@ package Box2D.Collision.Structures
 		 */
 		final public function GetSupport(p_dX:Number, p_dY:Number):int
 		{
-		    var bestIndex:int = 0;
+			var bestIndex:int = 0;
 			var vX:Number = b2Math.getX(m_vertices, 0);
 			var vY:Number = b2Math.getY(m_vertices, 0);
 
@@ -200,7 +200,7 @@ package Box2D.Collision.Structures
 			return b2Math.getX(m_vertices, p_index);
 		}
 
-			/**
+		/**
 		 * Get a vertex by index. Used by b2Distance.
 		 * @param p_index
 		 * @return  Y component of vertex.

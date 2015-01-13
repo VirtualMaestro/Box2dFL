@@ -225,12 +225,15 @@ package Box2D.Collision.Structures
 		}
 
 		/**
+		 * Results writes to p_outResult - where x is indexA, and y indexB.
 		 */
-		public function FindMinSeparation(p_indexA:int, p_indexB:int, p_t:Number, p_outResult:b2SPoint):Number
+		public function FindMinSeparation(p_t:Number, p_outResult:b2SPoint):Number
 		{
 			m_sweepA.GetTransform(xfA, p_t);
 			m_sweepB.GetTransform(xfB, p_t);
 
+			var indexA:int;
+			var indexB:int;
 			var axisAX:Number;
 			var axisAY:Number;
 			var axisBX:Number;
@@ -258,17 +261,17 @@ package Box2D.Collision.Structures
 					axisBX = _pointHelper.x;
 					axisBY = _pointHelper.y;
 
-					p_indexA = m_proxyA.GetSupport(axisAX, axisAY);
-					p_indexB = m_proxyB.GetSupport(axisBX, axisBY);
+					indexA = m_proxyA.GetSupport(axisAX, axisAY);
+					indexB = m_proxyB.GetSupport(axisBX, axisBY);
 
-					p_outResult.x = p_indexA;
-					p_outResult.y = p_indexB;
+					p_outResult.x = indexA;
+					p_outResult.y = indexB;
 
-					m_proxyA.GetVertex(p_indexA, _pointHelper);
+					m_proxyA.GetVertex(indexA, _pointHelper);
 					localPointAX = _pointHelper.x;
 					localPointAY = _pointHelper.y;
 
-					m_proxyB.GetVertex(p_indexB, _pointHelper);
+					m_proxyB.GetVertex(indexB, _pointHelper);
 					localPointBX = _pointHelper.x;
 					localPointBY = _pointHelper.y;
 
@@ -297,13 +300,13 @@ package Box2D.Collision.Structures
 					axisBX = _pointHelper.x;
 					axisBY = _pointHelper.y;
 
-					p_indexA = -1;
-					p_indexB = m_proxyB.GetSupport(axisBX, axisBY);
+					indexA = -1;
+					indexB = m_proxyB.GetSupport(axisBX, axisBY);
 
-					p_outResult.x = p_indexA;
-					p_outResult.y = p_indexB;
+					p_outResult.x = indexA;
+					p_outResult.y = indexB;
 
-					m_proxyB.GetVertex(p_indexB, _pointHelper);
+					m_proxyB.GetVertex(indexB, _pointHelper);
 					localPointBX = _pointHelper.x;
 					localPointBY = _pointHelper.y;
 
@@ -328,13 +331,13 @@ package Box2D.Collision.Structures
 					axisAX = _pointHelper.x;
 					axisAY = _pointHelper.y;
 
-					p_indexA = m_proxyA.GetSupport(axisAX, axisAY);
-					p_indexB = -1;
+					indexA = m_proxyA.GetSupport(axisAX, axisAY);
+					indexB = -1;
 
-					p_outResult.x = p_indexA;
-					p_outResult.y = p_indexB;
+					p_outResult.x = indexA;
+					p_outResult.y = indexB;
 
-					m_proxyA.GetVertex(p_indexA, _pointHelper);
+					m_proxyA.GetVertex(indexA, _pointHelper);
 					localPointAX = _pointHelper.x;
 					localPointAY = _pointHelper.y;
 

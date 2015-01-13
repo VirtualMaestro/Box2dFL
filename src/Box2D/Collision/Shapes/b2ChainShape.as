@@ -78,7 +78,6 @@ package Box2D.Collision.Shapes
 			return m_count - 1;
 		}
 
-
 		/**
 		 */
 		override public function Dispose():void

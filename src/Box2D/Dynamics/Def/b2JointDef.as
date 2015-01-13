@@ -20,7 +20,7 @@ package Box2D.Dynamics.Def
 
 		/**
 		 * Use this to attach application specific data to your joints.
- 		 */
+		 */
 		public var userData:*;
 
 		/**

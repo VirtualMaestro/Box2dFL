@@ -5,8 +5,8 @@
  */
 package Box2D.Collision.Shapes
 {
-	import Box2D.Collision.b2AABB;
 	import Box2D.Collision.Structures.b2RayCastData;
+	import Box2D.Collision.b2AABB;
 	import Box2D.Common.IDisposable;
 	import Box2D.Common.Math.b2Mat22;
 	import Box2D.Common.Math.b2Math;
@@ -94,7 +94,7 @@ package Box2D.Collision.Shapes
 		 *
 		 * @param p_rayCastData
 		 * @param p_xf
-         * @param p_childIndex
+		 * @param p_childIndex
 		 * @return
 		 */
 		override public function RayCast(p_rayCastData:b2RayCastData, p_xf:b2Mat22, p_childIndex:int):Boolean
@@ -104,14 +104,14 @@ package Box2D.Collision.Shapes
 			var rY:Number = p_rayCastData.p1Y - p_xf.y;
 			var cos:Number = p_xf.cos;
 			var sin:Number = p_xf.sin;
-			
-			var p1X:Number =  cos * rX + sin * rY;
+
+			var p1X:Number = cos * rX + sin * rY;
 			var p1Y:Number = -sin * rX + cos * rY;
 
 			rX = p_rayCastData.p2X - p_xf.x;
 			rY = p_rayCastData.p2Y - p_xf.y;
 
-			var p2X:Number =  cos * rX + sin * rY;
+			var p2X:Number = cos * rX + sin * rY;
 			var p2Y:Number = -sin * rX + cos * rY;
 
 			var dX:Number = p2X - p1X;
@@ -123,7 +123,7 @@ package Box2D.Collision.Shapes
 			normalX = normalY;
 			normalY = -rX;
 
-			var invLength:Number = 1.0 / Math.sqrt(normalX*normalX + normalY*normalY);
+			var invLength:Number = 1.0 / Math.sqrt(normalX * normalX + normalY * normalY);
 			normalX *= invLength;
 			normalY *= invLength;
 
@@ -148,8 +148,8 @@ package Box2D.Collision.Shapes
 				return false;
 			}
 
-			var qX:Number = p1X + dX*t;
-			var qY:Number = p1Y + dY*t;
+			var qX:Number = p1X + dX * t;
+			var qY:Number = p1Y + dY * t;
 
 			// q = v1 + s * r
 			// s = dot(q - v1, r) / dot(r, r)
@@ -195,7 +195,7 @@ package Box2D.Collision.Shapes
 		 *
 		 * @param p_aabb
 		 * @param p_xf
-         * @param p_childIndex
+		 * @param p_childIndex
 		 */
 		override public function ComputeAABB(p_aabb:b2AABB, p_xf:b2Mat22, p_childIndex:int):void
 		{

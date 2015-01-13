@@ -5,15 +5,21 @@ package Box2D.Dynamics
 {
 	import Box2D.Collision.Contact.b2Contact;
 	import Box2D.Collision.Contact.b2ContactEdge;
+	import Box2D.Collision.Structures.b2DistanceData;
+	import Box2D.Collision.Structures.b2DistanceProxy;
 	import Box2D.Collision.Structures.b2RayCastData;
+	import Box2D.Collision.Structures.b2SeparationFunction;
+	import Box2D.Collision.Structures.b2SimplexCache;
 	import Box2D.Collision.Structures.b2TOIData;
 	import Box2D.Collision.Structures.b2TimeStep;
 	import Box2D.Collision.b2AABB;
 	import Box2D.Collision.b2BroadPhase;
+	import Box2D.Collision.b2Collision;
+	import Box2D.Common.Math.b2Mat22;
 	import Box2D.Common.Math.b2Math;
+	import Box2D.Common.Math.b2SPoint;
 	import Box2D.Common.Math.b2Sweep;
 	import Box2D.Common.Math.b2Vec2;
-	import Box2D.Common.b2Settings;
 	import Box2D.Common.b2Settings;
 	import Box2D.Common.b2internal;
 	import Box2D.Dynamics.Callbacks.b2ContactListener;
@@ -25,13 +31,7 @@ package Box2D.Dynamics
 	import Box2D.Dynamics.Filters.b2Filter;
 	import Box2D.Dynamics.Joints.b2Joint;
 	import Box2D.Dynamics.Joints.b2JointEdge;
-	import Box2D.Dynamics.b2Body;
-	import Box2D.Dynamics.b2Body;
-	import Box2D.Dynamics.b2Body;
-	import Box2D.Dynamics.b2Body;
 	import Box2D.b2Assert;
-
-	import flash.profiler.profile;
 
 	use namespace b2internal;
 
@@ -82,6 +82,12 @@ package Box2D.Dynamics
 		private var _backupSweep1:b2Sweep;
 		private var _backupSweep2:b2Sweep;
 		private var _bodiesHelper:Vector.<b2Body>;
+		private var _cacheSimplex:b2SimplexCache;
+		private var _distanceData:b2DistanceData;
+		private var _xfA:b2Mat22;
+		private var _xfB:b2Mat22;
+		private var _fcn:b2SeparationFunction;
+		private var _pointHelper:b2SPoint;
 
 		// TODO: add some debugging props from original
 
@@ -114,6 +120,12 @@ package Box2D.Dynamics
 			_backupSweep1 = b2Sweep.Get();
 			_backupSweep2 = b2Sweep.Get();
 			_bodiesHelper = new Vector.<b2Body>(2);
+			_cacheSimplex = new b2SimplexCache();
+			_distanceData = new b2DistanceData();
+			_xfA = b2Mat22.Get();
+			_xfB = b2Mat22.Get();
+			_fcn = new b2SeparationFunction();
+			_pointHelper = b2SPoint.Get();
 		}
 
 		/**
@@ -125,10 +137,10 @@ package Box2D.Dynamics
 		}
 
 		/**
-		* Register a contact filter to provide specific control over collision.
-		* Otherwise the default filter is used (b2_defaultFilter). The listener is
-		* owned by you and must remain in scope.
-		*/
+		 * Register a contact filter to provide specific control over collision.
+		 * Otherwise the default filter is used (b2_defaultFilter). The listener is
+		 * owned by you and must remain in scope.
+		 */
 		[Inline]
 		final public function SetContactFilter(p_filter:b2Filter):void
 		{
@@ -178,11 +190,11 @@ package Box2D.Dynamics
 		}
 
 		/**
-		* Destroy a rigid body given a definition. No reference to the definition
-		* is retained. This function is locked during callbacks.
-		* @warning This automatically deletes all associated shapes and joints.
-		* @warning This function is locked during callbacks.
-		*/
+		 * Destroy a rigid body given a definition. No reference to the definition
+		 * is retained. This function is locked during callbacks.
+		 * @warning This automatically deletes all associated shapes and joints.
+		 * @warning This function is locked during callbacks.
+		 */
 		final public function DestroyBody(b:b2Body):void
 		{
 			CONFIG::debug
@@ -201,7 +213,7 @@ package Box2D.Dynamics
 			var je0:b2JointEdge;
 			var isDestructionListener:Boolean = m_destructionListener != null;
 
-			while(je)
+			while (je)
 			{
 				je0 = je;
 				je = je.next;
@@ -223,7 +235,7 @@ package Box2D.Dynamics
 			var ce0:b2ContactEdge;
 			var contactManager:b2ContactManager = m_contactManager;
 
-			while(ce)
+			while (ce)
 			{
 				ce0 = ce;
 				ce = ce.next;
@@ -237,7 +249,7 @@ package Box2D.Dynamics
 			var f0:b2Fixture;
 			var broadPhase:b2BroadPhase = contactManager.m_broadPhase;
 
-			while(f)
+			while (f)
 			{
 				f0 = f;
 				f = f.m_next;
@@ -279,10 +291,10 @@ package Box2D.Dynamics
 		}
 
 		/**
-		* Create a joint to constrain bodies together. No reference to the definition
-		* is retained. This may cause the connected bodies to cease colliding.
-		* @warning This function is locked during callbacks.
-		*/
+		 * Create a joint to constrain bodies together. No reference to the definition
+		 * is retained. This may cause the connected bodies to cease colliding.
+		 * @warning This function is locked during callbacks.
+		 */
 		final public function CreateJoint(p_def:b2JointDef):b2Joint
 		{
 			CONFIG::debug
@@ -474,12 +486,12 @@ package Box2D.Dynamics
 		}
 
 		/**
-		* Take a time step. This performs collision detection, integration,
-		* and constraint solution.
-		* @param p_dt the amount of time to simulate, this should not vary.
-		* @param p_velocityIterations for the velocity constraint solver.
-		* @param p_positionIterations for the position constraint solver.
-		*/
+		 * Take a time step. This performs collision detection, integration,
+		 * and constraint solution.
+		 * @param p_dt the amount of time to simulate, this should not vary.
+		 * @param p_velocityIterations for the velocity constraint solver.
+		 * @param p_positionIterations for the position constraint solver.
+		 */
 		final public function Step(p_dt:Number, p_velocityIterations:int, p_positionIterations:int):void
 		{
 			// If new fixtures were added, we need to find the new contacts.
@@ -537,14 +549,14 @@ package Box2D.Dynamics
 		}
 
 		/**
-		* Manually clear the force buffer on all bodies. By default, forces are cleared automatically
-		* after each call to Step. The default behavior is modified by calling SetAutoClearForces.
-		* The purpose of this function is to support sub-stepping. Sub-stepping is often used to maintain
-		* a fixed sized time step under a variable frame-rate.
-		* When you perform sub-stepping you will disable auto clearing of forces and instead call
-		* ClearForces after all sub-steps are complete in one pass of your game loop.
-		* @see SetAutoClearForces
-		*/
+		 * Manually clear the force buffer on all bodies. By default, forces are cleared automatically
+		 * after each call to Step. The default behavior is modified by calling SetAutoClearForces.
+		 * The purpose of this function is to support sub-stepping. Sub-stepping is often used to maintain
+		 * a fixed sized time step under a variable frame-rate.
+		 * When you perform sub-stepping you will disable auto clearing of forces and instead call
+		 * ClearForces after all sub-steps are complete in one pass of your game loop.
+		 * @see SetAutoClearForces
+		 */
 		[Inline]
 		final public function ClearForces():void
 		{
@@ -557,11 +569,11 @@ package Box2D.Dynamics
 		}
 
 		/**
-		* Query the world for all fixtures that potentially overlap the
-		* provided AABB.
-		* @param p_callback a user implemented callback class.
-		* @param p_aabb the query box.
-		*/
+		 * Query the world for all fixtures that potentially overlap the
+		 * provided AABB.
+		 * @param p_callback a user implemented callback class.
+		 * @param p_aabb the query box.
+		 */
 		[Inline]
 		final public function QueryAABB(p_callback:b2QueryCallback, p_aabb:b2AABB):void
 		{
@@ -571,15 +583,15 @@ package Box2D.Dynamics
 		}
 
 		/**
-		* Ray-cast the world for all fixtures in the path of the ray. Your callback
-		* controls whether you get the closest point, any point, or n-points.
-		* The ray-cast ignores shapes that contain the starting point.
-		* @param p_callback a user implemented callback class.
-		* @param p_point1X the ray starting point
-		* @param p_point1Y the ray starting point
-		* @param p_point2X the ray ending point
-		* @param p_point2Y the ray ending point
-		*/
+		 * Ray-cast the world for all fixtures in the path of the ray. Your callback
+		 * controls whether you get the closest point, any point, or n-points.
+		 * The ray-cast ignores shapes that contain the starting point.
+		 * @param p_callback a user implemented callback class.
+		 * @param p_point1X the ray starting point
+		 * @param p_point1Y the ray starting point
+		 * @param p_point2X the ray ending point
+		 * @param p_point2Y the ray ending point
+		 */
 		final public function RayCast(p_callback:b2RayCastCallback, p_point1X:Number, p_point1Y:Number, p_point2X:Number, p_point2Y:Number):void
 		{
 			_worldRayCastWrapper.broadPhase = m_contactManager.m_broadPhase;
@@ -617,7 +629,7 @@ package Box2D.Dynamics
 			{
 				j.m_islandFlag = false;
 			}
-			
+
 			// Build and simulate all awake islands.
 			var stackSize:int = m_bodyCount;
 
@@ -627,26 +639,25 @@ package Box2D.Dynamics
 				{
 					continue;
 				}
-		
+
 				if (seed.IsAwake() == false || seed.IsActive() == false)
 				{
 					continue;
 				}
-		
+
 				// The seed can be dynamic or kinematic.
 				if (seed.GetType() == b2Body.STATIC)
 				{
 					continue;
 				}
-		
+
 				// Reset island and stack.
 				_island.Clear();
 				var stackCount:int = 0;
 				_stack[stackCount++] = seed;
 				seed.m_flags |= b2Body.e_islandFlag;
-				
-				// Perform a depth first search (DFS) on the constraint graph.
 
+				// Perform a depth first search (DFS) on the constraint graph.
 
 				while (stackCount > 0)
 				{
@@ -754,7 +765,7 @@ package Box2D.Dynamics
 
 				_island.Solve(p_step, m_gravity.x, m_gravity.y, m_allowSleep);
 
-		        // Post solve cleanup.
+				// Post solve cleanup.
 				var bodyCount:int = _island.m_bodyCount;
 				var bodyList:Vector.<b2Body> = _island.m_bodies;
 
@@ -839,7 +850,7 @@ package Box2D.Dynamics
 			var indexA:int;
 			var indexB:int;
 
-			while(true)
+			while (true)
 			{
 				// Find the first TOI.
 				for (c = m_contactManager.m_contactList; c; c = c.m_next)
@@ -893,10 +904,10 @@ package Box2D.Dynamics
 						{
 							continue;
 						}
-		
+
 						collideA = bA.IsBullet() || typeA != b2Body.DYNAMIC;
 						collideB = bB.IsBullet() || typeB != b2Body.DYNAMIC;
-		
+
 						// Are these two non-bullet dynamic bodies?
 						if (collideA == false && collideB == false)
 						{
@@ -907,7 +918,7 @@ package Box2D.Dynamics
 						// Put the sweeps onto the same time interval.
 						var alpha0:Number = bA.m_sweep.t0;
 						var alphaBb0:Number = bB.m_sweep.t0;
-		
+
 						if (alpha0 < alphaBb0)
 						{
 							alpha0 = alphaBb0;
@@ -917,22 +928,22 @@ package Box2D.Dynamics
 						{
 							bB.m_sweep.Advance(alpha0);
 						}
-		
+
 						CONFIG::debug
 						{
 							b2Assert(alpha0 < 1.0, "!(alpha0 < 1.0)");
 						}
-						
+
 						indexA = c.GetChildIndexA();
 						indexB = c.GetChildIndexB();
-		
+
 						// Compute the time of impact in interval [0, minTOI]
 						_toiData.proxyA.Set(fA.GetShape(), indexA);
 						_toiData.proxyB.Set(fB.GetShape(), indexB);
 						_toiData.sweepA.Set(bA.m_sweep);
 						_toiData.sweepB.Set(bB.m_sweep);
 						_toiData.tMax = 1.0;
-		
+
 						TimeOfImpact(_toiData);
 
 						// Beta is the fraction of the remaining portion of the .
@@ -949,7 +960,7 @@ package Box2D.Dynamics
 						c.m_toi = alpha;
 						c.m_flags |= b2Contact.e_toiFlag;
 					}
-					
+
 					if (alpha < minAlpha)
 					{
 						// This is the minimum TOI found so far.
@@ -957,14 +968,14 @@ package Box2D.Dynamics
 						minAlpha = alpha;
 					}
 				}
-				
+
 				if (minContact == null || 1.0 - 10.0 * b2Math.EPSILON < minAlpha)
 				{
 					// No more TOI events. Done!
 					m_stepComplete = true;
 					break;
 				}
-				
+
 				// Advance the bodies to the TOI.
 				fA = minContact.GetFixtureA();
 				fB = minContact.GetFixtureB();
@@ -973,7 +984,7 @@ package Box2D.Dynamics
 
 				_backupSweep1.Set(bA.m_sweep);
 				_backupSweep2.Set(bB.m_sweep);
-		
+
 				bA.Advance(minAlpha);
 				bB.Advance(minAlpha);
 
@@ -981,7 +992,7 @@ package Box2D.Dynamics
 				minContact.Update(m_contactManager.m_contactListener);
 				minContact.m_flags &= ~b2Contact.e_toiFlag;
 				++minContact.m_toiCount;
-				
+
 				// Is the contact solid?
 				if (minContact.IsEnabled() == false || minContact.IsTouching() == false)
 				{
@@ -1026,28 +1037,28 @@ package Box2D.Dynamics
 							{
 								break;
 							}
-		
+
 							if (_island.m_contactCount == _island.m_contactCapacity)
 							{
 								break;
 							}
-		
+
 							var contact:b2Contact = ce.contact;
-		
+
 							// Has this contact already been added to the island?
 							if ((contact.m_flags & b2Contact.e_islandFlag) != 0)
 							{
 								continue;
 							}
-							
+
 							// Only add static, kinematic, or bullet bodies.
 							var other:b2Body = ce.other;
 							if (other.m_type == b2Body.DYNAMIC &&
-								body.IsBullet() == false && other.IsBullet() == false)
+									body.IsBullet() == false && other.IsBullet() == false)
 							{
 								continue;
 							}
-							
+
 							// Skip sensors.
 							var sensorA:Boolean = contact.m_fixtureA.m_isSensor;
 							var sensorB:Boolean = contact.m_fixtureB.m_isSensor;
@@ -1056,18 +1067,18 @@ package Box2D.Dynamics
 							{
 								continue;
 							}
-		
+
 							// Tentatively advance the body to the TOI.
 							_backupSweep1.Set(other.m_sweep);
-							
+
 							if ((other.m_flags & b2Body.e_islandFlag) == 0)
 							{
 								other.Advance(minAlpha);
 							}
-							
+
 							// Update the contact points
 							contact.Update(m_contactManager.m_contactListener);
-		
+
 							// Was the contact disabled by the user?
 							// Are there contact points?
 							if (contact.IsEnabled() == false || contact.IsTouching() == false)
@@ -1076,7 +1087,7 @@ package Box2D.Dynamics
 								other.SynchronizeTransform();
 								continue;
 							}
-		
+
 							// Add the contact to the island
 							contact.m_flags |= b2Contact.e_islandFlag;
 							_island.AddContact(contact);
@@ -1117,25 +1128,25 @@ package Box2D.Dynamics
 				{
 					body = bodies[i];
 					body.m_flags &= ~b2Body.e_islandFlag;
-		
+
 					if (body.m_type != b2Body.DYNAMIC)
 					{
 						continue;
 					}
-		
+
 					body.SynchronizeFixtures();
-		
+
 					// Invalidate all contact TOIs on this displaced body.
 					for (ce = body.m_contactList; ce; ce = ce.next)
 					{
 						ce.contact.m_flags &= ~(b2Contact.e_toiFlag | b2Contact.e_islandFlag);
 					}
 				}
-		
+
 				// Commit fixture proxy movements to the broad-phase so that new contacts are created.
 				// Also, some contacts can be destroyed.
 				m_contactManager.FindNewContacts();
-		
+
 				if (m_subStepping)
 				{
 					m_stepComplete = false;
@@ -1145,16 +1156,217 @@ package Box2D.Dynamics
 		}
 
 		/**
-		* Compute the upper bound on time before two shapes penetrate. Time is represented as
-		* a fraction between [0,tMax]. This uses a swept separating axis and may miss some intermediate,
-		* non-tunneling collision. If you change the time interval, you should call this function
-		* again.
-		* Note: use b2Distance to compute the contact point and normal at the time of impact.
-		 * TODO
-		*/
+		 * Compute the upper bound on time before two shapes penetrate. Time is represented as
+		 * a fraction between [0,tMax]. This uses a swept separating axis and may miss some intermediate,
+		 * non-tunneling collision. If you change the time interval, you should call this function
+		 * again.
+		 * Note: use b2Distance to compute the contact point and normal at the time of impact.
+		 * CCD via the local separating axis method. This seeks progression
+		 * by computing the largest time at which separation is maintained.
+		 */
 		public function TimeOfImpact(p_toiData:b2TOIData):void
 		{
-			b2Assert(false, "current method isn't implemented yet or abstract and can't be used!");
+			p_toiData.state = b2TOIData.e_unknown;
+			p_toiData.t = p_toiData.tMax;
+
+			var proxyA:b2DistanceProxy = p_toiData.proxyA;
+			var proxyB:b2DistanceProxy = p_toiData.proxyB;
+			var sweepA:b2Sweep = _backupSweep1;
+			sweepA.Set(p_toiData.sweepA);
+
+			var sweepB:b2Sweep = _backupSweep2;
+			sweepB.Set(p_toiData.sweepB);
+
+			// Large rotations can make the root finder fail, so we normalize the
+			// sweep angles.
+			sweepA.Normalize();
+			sweepB.Normalize();
+
+			var tMax:Number = p_toiData.tMax;
+
+			var totalRadius:Number = proxyA.m_radius + proxyB.m_radius;
+			var target:Number = b2Math.Max(b2Settings.linearSlop, totalRadius - 3.0 * b2Settings.linearSlop);
+			var tolerance:Number = 0.25 * b2Settings.linearSlop;
+
+			CONFIG::debug
+			{
+				b2Assert(target > tolerance, "!(target > tolerance)");
+			}
+
+			var t1:Number = 0.0;
+			var iter:int = 0;
+
+			// Prepare input for distance query.
+			_cacheSimplex.count = 0;
+
+			_distanceData.proxyA = p_toiData.proxyA;
+			_distanceData.proxyB = p_toiData.proxyB;
+			_distanceData.useRadii = false;
+
+			// The outer loop progressively attempts to compute new separating axes.
+			// This loop terminates when an axis is repeated (no progress is made).
+
+			while (true)
+			{
+				sweepA.GetTransform(_xfA, t1);
+				sweepB.GetTransform(_xfB, t1);
+
+				// Get the distance between shapes. We can also use the results
+				// to get a separating axis.
+				_distanceData.transformA = _xfA;
+				_distanceData.transformB = _xfB;
+
+				b2Collision.b2Distance(_distanceData, _cacheSimplex);
+
+				// If the shapes are overlapped, we give up on continuous collision.
+				if (_distanceData.distance <= 0.0)
+				{
+					// Failure!
+					p_toiData.state = b2TOIData.e_overlapped;
+					p_toiData.t = 0.0;
+					break;
+				}
+
+				if (_distanceData.distance < target + tolerance)
+				{
+					// Victory!
+					p_toiData.state = b2TOIData.e_touching;
+					p_toiData.t = t1;
+					break;
+				}
+
+				// Initialize the separating axis.
+				_fcn.Initialize(_cacheSimplex, proxyA, sweepA, proxyB, sweepB, t1);
+
+				// Compute the TOI on the separating axis. We do this by successively
+				// resolving the deepest point. This loop is bounded by the number of vertices.
+				var done:Boolean = false;
+				var t2:Number = tMax;
+				var pushBackIter:int = 0;
+				var indexA:int;
+				var indexB:int;
+				var s2:Number;
+
+				while (true)
+				{
+					// Find the deepest point at t2. Store the witness point indices.
+					s2 = _fcn.FindMinSeparation(t2, _pointHelper);
+					indexA = _pointHelper.x;
+					indexB = _pointHelper.y;
+
+					// Is the final configuration separated?
+					if (s2 > target + tolerance)
+					{
+						// Victory!
+						p_toiData.state = b2TOIData.e_separated;
+						p_toiData.t = tMax;
+						done = true;
+						break;
+					}
+
+					// Has the separation reached tolerance?
+					if (s2 > target - tolerance)
+					{
+						// Advance the sweeps
+						t1 = t2;
+						break;
+					}
+
+					// Compute the initial separation of the witness points.
+					var s1:Number = _fcn.Evaluate(indexA, indexB, t1);
+
+					// Check for initial overlap. This might happen if the root finder
+					// runs out of iterations.
+					if (s1 < target - tolerance)
+					{
+						p_toiData.state = b2TOIData.e_failed;
+						p_toiData.t = t1;
+						done = true;
+						break;
+					}
+
+					// Check for touching
+					if (s1 <= target + tolerance)
+					{
+						// Victory! t1 should hold the TOI (could be 0.0).
+						p_toiData.state = b2TOIData.e_touching;
+						p_toiData.t = t1;
+						done = true;
+						break;
+					}
+
+					// Compute 1D root of: f(x) - target = 0
+					var rootIterCount:int = 0;
+					var a1:Number = t1;
+					var a2:Number = t2;
+
+					while (true)
+					{
+						// Use a mix of the secant rule and bisection.
+						var t:Number;
+						if ((rootIterCount & 1) != 0)
+						{
+							// Secant rule to improve convergence.
+							t = a1 + (target - s1) * (a2 - a1) / (s2 - s1);
+						}
+						else
+						{
+							// Bisection to guarantee progress.
+							t = 0.5 * (a1 + a2);
+						}
+
+						++rootIterCount;
+
+						var s:Number = _fcn.Evaluate(indexA, indexB, t);
+
+						if (b2Math.Abs(s - target) < tolerance)
+						{
+							// t2 holds a tentative value for t1
+							t2 = t;
+							break;
+						}
+
+						// Ensure we continue to bracket the root.
+						if (s > target)
+						{
+							a1 = t;
+							s1 = s;
+						}
+						else
+						{
+							a2 = t;
+							s2 = s;
+						}
+
+						if (rootIterCount == 50)
+						{
+							break;
+						}
+					}
+
+					++pushBackIter;
+
+					if (pushBackIter == b2Settings.maxPolygonVertices)
+					{
+						break;
+					}
+				}
+
+				++iter;
+
+				if (done)
+				{
+					break;
+				}
+
+				if (iter == b2Settings.maxIterations)
+				{
+					// Root finder got stuck. Semi-victory.
+					p_toiData.state = b2TOIData.e_failed;
+					p_toiData.t = t1;
+					break;
+				}
+			}
 		}
 
 		/**
@@ -1389,7 +1601,6 @@ import Box2D.Collision.Structures.b2RayCastData;
 import Box2D.Collision.b2BroadPhase;
 import Box2D.Dynamics.Callbacks.b2QueryCallback;
 import Box2D.Dynamics.Callbacks.b2RayCastCallback;
-import Box2D.Dynamics.b2Body;
 import Box2D.Dynamics.b2Fixture;
 import Box2D.Dynamics.b2FixtureProxy;
 
@@ -1434,59 +1645,4 @@ internal class b2WorldRayCastWrapper
 
 	public var broadPhase:b2BroadPhase;
 	public var callback:b2RayCastCallback;
-}
-
-/**
- *
- */
-internal class BodyStack
-{
-	private var _stack:Vector.<b2Body>;
-	private var _count:int = 0;
-
-	/**
-	 */
-	public function BodyStack()
-	{
-		_stack = new <b2Body>[];
-	}
-
-	/**
-	 */
-	[Inline]
-	final public function Push(p_element:b2Body):void
-	{
-		_stack[_count++] = p_element;
-	}
-
-	/**
-	 */
-	[Inline]
-	final public function Pop():b2Body
-	{
-		return _stack[--_count];
-	}
-
-	/**
-	 */
-	[Inline]
-	final public function GetCount():int
-	{
-		return _count;
-	}
-
-	/**
-	 * Clear stack.
-	 */
-	public function Free():void
-	{
-		var count:int = _stack.length;
-		for (var i:int = 0; i < count; i++)
-		{
-			_stack[i] = null;
-		}
-
-		_stack.length = 0;
-		_count = 0;
-	}
 }

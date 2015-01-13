@@ -5,8 +5,8 @@
  */
 package Box2D.Common.Math
 {
-	import Box2D.Common.b2Disposable;
 	import Box2D.Common.IDisposable;
+	import Box2D.Common.b2Disposable;
 	import Box2D.Common.b2internal;
 
 	CONFIG::debug
@@ -58,26 +58,26 @@ package Box2D.Common.Math
 		public var t0:Number = 0;
 
 		/**
-		* Get the interpolated transform at a specific time.
-		* @param p_mat
-		* @param p_alpha is a factor in [0,1], where 0 indicates t0.
-		*/
+		 * Get the interpolated transform at a specific time.
+		 * @param p_mat
+		 * @param p_alpha is a factor in [0,1], where 0 indicates t0.
+		 */
 		public function GetTransform(p_mat:b2Mat22, p_alpha:Number):void
 		{
 			var oneSubAlpha:Number = 1.0 - p_alpha;
 
 			p_mat.x = oneSubAlpha * worldCenterX0 + p_alpha * worldCenterX;
 			p_mat.y = oneSubAlpha * worldCenterY0 + p_alpha * worldCenterY;
-			p_mat.SetAngle(oneSubAlpha * worldAngle0 + p_alpha *  worldAngle);
+			p_mat.SetAngle(oneSubAlpha * worldAngle0 + p_alpha * worldAngle);
 			p_mat.x -= (p_mat.c11 * localCenterX + p_mat.c21 * localCenterY);
 			p_mat.y -= (p_mat.c12 * localCenterX + p_mat.c22 * localCenterY);
 		}
 
 		/**
-		* Advance the sweep forward, yielding a new initial state.
-		* @param p_t the new initial time.
-		*/
-		public function Advance(p_t:Number) : void
+		 * Advance the sweep forward, yielding a new initial state.
+		 * @param p_t the new initial time.
+		 */
+		public function Advance(p_t:Number):void
 		{
 			CONFIG::debug
 			{
@@ -100,9 +100,9 @@ package Box2D.Common.Math
 		final public function Normalize():void
 		{
 			var PI_2:Number = b2Math.PI_2;
-			var d:Number = PI_2 * int(worldAngle0/PI_2);
+			var d:Number = PI_2 * int(worldAngle0 / PI_2);
 			worldAngle0 -= d;
-			worldAngle -=  d;
+			worldAngle -= d;
 		}
 
 		/**
@@ -129,7 +129,7 @@ package Box2D.Common.Math
 			worldCenterY0 = p_sweep.worldCenterY0;
 			worldCenterX = p_sweep.worldCenterX;
 			worldCenterY = p_sweep.worldCenterY;
-			worldAngle = p_sweep. worldAngle;
+			worldAngle = p_sweep.worldAngle;
 			worldAngle0 = p_sweep.worldAngle0;
 			t0 = p_sweep.t0;
 		}

@@ -8,9 +8,9 @@ package Box2D.Dynamics
 	import Box2D.Collision.Contact.b2Contact;
 	import Box2D.Collision.Contact.b2ContactEdge;
 	import Box2D.Collision.Shapes.b2Shape;
+	import Box2D.Collision.Structures.b2RayCastData;
 	import Box2D.Collision.b2AABB;
 	import Box2D.Collision.b2BroadPhase;
-	import Box2D.Collision.Structures.b2RayCastData;
 	import Box2D.Common.Math.b2Mat22;
 	import Box2D.Common.b2Disposable;
 	import Box2D.Common.b2internal;
@@ -184,7 +184,7 @@ package Box2D.Dynamics
 		 * Get the type of the child shape.
 		 * You can use this to down cast to the concrete shape.
 		 * @return the shape type.
- 		 */
+		 */
 		[Inline]
 		final public function GetType():int
 		{
@@ -195,7 +195,7 @@ package Box2D.Dynamics
 		 * Get the child shape. You can modify the child shape, however you should not change the
 		 * number of vertices because this will crash some collision caching mechanisms.
 		 * Manipulating the shape may lead to non-physical behavior.
- 		 */
+		 */
 		[Inline]
 		final public function GetShape():b2Shape
 		{
@@ -217,7 +217,7 @@ package Box2D.Dynamics
 		/**
 		 * Is this fixture a sensor (non-solid)?
 		 * @return the true if the shape is a sensor.
- 		 */
+		 */
 		[Inline]
 		final public function IsSensor():Boolean
 		{
@@ -228,7 +228,7 @@ package Box2D.Dynamics
 		 * Set the contact filtering data.
 		 * This will not update contacts until the next time step when either parent body is active and awake.
 		 * This automatically calls Refilter.
- 		 */
+		 */
 		public function SetFilter(p_filter:b2Filter):void
 		{
 			m_filter = p_filter;
@@ -297,7 +297,7 @@ package Box2D.Dynamics
 		/**
 		 * Get the next fixture in the parent body's fixture list.
 		 * @return the next shape.
- 		 */
+		 */
 		[Inline]
 		final public function GetNext():b2Fixture
 		{
@@ -406,7 +406,7 @@ package Box2D.Dynamics
 		/**
 		 * Get the fixture's AABB. This AABB may be enlarge and/or stale.
 		 * If you need a more accurate AABB, compute it using the shape and the body transform.
- 		 */
+		 */
 		public function GetAABB(p_childIndex:int):b2AABB
 		{
 			CONFIG::debug

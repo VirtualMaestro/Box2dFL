@@ -5,8 +5,8 @@
  */
 package Box2D.Common.Math
 {
-	import Box2D.Common.b2Disposable;
 	import Box2D.Common.IDisposable;
+	import Box2D.Common.b2Disposable;
 	import Box2D.Common.b2internal;
 
 	use namespace b2internal;

@@ -22,17 +22,17 @@ package Box2D.Dynamics.Def
 
 		/**
 		 * Use this to store application specific fixture data.
- 		 */
+		 */
 		public var userData:*;
 
 		/**
 		 * The friction coefficient, usually in the range [0,1].
- 		 */
+		 */
 		public var friction:Number;
 
 		/**
 		 * The restitution (elasticity) usually in the range [0,1].
- 		 */
+		 */
 		public var restitution:Number;
 
 		/**
@@ -48,7 +48,7 @@ package Box2D.Dynamics.Def
 
 		/**
 		 * Contact filtering data.
- 		 */
+		 */
 		public var filter:b2Filter;
 
 		/**

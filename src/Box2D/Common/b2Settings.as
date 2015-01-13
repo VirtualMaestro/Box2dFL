@@ -13,7 +13,7 @@ package Box2D.Common
 		/**
 		 * The maximum number of contact points between two convex shapes.
 		 * Do not change this value.
- 		 */
+		 */
 		static public const maxManifoldPoints:int = 2;
 
 		/**
@@ -38,7 +38,7 @@ package Box2D.Common
 		 * The radius of the polygon/edge shape skin. This should not be modified.
 		 * Making this smaller means polygons will have an insufficient buffer for continuous collision.
 		 * Making it larger may create artifacts for vertex collision.
- 		 */
+		 */
 		static public const polygonRadius:Number = 2.0 * linearSlop;
 
 		/**
@@ -52,27 +52,27 @@ package Box2D.Common
 		 * This is used to fatten AABBs in the dynamic tree.
 		 * This is used to predict the future position based on the current displacement.
 		 * This is a dimensionless multiplier.
- 		 */
+		 */
 		static public const aabbMultiplier:Number = 2.0;
 
 		/**
 		 * A velocity threshold for elastic collisions.
 		 * Any collision with a relative linear velocity below this threshold will be treated as inelastic.
- 		 */
+		 */
 		static public const velocityThreshold:Number = 1.0;
 
 		/**
-		* This scale factor controls how fast overlap is resolved. Ideally this would be 1 so
-		* that overlap is removed in one time step. However using values close to 1 often lead
-		* to overshoot.
-		*/
+		 * This scale factor controls how fast overlap is resolved. Ideally this would be 1 so
+		 * that overlap is removed in one time step. However using values close to 1 often lead
+		 * to overshoot.
+		 */
 		static public const baumgarte:Number = 0.2;
 		static public const toiBaugarte:Number = 0.75;
 
 		/**
 		 * The maximum linear position correction used when solving constraints.
 		 * This helps to prevent overshoot.
- 		 */
+		 */
 		static public const maxLinearCorrection:Number = 0.2;
 
 		/**
@@ -99,7 +99,7 @@ package Box2D.Common
 		/**
 		 * A body cannot sleep if its angular velocity is above this tolerance.
 		 */
-		static public const angularSleepTolerance:Number = 	(2.0 / 180.0 * Math.PI);
+		static public const angularSleepTolerance:Number = (2.0 / 180.0 * Math.PI);
 
 		/**
 		 * The time that a body must be still before it will go to sleep.
@@ -116,6 +116,9 @@ package Box2D.Common
 		 */
 		static public const maxSubSteps:int = 8;
 
-
+		/**
+		 *
+		 */
+		static public const maxIterations:int = 20;
 	}
 }

@@ -31,7 +31,7 @@ package Box2D.Dynamics.Callbacks
 		 * closest hit, 1 to continue
 		 */
 		virtual public function ReportFixture(p_fixture:b2Fixture, p_pointX:Number, p_pointY:Number,
-												p_normalX:Number, p_normalY:Number, p_fraction:Number):Number
+		                                      p_normalX:Number, p_normalY:Number, p_fraction:Number):Number
 		{
 			b2Assert(false, "current method isn't implemented yet or abstract and can't be used!");
 			return 0;

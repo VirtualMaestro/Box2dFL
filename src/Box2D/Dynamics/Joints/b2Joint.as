@@ -7,7 +7,6 @@ package Box2D.Dynamics.Joints
 {
 	import Box2D.Collision.Structures.b2SolverData;
 	import Box2D.Common.b2internal;
-	import Box2D.Common.b2internal;
 	import Box2D.Dynamics.Def.b2JointDef;
 	import Box2D.Dynamics.b2Body;
 	import Box2D.b2Assert;
@@ -28,9 +27,9 @@ package Box2D.Dynamics.Joints
 		static public const e_mouseJoint:int = 5;
 		static public const e_gearJoint:int = 6;
 		static public const e_wheelJoint:int = 7;
-		static public const  e_weldJoint:int = 8;
+		static public const e_weldJoint:int = 8;
 		static public const e_frictionJoint:int = 9;
-		static public const 	e_ropeJoint:int = 10;
+		static public const e_ropeJoint:int = 10;
 		static public const e_motorJoint:int = 11;
 
 		//

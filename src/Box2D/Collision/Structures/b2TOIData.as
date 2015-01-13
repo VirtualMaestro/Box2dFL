@@ -9,6 +9,7 @@ package Box2D.Collision.Structures
 
 	/**
 	 * Input/Output parameters for b2TimeOfImpact
+	 * Merged b2TOIInput, b2TOIOutput
 	 */
 	public class b2TOIData
 	{
