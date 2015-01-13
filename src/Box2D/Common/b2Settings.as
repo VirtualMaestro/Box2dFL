@@ -120,5 +120,10 @@ package Box2D.Common
 		 *
 		 */
 		static public const maxIterations:int = 20;
+
+		/**
+		 * Count of types which can be stored in main pool.
+		 */
+		static public const maxTypesInPool:int = 100;
 	}
 }

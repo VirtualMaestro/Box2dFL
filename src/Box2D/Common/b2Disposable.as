@@ -110,8 +110,8 @@ package Box2D.Common
 		//** POOL****
 		//***********
 
-		static private var _pool:Vector.<Vector.<b2Disposable>> = new <Vector.<b2Disposable>>[];
-		static private var _counts:Vector.<int>;
+		static private var _pool:Vector.<Vector.<b2Disposable>> = new Vector.<Vector.<b2Disposable>>(b2Settings.maxTypesInPool);
+		static private var _counts:Vector.<int> = new Vector.<int>(b2Settings.maxTypesInPool);
 
 		/**
 		 * Returns disposable instance corresponds to given class id.
@@ -119,10 +119,11 @@ package Box2D.Common
 		 */
 		static b2internal function Get(p_classId:uint):b2Disposable
 		{
-			//
-			if (_counts == null) initPools();
+			CONFIG::debug
+			{
+				b2Assert(p_classId < _counts.length, "not enough elements for pool");
+			}
 
-			//
 			var count:int = _counts[p_classId];
 			var disposable:b2Disposable;
 
@@ -137,21 +138,6 @@ package Box2D.Common
 			}
 
 			return disposable;
-		}
-
-		/**
-		 * Initialize pools.
-		 */
-		[Inline]
-		static private function initPools():void
-		{
-			_counts = new <int>[];
-
-			for (var i:int = 0; i < _classUID; i++)
-			{
-				_counts[i] = -1;
-				_pool[i] = null;
-			}
 		}
 
 		/**
