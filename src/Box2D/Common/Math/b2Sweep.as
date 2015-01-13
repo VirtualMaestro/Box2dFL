@@ -50,7 +50,10 @@ package Box2D.Common.Math
 		public var worldAngle0:Number = 0;
 
 		/**
+		 * Fraction of the current time step in the range [0,1]
+		 * worldCenter0 and worldAngle0 are the positions at t0.
 		 * Time interval = [t0,1], where t0 is in [0,1]
+		 * (originally alpha0)
 		 */
 		public var t0:Number = 0;
 

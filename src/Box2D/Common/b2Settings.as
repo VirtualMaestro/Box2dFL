@@ -106,5 +106,16 @@ package Box2D.Common
 		 */
 		static public const timeToSleep:Number = 0.5;
 
+		/**
+		 * Maximum number of contacts to be handled to solve a TOI impact.
+		 */
+		static public const maxTOIContacts:int = 32;
+
+		/**
+		 * Maximum number of sub-steps per contact in continuous physics simulation.
+		 */
+		static public const maxSubSteps:int = 8;
+
+
 	}
 }
