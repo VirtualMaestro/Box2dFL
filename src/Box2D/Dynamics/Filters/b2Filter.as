@@ -71,12 +71,39 @@ package Box2D.Dynamics.Filters
 		}
 
 		/**
+		 * Include categories for possibility to collide with.
+		 * @param p_includeCategories
+		 */
+		public function IncludeCollisionCategories(p_includeCategories:Array):void
+		{
+			var len:int = p_includeCategories.length;
+			for (var i:int = 0; i < len; i++)
+			{
+				mask = IncludeCategory(mask, p_includeCategories[i]);
+			}
+		}
+
+		/**
 		 * Given category will not collide with current filter anymore
 		 * @param p_excludeCategory
 		 */
 		public function ExcludeCollisionCategory(p_excludeCategory:int):void
 		{
-			mask = IncludeCategory(mask, p_excludeCategory);
+			mask = ExcludeCategory(mask, p_excludeCategory);
+		}
+
+		/**
+		 * Given categories will not collide with current filter anymore
+		 * @param p_excludeCategories
+		 */
+		public function ExcludeCollisionCategories(p_excludeCategories:Array):void
+		{
+			var len:int = p_excludeCategories.length;
+
+			for (var i:int = 0; i < len; i++)
+			{
+				mask = ExcludeCategory(mask, p_excludeCategories[i]);
+			}
 		}
 
 		/**

@@ -57,7 +57,7 @@ package Box2D.Dynamics.Def
 		{
 			shape = null;
 			userData = null;
-			filter = null;
+			filter = b2Filter.Get();
 			friction = 0.2;
 			restitution = 0.0;
 			density = 0.0;

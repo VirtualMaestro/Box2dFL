@@ -71,6 +71,7 @@ package Box2D.Dynamics
 
 		b2internal var m_destructionListener:b2DestructionListener;  // TODO: Think about remove that functionality
 
+		//
 		private var _worldQueryWrapper:b2WorldQueryWrapper;
 		private var _worldRayCastWrapper:b2WorldRayCastWrapper;
 		private var _rayCastHelper:b2RayCastData;
@@ -109,6 +110,9 @@ package Box2D.Dynamics
 
 			m_inv_dt0 = 0.0;
 
+			m_contactManager = new b2ContactManager();
+
+			//
 			_worldQueryWrapper = new b2WorldQueryWrapper();
 			_worldRayCastWrapper = new b2WorldRayCastWrapper();
 			_rayCastHelper = new b2RayCastData();

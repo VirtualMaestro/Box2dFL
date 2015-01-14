@@ -30,6 +30,7 @@ package Box2D.Dynamics
 			m_contactCount = 0;
 			m_contactFilter = new b2Filter();
 			m_contactListener = new b2ContactListener();
+			m_broadPhase = new b2BroadPhase();
 		}
 
 		/**

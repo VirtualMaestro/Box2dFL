@@ -41,6 +41,8 @@ package Box2D.Collision
 
 			m_moveCount = 0;
 			m_moveBuffer = new <int>[];
+
+			m_tree = new b2DynamicTree();
 		}
 
 		/**
