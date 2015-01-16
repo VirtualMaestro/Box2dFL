@@ -155,12 +155,14 @@ package Box2D.Common
 
 			var count:int = _counts[p_classId];
 
-			if (count < 0)
+			var subPool:Vector.<b2Disposable> = _pool[p_classId];
+			if (subPool == null)
 			{
-				_pool[p_classId] = new <b2Disposable>[];
+				subPool = new <b2Disposable>[];
+				_pool[p_classId] = subPool;
 			}
 
-			_pool[p_classId][count++] = p_instance;
+			subPool[count++] = p_instance;
 			_counts[p_classId] = count;
 		}
 

@@ -303,7 +303,7 @@ package Box2D.Collision.Shapes
 		 * @param p_hy the half-height.
 		 * @param p_centerX the center by X of the box in local coordinates.
 		 * @param p_centerY the center by Y of the box in local coordinates.
-		 * @param p_angle the rotation of the box in local coordinates.
+		 * @param p_angle the rotation in radians of the box in local coordinates.
 		 */
 		public function SetAsOrientedBox(p_hx:Number, p_hy:Number, p_centerX:Number, p_centerY:Number, p_angle:Number):void
 		{
@@ -870,6 +870,31 @@ package Box2D.Collision.Shapes
 			cY *= temp;
 
 			return b2SPoint.Get(cX, cY);
+		}
+
+		/**
+		 * Return b2PolygonShape setup as box.
+		 * @return b2PolygonShape
+		 */
+		static public function GetAsBox(p_hx:Number, p_hy:Number):b2PolygonShape
+		{
+			var box:b2PolygonShape = Get();
+			box.SetAsBox(p_hx, p_hy);
+
+			return box;
+		}
+
+		/**
+		 * Return b2PolygonShape setup as box.
+		 * Angle in radians.
+		 * @return b2PolygonShape
+		 */
+		static public function GetAsOrientedBox(p_hx:Number, p_hy:Number, p_centerX:Number, p_centerY:Number, p_angle:Number):b2PolygonShape
+		{
+			var box:b2PolygonShape = Get();
+			box.SetAsOrientedBox(p_hx, p_hy, p_centerX, p_centerY, p_angle);
+
+			return box;
 		}
 
 		/**

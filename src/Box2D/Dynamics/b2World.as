@@ -496,7 +496,7 @@ package Box2D.Dynamics
 		 * @param p_velocityIterations for the velocity constraint solver.
 		 * @param p_positionIterations for the position constraint solver.
 		 */
-		final public function Step(p_dt:Number, p_velocityIterations:int, p_positionIterations:int):void
+		final public function Step(p_dt:Number = 0.0333, p_velocityIterations:int = 10, p_positionIterations:int = 10):void
 		{
 			// If new fixtures were added, we need to find the new contacts.
 			if ((m_flags & e_newFixture) != 0)

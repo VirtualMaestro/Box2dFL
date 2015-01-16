@@ -65,6 +65,11 @@ package Box2D.Dynamics
 		 */
 		b2internal function Create(p_body:b2Body, p_def:b2FixtureDef):void
 		{
+			CONFIG::debug
+			{
+				b2Assert(p_def.shape != null, "fixtureDef has shape as null")
+			}
+
 			m_body = p_body;
 			userData = p_def.userData;
 			m_density = p_def.density;

@@ -8,6 +8,7 @@ package Box2D.Dynamics
 	import Box2D.Collision.Contact.b2Contact;
 	import Box2D.Collision.Contact.b2ContactEdge;
 	import Box2D.Collision.Shapes.b2Shape;
+	import Box2D.Collision.b2AABB;
 	import Box2D.Collision.b2BroadPhase;
 	import Box2D.Common.IDisposable;
 	import Box2D.Common.Math.b2Mat22;
@@ -43,7 +44,7 @@ package Box2D.Dynamics
 		static b2internal const e_bulletFlag:uint = 0x0008;
 		static b2internal const e_fixedRotationFlag:uint = 0x0010;
 		static b2internal const e_activeFlag:uint = 0x0020;
-		static b2internal const e_toiFlag:uint = 0x0040;
+//		static b2internal const e_toiFlag:uint = 0x0040;
 
 		//
 		b2internal var m_type:uint;
@@ -1397,6 +1398,23 @@ package Box2D.Dynamics
 			m_xf.SetAngle(m_sweep.worldAngle);
 
 			SynchronizeTransform();
+		}
+
+		/**
+		 * Returns bounding box of body
+		 */
+		public function GetAABB(p_resultAABB:b2AABB):void
+		{
+			p_resultAABB.SetZero();
+			var tAABB:b2AABB = b2AABB.Get();
+
+			for (var fixture:b2Fixture = m_fixtureList; fixture; fixture = fixture.m_next)
+			{
+				fixture.m_shape.ComputeAABB(tAABB, m_xf, 0);
+				p_resultAABB.Combine(tAABB);
+			}
+
+			tAABB.Dispose();
 		}
 
 		/**

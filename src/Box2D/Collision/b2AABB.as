@@ -55,6 +55,18 @@ package Box2D.Collision
 		}
 
 		/**
+		 * Set all bounds to 0.
+		 */
+		[Inline]
+		final public function SetZero():void
+		{
+			upperBoundX = 0;
+			upperBoundY = 0;
+			lowerBoundX = 0;
+			lowerBoundY = 0;
+		}
+
+		/**
 		 * Get the center of the AABB.
 		 * IMPORTANT! Method returns new instance of b2SPoint.
 		 */

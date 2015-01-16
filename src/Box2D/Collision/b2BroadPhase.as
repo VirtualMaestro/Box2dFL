@@ -26,6 +26,7 @@ package Box2D.Collision
 		b2internal var m_moveCount:int;
 
 		b2internal var m_pairBuffer:Vector.<b2Pair>;
+		b2internal var m_pairCapacity:int;
 		b2internal var m_pairCount:int;
 
 		b2internal var m_queryProxyId:int;
@@ -37,7 +38,13 @@ package Box2D.Collision
 			m_proxyCount = 0;
 
 			m_pairCount = 0;
+			m_pairCapacity = 16;
 			m_pairBuffer = new <b2Pair>[];
+
+			for (var i:int = 0; i < m_pairCapacity; i++)
+			{
+				m_pairBuffer[i] = new b2Pair();
+			}
 
 			m_moveCount = 0;
 			m_moveBuffer = new <int>[];
@@ -243,12 +250,27 @@ package Box2D.Collision
 			// A proxy form a pair
 			if (p_proxyId != m_queryProxyId)
 			{
+				if (m_pairCount >= m_pairCapacity)
+				{
+					extendsPairBuffer();
+				}
+
 				m_pairBuffer[m_pairCount].proxyIdA = b2Math.Min(p_proxyId, m_queryProxyId);
 				m_pairBuffer[m_pairCount].proxyIdB = b2Math.Min(p_proxyId, m_queryProxyId);
 				++m_pairCount;
 			}
 
 			return true;
+		}
+
+		[Inline]
+		final private function extendsPairBuffer():void
+		{
+			var newSize:int = m_pairCapacity * 2;
+			for (var i:int = m_pairCapacity; i < newSize; i++)
+			{
+				m_pairBuffer[i] = new b2Pair();
+			}
 		}
 
 		/**
