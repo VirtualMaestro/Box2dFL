@@ -176,6 +176,7 @@ package Box2D.Collision.Shapes
 		 */
 		override public function Dispose():void
 		{
+			m_fixture = null;
 			b2Disposable.Put(this, classId);
 		}
 

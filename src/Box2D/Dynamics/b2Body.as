@@ -7,6 +7,7 @@ package Box2D.Dynamics
 {
 	import Box2D.Collision.Contact.b2Contact;
 	import Box2D.Collision.Contact.b2ContactEdge;
+	import Box2D.Collision.Shapes.b2PolygonShape;
 	import Box2D.Collision.Shapes.b2Shape;
 	import Box2D.Collision.b2AABB;
 	import Box2D.Collision.b2BroadPhase;

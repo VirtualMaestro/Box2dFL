@@ -45,11 +45,6 @@ package Box2D.Common.Math
 		 */
 		override public function Dispose():void
 		{
-			CONFIG::debug
-			{
-				super.Dispose();
-			}
-
 			b2Disposable.Put(this, classId);
 		}
 

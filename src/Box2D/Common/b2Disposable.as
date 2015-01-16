@@ -19,20 +19,11 @@ package Box2D.Common
 		b2internal var disposed:Boolean = false;
 
 		/**
-		 */
-		public function b2Disposable()
-		{
-		}
-
-		/**
 		 * Disposed current instance and return to pool (if current implementation able to do this).
 		 */
 		public function Dispose():void
 		{
-			CONFIG::debug
-			{
-				b2Assert(!disposed, "attempt to destroy the already destroyed instance");
-			}
+			b2Assert(false, "current method isn't implemented yet or abstract and can't be used!");
 		}
 
 		/**
@@ -148,7 +139,7 @@ package Box2D.Common
 		{
 			CONFIG::debug
 			{
-				b2Assert(!p_instance.disposed, "try to add already disposed shape to pool");
+				b2Assert(p_instance.disposed == false, "try to add already disposed shape to pool");
 			}
 
 			p_instance.disposed = true;

@@ -83,11 +83,8 @@ package Box2D.Collision.Shapes
 		 */
 		override public function Dispose():void
 		{
-			CONFIG::debug
-			{
-				super.Dispose();
-			}
-
+			m_fixture = null;
+			m_fixture = null;
 			m_vertices = null;
 
 			b2Disposable.Put(this, classId);

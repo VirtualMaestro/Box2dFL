@@ -5,6 +5,8 @@ package Box2D.Dynamics
 {
 	import Box2D.Collision.Contact.b2Contact;
 	import Box2D.Collision.Contact.b2ContactEdge;
+	import Box2D.Collision.Shapes.b2CircleShape;
+	import Box2D.Collision.Shapes.b2PolygonShape;
 	import Box2D.Collision.Structures.b2DistanceData;
 	import Box2D.Collision.Structures.b2DistanceProxy;
 	import Box2D.Collision.Structures.b2RayCastData;
@@ -46,6 +48,8 @@ package Box2D.Dynamics
 		static b2internal var e_newFixture:uint = 0x0001;
 		static b2internal var e_locked:uint = 0x0002;
 		static b2internal var e_clearForces:uint = 0x0004;
+
+		static b2internal var worldRef:b2World;
 
 		b2internal var m_contactManager:b2ContactManager;
 		b2internal var m_flags:int;
@@ -130,6 +134,8 @@ package Box2D.Dynamics
 			_xfB = b2Mat22.Get();
 			_fcn = new b2SeparationFunction();
 			_pointHelper = b2SPoint.Get();
+
+			worldRef = this;
 		}
 
 		/**
@@ -1597,6 +1603,37 @@ package Box2D.Dynamics
 
 				b = bNext;
 			}
+		}
+
+		//
+		static b2internal var bodyDefDefault:b2BodyDef = new b2BodyDef();
+
+		/**
+		 * Return body with shape represents box.
+		 * Fof prototyping.
+		 * @return b2Body
+		 */
+		static public function GetBox(p_width:Number = 100, p_height:Number = 100, p_type:Number = b2Body.STATIC):b2Body
+		{
+			bodyDefDefault.type = p_type;
+			var body:b2Body = worldRef.CreateBody(bodyDefDefault);
+			body.CreateFixture2(b2PolygonShape.GetAsBox(p_width, p_height), (p_type == b2Body.STATIC) ? 0.0 : 1.0);
+
+			return body;
+		}
+
+		/**
+		 * Return body with shape represents circle.
+		 * Fof prototyping.
+		 * @return b2Body
+		 */
+		static public function GetCircle(p_radius:Number = 50, p_type:Number = b2Body.STATIC):b2Body
+		{
+			bodyDefDefault.type = p_type;
+			var body:b2Body = worldRef.CreateBody(bodyDefDefault);
+			body.CreateFixture2(b2CircleShape.Get(p_radius), (p_type == b2Body.STATIC) ? 0.0 : 1.0);
+
+			return body;
 		}
 	}
 }

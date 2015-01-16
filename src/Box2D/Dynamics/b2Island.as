@@ -70,6 +70,7 @@ package Box2D.Dynamics
 
 			_helperImpulse = new b2ContactImpulse();
 			_solverDataHelper = new b2SolverData();
+			_contactSolverDefHelper = new b2ContactSolverDef();
 			_contactSolver = new b2ContactSolver();
 		}
 

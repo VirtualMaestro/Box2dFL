@@ -153,13 +153,16 @@ package Box2D.Debug
 		[Inline]
 		final private function drawShape(p_shape:b2Shape):void
 		{
+			var body:b2Body = p_shape.GetFixture().GetBody();
+
 			switch (p_shape.m_type)
 			{
 				case b2Shape.CIRCLE:
 				{
 					var circle:b2CircleShape = p_shape as b2CircleShape;
-					drawCircle(circle.m_pX, circle.m_pY, circle.m_radius);
-					drawCenterMass(circle.m_pX, circle.m_pY);
+					body.GetWorldPoint(circle.m_pX, circle.m_pY, _pointHelper);
+					drawCircle(_pointHelper.x, _pointHelper.y, circle.m_radius);
+					drawCenterMass(_pointHelper.x, _pointHelper.y);
 
 					break;
 				}

@@ -78,6 +78,7 @@ package Box2D.Dynamics
 			m_isSensor = p_def.isSensor;
 			m_filter = p_def.filter.Clone() as b2Filter;
 			m_shape = p_def.shape.Clone() as b2Shape;
+			m_shape.m_fixture = this;
 			m_proxyCount = 0;
 
 			// Reserve proxy space

@@ -195,11 +195,6 @@ package Box2D.Collision
 		 */
 		override public function Dispose():void
 		{
-			CONFIG::debug
-			{
-				super.Dispose();
-			}
-
 			b2Disposable.Put(this, classId);
 		}
 

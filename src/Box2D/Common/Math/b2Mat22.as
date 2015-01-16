@@ -8,6 +8,7 @@ package Box2D.Common.Math
 	import Box2D.Common.IDisposable;
 	import Box2D.Common.b2Disposable;
 	import Box2D.Common.b2internal;
+	import Box2D.b2Assert;
 
 	use namespace b2internal;
 
@@ -197,7 +198,7 @@ package Box2D.Common.Math
 		{
 			CONFIG::debug
 			{
-				super.Dispose();
+				b2Assert(!disposed, "attempt to destroy the already destroyed instance");
 			}
 
 			b2Disposable.Put(this, classId);

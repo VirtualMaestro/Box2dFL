@@ -10,6 +10,7 @@ package Box2D.Collision.Shapes
 	import Box2D.Common.Math.b2Mat22;
 	import Box2D.Common.b2Disposable;
 	import Box2D.Common.b2internal;
+	import Box2D.Dynamics.b2Fixture;
 	import Box2D.Dynamics.b2MassData;
 	import Box2D.b2Assert;
 
@@ -44,6 +45,11 @@ package Box2D.Collision.Shapes
 		b2internal var m_type:int = 0;
 
 		/**
+		 * Fixture which shape belongs to.
+		 */
+		b2internal var m_fixture:b2Fixture;
+
+		/**
 		 * Init instance with given one.
 		 */
 		public function SetTo(p_shape:b2Shape):void
@@ -69,6 +75,16 @@ package Box2D.Collision.Shapes
 		final public function GetType():int
 		{
 			return m_type;
+		}
+
+		/**
+		 * Return fixture which shape belongs to.
+		 * @return
+		 */
+		[Inline]
+		final public function GetFixture():b2Fixture
+		{
+			return m_fixture;
 		}
 
 		/**

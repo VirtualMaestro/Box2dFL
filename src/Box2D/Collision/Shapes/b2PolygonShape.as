@@ -779,11 +779,7 @@ package Box2D.Collision.Shapes
 		 */
 		override public function Dispose():void
 		{
-			CONFIG::debug
-			{
-				super.Dispose();
-			}
-
+			m_fixture = null;
 			m_normals.length = 0;
 			m_vertices.length = 0;
 			m_count = 0;
